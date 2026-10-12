@@ -13,10 +13,10 @@ jobs:
       - run: python3 update_schedule.py
       - name: Сохранить, если изменилось
         run: |
-          if [ -n "$(git status --porcelain schedule.json)" ]; then
+          if [ -n "$(git status --porcelain schedule.json schedule_debug.txt)" ]; then
             git config user.name "schedule-bot"
             git config user.email "schedule-bot@users.noreply.github.com"
-            git add schedule.json
+            git add schedule.json schedule_debug.txt
             git commit -m "Расписание обновлено"
             git push
           fi

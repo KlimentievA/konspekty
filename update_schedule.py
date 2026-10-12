@@ -13,13 +13,18 @@ KINDS = (("лекц", "Лекция"), ("семин", "Семинар"), ("пр�
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schedule.json")
 
 
+DIAG = []
+
+
 def fetch(a, b):
     local = os.environ.get("LOCAL_HTML")
     if local:
         return open(local, encoding="utf-8", errors="replace").read()
     req = urllib.request.Request(URL.format(a=a, b=b), headers={"User-Agent": "Mozilla/5.0 (konspekty schedule bot)", "Accept-Language": "ru"})
     with urllib.request.urlopen(req, timeout=40) as r:
-        return r.read().decode("utf-8", "replace")
+        body = r.read().decode("utf-8", "replace")
+        DIAG.append(f"HTTP {r.status} {r.geturl()}")
+        return body
 
 
 def parse(page):
@@ -52,14 +57,20 @@ def main():
             page = fetch(a.strftime("%Y.%m.%d"), b.strftime("%Y.%m.%d"))
             got = parse(page)
             print(f"{a}..{b}: страница {len(page)} байт, пар найдено {len(got)}")
+            t = re.search(r"<title>(.*?)</title>", page, re.S)
+            DIAG.append(f"{a}..{b}: {len(page)} байт; title={t.group(1).strip()[:120] if t else None}; lesson-node={page.count('lesson-node')}; lesson-source={page.count('data-lesson-source')}; пар={len(got)}")
+            if not got:
+                DIAG.append("начало страницы: " + re.sub(r"\s+", " ", page[:400]))
             lessons += got
             ok += 1
         except Exception as e:  # не роняем workflow
             print(f"{a}..{b}: ошибка {e!r}")
+            DIAG.append(f"{a}..{b}: ОШИБКА {e!r}")
         if os.environ.get("LOCAL_HTML"):
             break
-    if not ok:
-        print("Не удалось скачать расписание — файл не менялся.")
+    open(os.path.join(os.path.dirname(OUT), "schedule_debug.txt"), "w", encoding="utf-8").write("\n".join(DIAG) + "\n")
+    if not ok or not lessons:
+        print("Не удалось получить пары — schedule.json не менялся.")
         return 0
     seen, uniq = set(), []
     for l in sorted(lessons, key=lambda l: (l["d"], l["b"], l["n"])):
@@ -73,7 +84,7 @@ def main():
     if uniq == old:
         print("Без изменений.")
         return 0
-    json.dump({"updated": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"), "list": uniq},
+    json.dump({"updated": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "list": uniq},
               open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     print(f"Записано пар: {len(uniq)}")
     return 0
