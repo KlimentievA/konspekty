@@ -123,7 +123,7 @@ def main():
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday())
     lessons, ok = [], 0
-    for w in range(3):  # эта неделя и две следующие
+    for w in range(26):  # эта неделя и ещё 25 вперёд (~полгода)
         a = monday + datetime.timedelta(days=7 * w)
         b = a + datetime.timedelta(days=6)
         try:
