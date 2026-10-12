@@ -67,7 +67,9 @@ def convert(x):
     kind = next((v for k, v in KINDS if k in kd), str(x.get("kindOfWork", "")))
     return {"d": str(x["date"]).replace(".", "-"), "b": x["beginLesson"], "e": x["endLesson"],
             "n": re.sub(r"\s*\((рус|анг)\)\s*$", "", name), "k": kind,
-            "r": str(x.get("auditorium", "")), "s": hit[1], "t": x.get("lecturer_title") or x.get("lecturer") or ""}
+            "r": str(x.get("auditorium", "")), "s": hit[1], "t": x.get("lecturer_title") or x.get("lecturer") or "",
+            "m": x.get("lecturerEmail") or "", "q": x.get("lecturer_rank") or "", "bd": x.get("building") or "",
+            "g": x.get("group") or "", "u": x.get("url1") or ""}
 
 
 def from_api(a, b):
