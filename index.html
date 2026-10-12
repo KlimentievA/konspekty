@@ -932,9 +932,9 @@ function hlDom(rootEl,re){
 var SKINS={a:'Бумага',c:'Газета',d:'Швейцария',f:'Книга',g:'Поля'},
 SW={a:['#F4F1E8','#A93D28'],c:['#F5F2EA','#B3261E'],d:['#ffffff','#E10600'],f:['#FBF8F1','#8A3A2B'],g:['#FDFDFB','#2F5D8A']},
 DEF={civil:'a',const:'f',crim:'c',fin:'d',python:'g',links:'a'};
-function globalSkin(){var v=store('skin');return SKINS[v]?v:''}
-function skinOf(s){return globalSkin()||DEF[s.id]||'a'}
-function homeSkin(){return globalSkin()||'a'}
+function globalSkin(){var v=store('skin');return SKINS[v]?v:'a'}
+function skinOf(s){return globalSkin()}
+function homeSkin(){return globalSkin()}
 function applySkin(k){root.setAttribute('data-skin',k);syncHdr()}
 function renderNote(n){
   var s=n.subject,ml=minLevel(n.md);
@@ -1135,10 +1135,10 @@ function setSkin(k){
 $('#btn-style').addEventListener('click',function(e){
   e.stopPropagation();
   if(!menu.hidden){closeMenu();return}
-  var cur=globalSkin()||'auto';
-  menu.innerHTML='<div class="fzrow"><span>Размер текста</span><button type="button" data-fz="-1" aria-label="Меньше">А−</button><b>'+Math.round(getFz()*100)+'%</b><button type="button" data-fz="1" aria-label="Больше">А+</button></div><p>Оформление сайта</p>'+['auto'].concat(Object.keys(SKINS)).map(function(k){
-    var sw=k==='auto'?'conic-gradient(#A93D28,#3dff8a,#8B7CFF,#E10600,#A93D28)':'linear-gradient(135deg,'+SW[k][0]+' 50%,'+SW[k][1]+' 50%)';
-    return '<button type="button" data-skin="'+k+'" class="'+(k===cur?'on':'')+'"><i style="background:'+sw+'"></i>'+(k==='auto'?'Разное по предметам':SKINS[k])+(k===cur?'<b>✓</b>':'')+'</button>';
+  var cur=globalSkin();
+  menu.innerHTML='<div class="fzrow"><span>Размер текста</span><button type="button" data-fz="-1" aria-label="Меньше">А−</button><b>'+Math.round(getFz()*100)+'%</b><button type="button" data-fz="1" aria-label="Больше">А+</button></div><p>Оформление сайта</p>'+Object.keys(SKINS).map(function(k){
+    var sw='linear-gradient(135deg,'+SW[k][0]+' 50%,'+SW[k][1]+' 50%)';
+    return '<button type="button" data-skin="'+k+'" class="'+(k===cur?'on':'')+'"><i style="background:'+sw+'"></i>'+SKINS[k]+(k===cur?'<b>✓</b>':'')+'</button>';
   }).join('');
   var r=this.getBoundingClientRect();
   menu.style.top=Math.round(r.bottom+6)+'px';menu.style.right=Math.max(8,Math.round(window.innerWidth-r.right))+'px';
