@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<title>Конспекты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  --bg:#f1f1ee;--sf:#fafaf8;--sf2:#e9e9e4;--bd:#cfcfc8;--tx:#1f2328;--mu:#636b72;--dim:#9aa0a6;
+  --ac:#9a6700;--ac-bg:#f6e8c7;--mark:#fde68a;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fs:16px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1117;--sf:#161b22;--sf2:#1c2129;--bd:#30363d;--tx:#c9d1d9;--mu:#8b949e;--dim:#6e7681;
+  --ac:#d9a441;--ac-bg:#2b2412;--mark:#5a4a12;color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1117;--sf:#161b22;--sf2:#1c2129;--bd:#30363d;--tx:#c9d1d9;--mu:#8b949e;--dim:#6e7681;
+  --ac:#d9a441;--ac-bg:#2b2412;--mark:#5a4a12;color-scheme:dark;
+}
+:root[data-fs="1"]{--fs:15px}:root[data-fs="3"]{--fs:18px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.5 var(--mono);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overflow-wrap:anywhere;min-height:100vh}
+a{color:var(--ac);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px 48px}
+
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--bd);margin:0 -16px;padding:10px 16px 0}
+.prompt{display:flex;align-items:center;gap:8px;min-height:40px}
+.prompt .ps{color:var(--ac)}
+.prompt h1{font:600 13px/1 var(--mono);margin:0;white-space:nowrap}
+.cur{display:inline-block;width:7px;height:14px;background:var(--ac);vertical-align:-2px;margin-left:2px;animation:bl 1.1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.tools{margin-left:auto;display:flex;gap:4px}
+.tools button{min-width:40px;height:40px;color:var(--mu);border-radius:4px}
+.tools button:hover{color:var(--tx);background:var(--sf2)}
+nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{color:var(--mu);padding:8px 10px 10px;min-height:40px;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav a:hover{color:var(--tx);text-decoration:none}
+nav a.on{color:var(--tx);border-color:var(--ac)}
+nav a::before{content:"./";color:var(--dim)}
+nav a.on::before{color:var(--ac)}
+
+main{padding-top:20px}
+.cmd{color:var(--mu);margin:22px 0 10px}
+.cmd:first-child{margin-top:0}
+#home,#qr:not(:empty){margin-top:22px}
+.cmd b{color:var(--ac);font-weight:400}
+.cmd span{color:var(--tx)}
+.muted{color:var(--mu)}
+.dim{color:var(--dim)}
+.tag{color:var(--ac)}
+
+.tree{margin:0;padding:0;list-style:none}
+.tree li{display:flex;min-height:28px;align-items:flex-start}
+.tree .pre{white-space:pre;color:var(--dim);flex:none;padding:3px 0}
+.tree .d{color:var(--mu);white-space:pre;flex:none;margin-right:8px;padding:3px 0}
+.tree a,.tree .t{flex:1;min-width:0;padding:3px 0}
+.tree a{color:var(--tx)}
+.tree a:hover{color:var(--ac);text-decoration:none}
+.tree .dir{color:var(--ac);font-weight:600}
+.tree .dir::after{content:"/";color:var(--dim);font-weight:400}
+
+.row{display:flex;flex-wrap:wrap;gap:0 12px;padding:6px 0;border-bottom:1px dashed var(--bd);align-items:baseline}
+.row:last-child{border:0}
+.row .when{white-space:nowrap}
+.row .nm{flex:1 1 200px;min-width:0;color:var(--tx)}
+.row .k{color:var(--mu)}
+.row a{color:var(--tx)}
+.row a:hover{color:var(--ac)}
+.row .r{color:var(--mu);white-space:nowrap}
+.row .r::before{content:"ауд. "}
+
+.box{border:1px solid var(--bd);background:var(--sf);border-radius:4px;padding:10px 12px}
+.btn{display:inline-flex;align-items:center;min-height:40px;padding:0 12px;border:1px solid var(--bd);border-radius:4px;color:var(--tx);background:var(--sf)}
+.btn:hover{border-color:var(--ac);color:var(--ac);text-decoration:none}
+.btn[disabled]{opacity:.4;pointer-events:none}
+
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--bd);background:var(--sf);border-radius:4px;padding:0 10px;min-height:40px}
+.search .ps{color:var(--ac);white-space:nowrap}
+.search input{flex:1;min-width:0;font:inherit;color:inherit;background:none;border:0;outline:0;height:38px}
+.search input::placeholder{color:var(--dim)}
+.search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.search button{color:var(--mu);min-width:32px;height:38px}
+.res{margin:0;padding:0;list-style:none}
+.res li{padding:10px 0;border-bottom:1px solid var(--bd)}
+.res a{color:var(--tx)}
+.res .sn{font:var(--fs)/1.5 var(--sans);font-size:calc(var(--fs) - 2px);color:var(--mu);margin-top:4px}
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+
+.md{font:var(--fs)/1.6 var(--sans);max-width:72ch}
+.md>:first-child{margin-top:0}
+.md h1,.md h2,.md h3,.md h4{font-family:var(--mono);line-height:1.3;margin:1.6em 0 .6em}
+.md h1{font-size:1.25em}.md h2{font-size:1.1em}.md h3{font-size:1em}.md h4{font-size:.95em;color:var(--mu)}
+.md h2::before,.md h3::before{content:"# ";color:var(--ac)}
+.md h3::before{content:"## "}
+.md p,.md ul,.md ol{margin:.7em 0}
+.md li{margin:.2em 0}
+.md blockquote{margin:.8em 0;padding:2px 12px;border-left:2px solid var(--ac);color:var(--mu)}
+.md code{font-family:var(--mono);font-size:.88em;background:var(--sf2);padding:1px 4px;border-radius:3px}
+.md pre{background:var(--sf2);padding:10px 12px;border-radius:4px;overflow-x:auto}
+.md pre code{background:none;padding:0}
+.md hr{border:0;border-top:1px dashed var(--bd);margin:1.5em 0}
+.md img{max-width:100%}
+.md a{text-decoration:underline;text-decoration-color:var(--bd)}
+.tw{overflow-x:auto;margin:.9em 0;max-width:100%}
+.md table{border-collapse:collapse;font-size:.92em;min-width:100%}
+.md th,.md td{border:1px solid var(--bd);padding:5px 9px;text-align:left;vertical-align:top;overflow-wrap:normal}
+.md th{background:var(--sf2);font-family:var(--mono);font-weight:600;font-size:.85em;white-space:nowrap}
+
+.note-h h1{font:600 18px/1.3 var(--mono);margin:6px 0 4px}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:14px -16px 18px;padding:0 16px;border-bottom:1px solid var(--bd)}
+.tabs::-webkit-scrollbar{display:none}
+.tabs a{white-space:nowrap;color:var(--mu);padding:8px 8px 10px;min-height:40px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs a.on{color:var(--tx);border-color:var(--ac)}
+.tabs a:hover{text-decoration:none;color:var(--tx)}
+.pager{display:flex;justify-content:space-between;gap:8px;margin-top:28px;padding-top:14px;border-top:1px solid var(--bd)}
+.pager a{max-width:48%}
+
+.wk{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.wk .btn{min-width:40px;justify-content:center;padding:0}
+table.sch{width:100%;border-collapse:collapse}
+.sch td{padding:5px 8px 5px 0;vertical-align:top}
+.sch td:first-child{white-space:nowrap;color:var(--mu)}
+.sch td.r{white-space:nowrap;color:var(--mu)}
+.sch td.k{white-space:nowrap;color:var(--dim)}
+.sch td.n{width:100%}
+.sch tr.p{cursor:pointer}
+.sch tr.p:hover td{color:var(--ac)}
+.sch tr.p td{border-top:1px dashed var(--bd)}
+.sch tr.p[aria-expanded="true"] td.n{color:var(--ac)}
+.sch tr.x td{padding:2px 0 10px;color:var(--mu);font:calc(var(--fs) - 2px)/1.5 var(--sans)}
+.sch tr.x div{padding-left:0}
+.day{margin:18px 0 6px}
+.day:first-child{margin-top:0}
+.day b{font-weight:600}
+.day.today b{color:var(--ac)}
+
+.ttabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 14px;padding:0 16px;border-bottom:1px solid var(--bd)}
+.ttabs::-webkit-scrollbar{display:none}
+.ttabs a{white-space:nowrap;color:var(--mu);padding:8px 8px 10px;min-height:40px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.ttabs a.on{color:var(--tx);border-color:var(--ac)}
+.ttabs a:hover{text-decoration:none;color:var(--tx)}
+details.q{border-bottom:1px dashed var(--bd)}
+details.q summary{display:flex;gap:10px;padding:8px 0;cursor:pointer;list-style:none;min-height:40px;align-items:flex-start;font:var(--fs)/1.45 var(--sans);font-size:calc(var(--fs) - 1px)}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary .n{font-family:var(--mono);color:var(--ac);flex:none;padding-top:1px;font-size:13px}
+details.q summary:hover{color:var(--ac)}
+details.q[open] summary{color:var(--ac)}
+details.q .md{padding:2px 0 14px;font-size:calc(var(--fs) - 1px)}
+details.q .md>*{max-width:70ch}
+.sub{margin:18px 0 6px;color:var(--mu)}
+.sub:first-child{margin-top:0}
+
+details.ab{border:1px solid var(--bd);border-radius:4px;background:var(--sf);margin-bottom:8px}
+details.ab summary{list-style:none;cursor:pointer;padding:10px 12px;min-height:40px;display:flex;gap:8px}
+details.ab summary::-webkit-details-marker{display:none}
+details.ab summary::before{content:"+";color:var(--ac);width:12px;flex:none}
+details.ab[open] summary::before{content:"-"}
+details.ab summary:hover{color:var(--ac)}
+details.ab .md{padding:0 12px 12px}
+@media (min-width:700px){
+  body{font-size:14px}
+  .prompt h1{font-size:14px}
+  .md{max-width:76ch}
+  .sch td{padding-right:14px}
+  details.q .md{padding-left:34px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="prompt"><span class="ps">~/konspekty $</span><h1>konspekty<span class="cur"></span></h1>
+    <div class="tools">
+      <button id="fsb" title="Размер шрифта" aria-label="Размер шрифта">Aa</button>
+      <button id="thb" title="Тема" aria-label="Переключить тему">◐</button>
+    </div>
+  </div>
+  <nav id="nav">
+    <a href="#notes" data-s="notes">notes</a><a href="#schedule" data-s="schedule">schedule</a><a href="#tickets" data-s="tickets">tickets</a><a href="#about" data-s="about">about</a>
+  </nav>
+</header>
+<main id="m"></main>
+</div>
+<!--DATA-->
+<!--MARKED-->
+<script>
+'use strict';
+const D=JSON.parse(document.getElementById('data').textContent);
+const M=document.getElementById('m');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={g:k=>{try{return localStorage.getItem('k.'+k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem('k.'+k,v)}catch(e){}}};
+const MON=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const WD=['вс','пн','вт','ср','чт','пт','сб'];
+const dtag=d=>'['+String(d.getDate()).padStart(2,' ')+' '+MON[d.getMonth()]+']';
+const ntag=s=>{if(!s)return '[  ——  ]';const m=s.match(/^(\d+)\s+(\S+)/);return m?'['+m[1].padStart(2,' ')+' '+m[2].slice(0,3)+']':'['+s+']'};
+const pd=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const md=s=>{const h=marked.parse(s||'',{breaks:true});return h.replace(/<table>[\s\S]*?<\/table>/g,t=>'<div class="tw">'+t+'</div>')};
+const KIND={'Семинар':'сем','Лекция':'лек'};
+const SUBJ=Object.fromEntries(D.subjects.map(s=>[s.id,s]));
+const NOTES=D.subjects.flatMap(s=>s.notes.map(n=>({...n,sid:s.id,sname:s.name})));
+const NOTE=Object.fromEntries(NOTES.map(n=>[n.id,n]));
+let SCH=D.schedule;
+
+/* theme & font size */
+const root=document.documentElement;
+const tc=document.querySelector('meta[name=theme-color]');
+function applyTheme(){const t=ls.g('theme');if(t)root.dataset.theme=t;else delete root.dataset.theme;
+  const dark=t?t==='dark':matchMedia('(prefers-color-scheme: dark)').matches;tc.content=dark?'#0d1117':'#f1f1ee'}
+function applyFs(){root.dataset.fs=ls.g('fs')||'2'}
+applyTheme();applyFs();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
+document.getElementById('thb').onclick=()=>{const dark=root.dataset.theme?root.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;ls.s('theme',dark?'light':'dark');applyTheme()};
+document.getElementById('fsb').onclick=()=>{ls.s('fs',String((+root.dataset.fs)%3+1));applyFs()};
+
+/* schedule helpers */
+function upcoming(n){const now=new Date();return SCH.map(p=>({p,t:pd(p.d)})).filter(o=>{const[h,m]=o.p.e.split(':');const end=new Date(o.t);end.setHours(+h,+m);return end>=now})
+  .sort((a,b)=>a.t-b.t||a.p.b.localeCompare(b.p.b)).slice(0,n)}
+function rel(d){const t=new Date();t.setHours(0,0,0,0);const k=Math.round((d-t)/864e5);return k===0?'сегодня':k===1?'завтра':WD[d.getDay()]}
+function pairRow(p,d){return `<div class="row"><span class="when">${esc(dtag(d))} <span class="tag">${esc(rel(d))}</span> ${esc(p.b)}–${esc(p.e)}</span><span class="r">${esc(p.r)}</span><span class="nm">${p.s&&SUBJ[p.s]&&SUBJ[p.s].notes.length?`<a href="#${esc(p.s)}">${esc(p.n)}</a>`:esc(p.n)} <span class="k">${esc(KIND[p.k]||p.k)}</span></span></div>`}
+
+/* views */
+const V={};
+V.notes=()=>{
+  const last=ls.g('last'),ln=last&&NOTE[last];
+  const up=upcoming(4);
+  let h=`<div class="search"><span class="ps">$ grep -i</span><input id="q" type="search" placeholder="поиск по конспектам и билетам" autocomplete="off" enterkeyhint="search"><button id="qx" aria-label="Очистить" hidden>×</button></div><div id="qr"></div><div id="home">`;
+  h+=`<div class="cmd"><b>$</b> next <span class="dim">--limit 4</span></div>`;
+  h+=up.length?up.map(o=>pairRow(o.p,o.t)).join(''):`<div class="muted">ближайших пар нет</div>`;
+  if(ln)h+=`<div class="cmd"><b>$</b> resume</div><a class="btn" href="#${esc(ln.id)}">→ ${esc(ln.sname)}: ${esc(ln.title)}</a>`;
+  h+=`<div class="cmd"><b>$</b> tree notes/</div><ul class="tree">`;
+  const ss=D.subjects.filter(s=>s.notes.length);
+  ss.forEach((s,i)=>{const lastS=i===ss.length-1;
+    h+=`<li><span class="pre">${lastS?'└── ':'├── '}</span><span class="t dir" id="${esc(s.id)}">${esc(s.name)}</span></li>`;
+    s.notes.forEach((n,j)=>{const lastN=j===s.notes.length-1;
+      h+=`<li><span class="pre">${lastS?'    ':'│   '}${lastN?'└── ':'├── '}</span><span class="d">${esc(ntag(n.date))}</span><a href="#${esc(n.id)}">${esc(n.title)}</a></li>`})});
+  h+=`</ul></div>`;
+  M.innerHTML=h;
+  const q=document.getElementById('q'),qr=document.getElementById('qr'),home=document.getElementById('home'),qx=document.getElementById('qx');
+  const run=()=>{const v=q.value.trim();qx.hidden=!v;if(v.length<2){qr.innerHTML='';home.hidden=false;return}home.hidden=true;qr.innerHTML=search(v)};
+  q.oninput=run;qx.onclick=()=>{q.value='';run();q.focus()};
+  if(V.q){q.value=V.q;run()}
+  q.addEventListener('input',()=>{V.q=q.value});
+};
+
+/* search */
+let IDX;
+function buildIdx(){IDX=NOTES.map(n=>({t:n.title,s:n.sname,h:'#'+n.id,x:plain(n.md)}));
+  for(const[k,arr]of Object.entries(D.tickets))for(const[n,qq,a]of arr)IDX.push({t:String(n).padStart(3,'0')+' '+qq,s:'билеты · '+SUBJ[k].name,h:'#tickets-'+k+'-'+n,x:qq+' '+plain(a)})}
+const plain=s=>(s||'').replace(/[#*_`>|]/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/\s+/g,' ');
+const hl=(s,re)=>esc(s).replace(re,'<mark>$&</mark>');
+function search(v){if(!IDX)buildIdx();const re=new RegExp(v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');const out=[];
+  for(const e of IDX){let i=e.x.search(re),it=e.t.search(re);if(i<0&&it<0)continue;
+    let sn='';if(i>=0){const a=Math.max(0,i-70),b=Math.min(e.x.length,i+v.length+110);sn=(a?'…':'')+hl(e.x.slice(a,b),re)+(b<e.x.length?'…':'')}
+    out.push(`<li><a href="${esc(e.h)}">${hl(e.t,re)}</a> <span class="muted">· ${esc(e.s)}</span>${sn?`<div class="sn">${sn}</div>`:''}</li>`);if(out.length>=60)break}
+  return `<div class="cmd"><b>$</b> grep -i "${esc(v)}" <span class="dim">→ ${out.length}${out.length>=60?'+':''}</span></div>`+(out.length?`<ul class="res">${out.join('')}</ul>`:`<div class="muted">ничего не найдено</div>`)}
+
+V.note=id=>{const n=NOTE[id];if(!n)return V.notes();ls.s('last',id);
+  const s=SUBJ[n.sid],i=s.notes.findIndex(x=>x.id===id),pv=s.notes[i-1],nx=s.notes[i+1];
+  M.innerHTML=`<div class="note-h"><div class="cmd"><b>$</b> cat notes/${esc(n.sid)}/${esc(n.id)}.md</div><h1>${esc(n.title)}</h1><div class="muted">${esc(ntag(n.date))} · <a href="#notes">${esc(s.name)}</a></div></div>
+  <div class="tabs">${s.notes.map(x=>`<a href="#${esc(x.id)}"${x.id===id?' class="on"':''}>${esc(x.short||x.title)}</a>`).join('')}</div>
+  <div class="md">${md(n.md)}</div>
+  <div class="pager">${pv?`<a class="btn" href="#${esc(pv.id)}">← ${esc(pv.short||pv.title)}</a>`:'<span></span>'}${nx?`<a class="btn" href="#${esc(nx.id)}">${esc(nx.short||nx.title)} →</a>`:''}</div>`;
+  const on=M.querySelector('.tabs .on');if(on)on.scrollIntoView({block:'nearest',inline:'center'});
+};
+
+let WK=0;
+V.schedule=()=>{const t=new Date();t.setHours(0,0,0,0);const mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7)+WK*7);
+  const days=[...Array(7)].map((_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d});const sun=days[6];
+  const byDay=days.map(d=>({d,ps:SCH.filter(p=>p.d===iso(d)).sort((a,b)=>a.b.localeCompare(b.b))})).filter(x=>x.ps.length);
+  let h=`<div class="wk"><button class="btn" id="wp" aria-label="Предыдущая неделя">←</button><span>${esc(dtag(mon))} – ${esc(dtag(sun))}${WK?` <a href="#schedule" id="w0">[сейчас]</a>`:' <span class="tag">текущая</span>'}</span><button class="btn" id="wn" aria-label="Следующая неделя">→</button></div>`;
+  if(!byDay.length)h+=`<div class="muted">на этой неделе пар нет</div>`;
+  for(const{d,ps}of byDay){const today=iso(d)===iso(t);
+    h+=`<div class="day${today?' today':''}"><b>${esc(WD[d.getDay()])}</b> ${esc(dtag(d))}${today?' <span class="tag">сегодня</span>':''}</div><table class="sch">`;
+    ps.forEach((p,i)=>{h+=`<tr class="p" tabindex="0" role="button" aria-expanded="false" data-i="${i}"><td>${esc(p.b)}–${esc(p.e)}</td><td class="r">${esc(p.r)}</td><td class="k">${esc(KIND[p.k]||p.k)}</td><td class="n">${esc(p.n)}</td></tr>
+      <tr class="x" hidden><td colspan="4"><div>${esc(p.t)}${p.q?` · ${esc(p.q)}`:''}${p.m?`<br><a href="mailto:${esc(p.m)}">${esc(p.m)}</a>`:''}${p.bd?`<br>${esc(p.bd)}`:''}</div></td></tr>`});
+    h+=`</table>`}
+  M.innerHTML=h;
+  document.getElementById('wp').onclick=()=>{WK--;V.schedule()};document.getElementById('wn').onclick=()=>{WK++;V.schedule()};
+  const w0=document.getElementById('w0');if(w0)w0.onclick=e=>{e.preventDefault();WK=0;V.schedule()};
+  const tog=tr=>{const x=tr.nextElementSibling,o=tr.getAttribute('aria-expanded')==='true';tr.setAttribute('aria-expanded',!o);x.hidden=o};
+  M.querySelectorAll('tr.p').forEach(tr=>{tr.onclick=()=>tog(tr);tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog(tr)}}});
+};
+
+const TK=['const','crim','civil'];
+V.tickets=(k='const',open)=>{if(!D.tickets[k])k='const';const arr=D.tickets[k];
+  let h=`<div class="ttabs">${TK.map(id=>`<a href="#tickets-${id}"${id===k?' class="on"':''}>${id}/ <span class="dim">${D.tickets[id].length}</span></a>`).join('')}</div>`;
+  h+=`<div class="muted" style="margin-bottom:10px">${esc(SUBJ[k].name)} · вопросы прошлых лет${k==='civil'?'<br>Сборника ответов не было, ответы составлены по ГК РФ':''}</div>`;
+  let part=0;
+  for(const[n,q]of arr){if(k==='civil'){const p=n<=86?1:2;if(p!==part){part=p;h+=`<div class="sub"># ${p===1?'1–2 модуль':'3–4 модуль'}</div>`}}
+    h+=`<details class="q" id="t-${esc(k)}-${n}"${open==n?' open':''}><summary><span class="n">${String(n).padStart(3,'0')}</span><span>${esc(q)}</span></summary><div class="md" data-n="${n}"></div></details>`}
+  M.innerHTML=h;
+  const ans=Object.fromEntries(arr.map(x=>[x[0],x[2]]));
+  const fill=d=>{const b=d.querySelector('.md');if(!b.dataset.ok){b.innerHTML=md(ans[+b.dataset.n]);b.dataset.ok=1}};
+  M.querySelectorAll('details.q').forEach(d=>{d.addEventListener('toggle',()=>{if(d.open)fill(d)});if(d.open)fill(d)});
+  if(open){const d=document.getElementById('t-'+k+'-'+open);if(d)requestAnimationFrame(()=>d.scrollIntoView({block:'start'}))}
+};
+
+V.about=()=>{M.innerHTML=`<div class="cmd"><b>$</b> cat about/*.md</div>`+D.subjects.filter(s=>s.about).map(s=>`<details class="ab"><summary>${esc(s.name)}</summary><div class="md">${md(s.about)}</div></details>`).join('')};
+
+/* router */
+function route(){const h=decodeURIComponent(location.hash.slice(1));let sec='notes',m;
+  if(h==='schedule'){sec='schedule';V.schedule()}
+  else if((m=h.match(/^tickets(?:-(\w+))?(?:-(\d+))?$/))){sec='tickets';V.tickets(m[1],m[2]?+m[2]:0)}
+  else if(h==='about'){sec='about';V.about()}
+  else if(NOTE[h])V.note(h);
+  else if(SUBJ[h]){V.notes();const el=document.getElementById(h);if(el)el.scrollIntoView({block:'start'})}
+  else V.notes();
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.s===sec));
+  if(!(m&&m[2])&&!SUBJ[h])scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+route();
+fetch('schedule.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(Array.isArray(j)&&j.length){SCH=j;const h=location.hash.slice(1);if(h===''||h==='notes'||h==='schedule')route()}}).catch(()=>{});
+</script>
+</body>
+</html>

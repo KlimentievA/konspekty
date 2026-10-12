@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16213a" media="(prefers-color-scheme: dark)">
+<title>Конспекты</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+:root{
+  --fs:16px;--lh:28px;
+  --paper:#fbf8ee;--desk:#ece6d6;--ink:#262626;--muted:#7a7366;--rule:#c9dbe9;--margin:#e2594f;
+  --pen:#1f4e9c;--mark:#ffe766;--mark-ink:#3a3000;--shadow:0 1px 3px rgba(60,40,0,.12),0 6px 18px rgba(60,40,0,.08);
+  --tab:#fff;--sep:rgba(0,0,0,.08);--code:#f1ede2;--sat:62%;--lum:72%;
+}
+:root[data-fs="1"]{--fs:15px;--lh:26px}
+:root[data-fs="3"]{--fs:18px;--lh:30px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#1b2440;--desk:#101729;--ink:#e3e4ea;--muted:#9aa2b8;--rule:rgba(140,160,210,.14);--margin:#c9524a;
+  --pen:#8fb4ff;--mark:#c9a91c;--mark-ink:#1a1500;--shadow:0 1px 3px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.35);
+  --tab:#243052;--sep:rgba(255,255,255,.1);--code:#141c33;--sat:40%;--lum:38%;
+}}
+:root[data-theme="dark"]{
+  --paper:#1b2440;--desk:#101729;--ink:#e3e4ea;--muted:#9aa2b8;--rule:rgba(140,160,210,.14);--margin:#c9524a;
+  --pen:#8fb4ff;--mark:#c9a91c;--mark-ink:#1a1500;--shadow:0 1px 3px rgba(0,0,0,.4),0 8px 20px rgba(0,0,0,.35);
+  --tab:#243052;--sep:rgba(255,255,255,.1);--code:#141c33;--sat:40%;--lum:38%;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font:var(--fs)/var(--lh) Nunito,"PT Sans",system-ui,sans-serif;overflow-x:hidden;min-height:100vh}
+a{color:var(--pen);text-decoration-color:color-mix(in srgb,var(--pen) 45%,transparent);text-underline-offset:3px}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;min-height:40px;min-width:40px}
+h1,h2,h3,.hand{font-family:Caveat,"Marck Script",cursive;font-weight:700;letter-spacing:.01em}
+h1{font-size:2.2em;line-height:1.1;margin:0}
+h2{font-size:1.9em;line-height:1.15;margin:calc(var(--lh)*1) 0 calc(var(--lh)*.5)}
+h3{font-size:1.55em;line-height:1.2;margin:calc(var(--lh)*.75) 0 calc(var(--lh)*.25)}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 .15em;border-radius:2px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.muted{color:var(--muted)}
+.small{font-size:.85em}
+
+#top{position:sticky;top:0;z-index:5;background:var(--desk);padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+.bar{display:flex;align-items:center;gap:8px;max-width:860px;margin:0 auto}
+.bar h1 a{color:inherit;text-decoration:none}
+.bar .sp{flex:1}
+.tool{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--muted);font-weight:700}
+.tool:hover{background:var(--sep)}
+.tool svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+nav{display:flex;gap:6px;max-width:860px;margin:10px auto 0;overflow-x:auto;scrollbar-width:none;padding:4px 2px 0}
+nav::-webkit-scrollbar{display:none}
+nav a{flex:1 0 auto;text-decoration:none;color:var(--ink);background:var(--tab);padding:6px 5px 4px;border-radius:7px 7px 0 0;border-top:4px solid hsl(var(--h) var(--sat) var(--lum));box-shadow:0 -1px 3px rgba(60,40,0,.08);line-height:1.5;text-align:center;white-space:nowrap;min-height:40px;font-weight:600;font-size:.82em;position:relative;top:2px}
+nav a.on{background:var(--paper);top:0;box-shadow:inset 0 -.55em var(--mark),0 -1px 3px rgba(60,40,0,.08)}
+
+#sheet{position:relative;max-width:860px;margin:0 auto;padding:calc(var(--lh)*.5) max(16px,env(safe-area-inset-right)) calc(var(--lh)*2 + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  background-color:var(--paper);background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--lh) - 1px),var(--rule) calc(var(--lh) - 1px),var(--rule) var(--lh));
+  background-attachment:local;background-position:0 calc(var(--lh)*.5 + 2px);box-shadow:var(--shadow);min-height:70vh}
+#sheet:before{content:"";position:absolute;top:0;bottom:0;left:10px;width:2px;background:var(--margin);opacity:.75}
+#view{min-height:40vh}
+
+.field{display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--pen);margin-bottom:calc(var(--lh)*.5)}
+.field svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:2;flex:none}
+.field input{flex:1;min-width:0;font:inherit;color:inherit;background:none;border:0;outline:0;height:40px;padding:0}
+.field input::placeholder{color:var(--muted);font-family:Caveat,cursive;font-size:1.25em}
+
+ul.plain{list-style:none;margin:0;padding:0}
+.row{display:flex;gap:10px;align-items:baseline;padding:0;border:0}
+.row .t{flex:none;width:3.4em;color:var(--muted);font-variant-numeric:tabular-nums}
+.row .n{flex:1;min-width:0}
+.row .r{flex:none;color:var(--muted)}
+.day{margin:0;font-weight:700}
+.when{color:var(--muted);font-weight:400}
+.cont{display:inline-block;margin:calc(var(--lh)*.25) 0 0;font-weight:600}
+
+.subj{margin:0 0 var(--lh)}
+.subj h2{display:flex;align-items:center;gap:10px;margin-top:var(--lh)}
+.dot{width:14px;height:14px;border-radius:3px;background:hsl(var(--h) var(--sat) var(--lum));flex:none;transform:rotate(-6deg)}
+.notes a{display:flex;gap:10px;align-items:baseline;text-decoration:none;color:inherit;min-height:40px}
+.notes a .d{flex:none;width:4.4em;color:var(--muted);font-variant-numeric:tabular-nums}
+.notes a .tt{color:var(--pen);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--pen) 40%,transparent);text-underline-offset:3px}
+.notes a:hover .tt{text-decoration-color:var(--pen)}
+
+.crumbs{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;color:var(--muted)}
+.crumbs a{color:inherit}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:calc(var(--lh)*.25) 0;padding:4px 0}
+.chips::-webkit-scrollbar{display:none}
+.chips a{flex:none;text-decoration:none;color:var(--ink);border:1px solid var(--sep);border-radius:999px;padding:0 12px;line-height:34px;font-size:.9em;white-space:nowrap}
+.chips a.on{background:var(--mark);color:var(--mark-ink);border-color:transparent}
+.pn{display:flex;justify-content:space-between;gap:12px;margin-top:var(--lh);padding-top:calc(var(--lh)*.5);border-top:1px dashed var(--sep)}
+.pn a,.pn i{flex:1 1 0;min-width:0;min-height:40px;display:flex;align-items:center;gap:4px;text-decoration:none}
+.pn a:last-child{justify-content:flex-end}
+.pn a span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.md{overflow-wrap:anywhere}
+.md>:first-child{margin-top:0}
+.md p,.md ul,.md ol,.md blockquote{margin:0 0 var(--lh)}
+.md ul,.md ol{padding-left:1.4em}
+.md li>p{margin:0}
+.md blockquote{border-left:3px solid var(--mark);padding-left:12px;color:var(--muted);margin-left:0}
+.md hr{border:0;border-top:1px dashed var(--muted);margin:var(--lh) 0}
+.md img{max-width:100%}
+.md code{font:.9em/1 ui-monospace,Menlo,Consolas,monospace;background:var(--code);padding:2px 5px;border-radius:4px}
+.md pre{background:var(--code);padding:12px;border-radius:6px;overflow-x:auto;line-height:1.5;margin:0 0 var(--lh)}
+.md pre code{background:none;padding:0;font-size:.85em}
+.md table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:0 0 var(--lh);line-height:1.45;font-size:.92em;background:var(--paper)}
+.md th,.md td{border:1px solid var(--sep);padding:6px 10px;text-align:left;vertical-align:top;min-width:6em}
+.md th{background:var(--code);font-weight:700}
+.md strong{font-weight:700}
+.md h1{font-size:1.7em}.md h2{font-size:1.5em}.md h3{font-size:1.3em}.md h4,.md h5{font-family:inherit;font-size:1.05em;margin:calc(var(--lh)*.5) 0 0}
+
+.wk{display:flex;align-items:center;gap:8px;margin-bottom:calc(var(--lh)*.5)}
+.wk .ttl{flex:1;text-align:center;font-family:Caveat,cursive;font-size:1.5em;font-weight:700;line-height:1}
+.wk button{font-size:1.4em;color:var(--pen);border-radius:50%}
+.wk button:hover{background:var(--sep)}
+details{margin:0}
+summary{cursor:pointer;list-style:none;min-height:40px}
+summary::-webkit-details-marker{display:none}
+.les summary{display:flex;gap:10px;align-items:baseline}
+.les .t{flex:none;width:3.6em;color:var(--muted);font-variant-numeric:tabular-nums}
+.les .n{flex:1;min-width:0}
+.les .t i{display:none}
+.les+.day,.row+.day{margin-top:calc(var(--lh)*.5)}
+.les .k{color:var(--muted);font-size:.85em}
+.les .r{flex:none;color:var(--muted)}
+.les .info{padding:0 0 0 calc(3.6em + 10px);color:var(--muted);font-size:.92em}
+.les .info a{word-break:break-all}
+.hl{box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.les[open] .hl,.tk[open] .hl{box-shadow:inset 0 -.55em var(--mark)}
+
+.ttabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:calc(var(--lh)*.5)}
+.ttabs a{text-decoration:none;color:var(--ink);border:1px solid var(--sep);border-radius:999px;padding:0 14px;line-height:38px;font-weight:600;font-size:.95em}
+.ttabs a.on{background:var(--mark);color:var(--mark-ink);border-color:transparent}
+.ttabs a.on .muted{color:inherit;opacity:.7}
+.tk summary{display:flex;gap:8px;align-items:baseline}
+.tk .num{flex:none;width:2.4em;text-align:right;color:var(--margin);font-family:Caveat,cursive;font-size:1.3em;font-weight:700;line-height:1;transform:translateY(.05em)}
+.tk .q{flex:1;min-width:0}
+.tk .md{padding:calc(var(--lh)*.25) 0 calc(var(--lh)*.5) calc(2.4em + 8px);font-size:.95em}
+.tk .md table{font-size:.9em}
+.ab summary{display:flex;gap:10px;align-items:center;font-family:Caveat,cursive;font-size:1.6em;font-weight:700;line-height:1.2;padding:calc(var(--lh)*.25) 0}
+.ab summary:after{content:"›";margin-left:auto;color:var(--muted);transform:rotate(90deg);transition:transform .15s}
+.ab[open] summary:after{transform:rotate(-90deg)}
+.ab .md{padding-bottom:calc(var(--lh)*.5)}
+
+.res a{display:block;text-decoration:none;color:inherit;padding:calc(var(--lh)*.25) 0;border-bottom:1px dashed var(--sep)}
+.res .h{font-weight:700;color:var(--pen)}
+.res .s{font-size:.92em;color:var(--muted)}
+.res .w{font-size:.82em;color:var(--muted)}
+
+@media (min-width:900px){
+  #top{position:static;padding-top:24px}
+  .bar{max-width:980px;padding:0 16px}
+  #sheet{margin:16px auto 40px;padding:var(--lh) 72px calc(var(--lh)*2) 88px;max-width:980px;min-height:80vh}
+  #sheet:before{left:64px}
+  nav{position:absolute;right:-60px;top:48px;flex-direction:column;width:60px;gap:12px;overflow:visible;margin:0;padding:0;z-index:1}
+  nav a{top:0;left:0;border-top:0;border-right:5px solid hsl(var(--h) var(--sat) var(--lum));border-radius:0 7px 7px 0;padding:10px 8px 10px 10px;writing-mode:vertical-rl;text-align:left;box-shadow:2px 1px 4px rgba(60,40,0,.12);min-height:0;white-space:nowrap;line-height:1.1}
+  nav a.on{left:-4px;box-shadow:inset 0 0 0 100px var(--mark),2px 1px 4px rgba(60,40,0,.12);color:var(--mark-ink)}
+  .wrap{position:relative;max-width:980px;margin:0 auto}
+  .tk .num{position:absolute;left:-74px;width:44px;text-align:right}
+  .tk summary{position:relative}
+  .tk .md{padding-left:0}
+  .les .t{width:7.6em}.les .t br{display:none}.les .t i{display:inline;font-style:normal}.les .info{padding-left:calc(7.6em + 10px)}
+}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="bar">
+    <h1><a href="#">Конспекты</a></h1>
+    <span class="sp"></span>
+    <button class="tool" id="fsb" title="Размер шрифта" aria-label="Размер шрифта">Aa</button>
+    <button class="tool" id="thb" title="Тема" aria-label="Тема"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18V3z"/><circle cx="12" cy="12" r="9"/></svg></button>
+  </div>
+</div>
+<div class="wrap">
+<div id="sheet">
+  <nav id="nav"></nav>
+  <div id="view"></div>
+</div>
+</div>
+<!--DATA-->
+<!--MARKED-->
+<script>
+(()=>{
+const D=JSON.parse(document.getElementById('data').textContent);
+const $=s=>document.querySelector(s),view=$('#view'),nav=$('#nav');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md=s=>marked.parse(s||'');
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'],DOW=['вс','пн','вт','ср','чт','пт','сб'],DOWF=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+const TK={const:'Конституционное',crim:'Уголовное',civil:'Гражданское'};
+const subj=id=>D.subjects.find(s=>s.id===id);
+const notes=D.subjects.flatMap(s=>s.notes.map(n=>({...n,sid:s.id,sname:s.name})));
+const note=id=>notes.find(n=>n.id===id);
+let SCH=D.schedule;
+const pd=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fmt=d=>d.getDate()+' '+MON[d.getMonth()];
+
+/* настройки */
+const root=document.documentElement;
+root.dataset.fs=ls.get('fs')||'2';
+const th=ls.get('theme');if(th)root.dataset.theme=th;
+$('#fsb').onclick=()=>{root.dataset.fs=String(+root.dataset.fs%3+1);ls.set('fs',root.dataset.fs)};
+$('#thb').onclick=()=>{const dark=root.dataset.theme==='dark'||(!root.dataset.theme&&matchMedia('(prefers-color-scheme:dark)').matches);root.dataset.theme=dark?'light':'dark';ls.set('theme',root.dataset.theme)};
+
+/* навигация */
+const NAV=[['','Конспекты',45],['schedule','Расписание',200],['tickets','Билеты',0],['about','О предметах',130]];
+function renderNav(cur){nav.innerHTML=NAV.map(([h,t,hue])=>`<a href="#${h}" class="${cur===h?'on':''}" style="--h:${hue}">${t}</a>`).join('')}
+
+/* главная */
+function upcoming(){
+  const now=new Date(),t0=ymd(now),hm=now.getHours()*60+now.getMinutes();
+  return SCH.filter(x=>x.d>t0||(x.d===t0&&(+x.e.slice(0,2)*60+ +x.e.slice(3))>=hm)).sort((a,b)=>(a.d+a.b).localeCompare(b.d+b.b)).slice(0,4);
+}
+function dayLabel(ds){const now=new Date(),t=ymd(now),d=pd(ds);const tm=new Date(now);tm.setDate(tm.getDate()+1);
+  if(ds===t)return 'сегодня';if(ds===ymd(tm))return 'завтра';return DOW[d.getDay()]+', '+fmt(d)}
+function home(q){
+  let h=`<div class="field"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Поиск по конспектам и билетам" value="${esc(q)}" autocomplete="off"></div>`;
+  if(q){h+=search(q)}else{
+    const up=upcoming(),last=ls.get('last');
+    let pd_='';h+=`<h2>Ближайшие пары</h2>`+(up.length?up.map(x=>{const d=x.d!==pd_?`<p class="day">${dayLabel(x.d)}</p>`:'';pd_=x.d;return d+`<div class="row"><span class="t">${esc(x.b)}</span><span class="n">${esc(x.n)} <span class="muted small">${esc(x.k)}</span></span><span class="r small">${esc(x.r)}</span></div>`}).join(''):'<p class="muted">Пар в расписании больше нет</p>');
+    if(last&&note(last))h+=`<a class="cont" href="#${esc(last)}">Продолжить: ${esc(note(last).title)} →</a>`;
+    h+=D.subjects.filter(s=>s.notes.length).map(s=>`<section class="subj"><h2><span class="dot" style="--h:${s.hue}"></span>${esc(s.name)}</h2><div class="notes">`+
+      s.notes.map(n=>`<a href="#${n.id}"><span class="d">${esc(n.date)}</span><span class="tt">${esc(n.title)}</span></a>`).join('')+'</div></section>').join('');
+  }
+  view.innerHTML=h;
+  const inp=$('#q');inp.oninput=()=>{home(inp.value.trim());const i=$('#q');i.focus();i.setSelectionRange(i.value.length,i.value.length)};
+}
+
+/* поиск */
+const strip=s=>s.replace(/[#*_`>|\-]+/g,' ').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/\s+/g,' ');
+const IDX=[...notes.map(n=>({h:'#'+n.id,title:n.title,where:n.sname+(n.date?' · '+n.date:''),text:strip(n.md)})),
+  ...Object.entries(D.tickets).flatMap(([k,v])=>v.map(([n,q,a])=>({h:`#tickets-${k}-${n}`,title:n+'. '+q,where:'Билеты · '+TK[k],text:strip(a||'')})))];
+function hl(s,q){return esc(s).replace(new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>'<mark>'+m+'</mark>')}
+function search(q){
+  const lq=q.toLowerCase(),out=[];
+  for(const it of IDX){let i=it.title.toLowerCase().indexOf(lq),inT=i>=0;if(!inT)i=it.text.toLowerCase().indexOf(lq);if(i<0)continue;
+    const sn=inT?it.text.slice(0,120):(i>60?'…':'')+it.text.slice(Math.max(0,i-60),i+90)+'…';
+    out.push(`<a href="${it.h}"><div class="h">${hl(it.title,q)}</div><div class="s">${hl(sn,q)}</div><div class="w">${esc(it.where)}</div></a>`);if(out.length>=60)break}
+  return `<div class="res"><p class="muted small">${out.length?'Найдено: '+out.length:'Ничего не найдено'}</p>${out.join('')}</div>`;
+}
+
+/* конспект */
+function notePage(id){
+  const n=note(id),s=subj(n.sid),i=s.notes.findIndex(x=>x.id===id),pv=s.notes[i-1],nx=s.notes[i+1];
+  ls.set('last',id);
+  view.innerHTML=`<div class="crumbs"><a href="#">Конспекты</a><span>·</span><span>${esc(s.name)}</span>${n.date?`<span>·</span><span>${esc(n.date)}</span>`:''}</div>
+  <h2 style="margin-top:0">${esc(n.title)}</h2>
+  <div class="chips">${s.notes.map(x=>`<a href="#${x.id}" class="${x.id===id?'on':''}">${esc(x.short||x.title)}</a>`).join('')}</div>
+  <div class="md">${md(n.md)}</div>
+  <div class="pn">${pv?`<a href="#${pv.id}">← <span>${esc(pv.short||pv.title)}</span></a>`:'<i></i>'}${nx?`<a href="#${nx.id}"><span>${esc(nx.short||nx.title)}</span> →</a>`:'<i></i>'}</div>`;
+  view.querySelector('.chips a.on')?.scrollIntoView({block:'nearest',inline:'center'});
+}
+
+/* расписание */
+let wk=0;
+function monday(off){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()+6)%7+off*7);return d}
+function schedule(){
+  const m=monday(wk),days=[];for(let i=0;i<7;i++){const d=new Date(m);d.setDate(m.getDate()+i);days.push(d)}
+  const end=days[6],today=ymd(new Date());
+  let h=`<div class="wk"><button id="wp" aria-label="Предыдущая неделя">‹</button><span class="ttl">${fmt(m)} – ${fmt(end)}</span><button id="wn" aria-label="Следующая неделя">›</button></div>`;
+  if(wk)h+=`<p class="small" style="text-align:center;margin:0 0 calc(var(--lh)*.5)"><a href="#schedule" id="wc">к текущей неделе</a></p>`;
+  let any=false;
+  for(const d of days){const ds=ymd(d),ls_=SCH.filter(x=>x.d===ds).sort((a,b)=>a.b.localeCompare(b.b));if(!ls_.length)continue;any=true;
+    h+=`<p class="day">${DOWF[d.getDay()]} <span class="when">${fmt(d)}${ds===today?' · сегодня':''}</span></p>`+ls_.map(x=>`<details class="les"><summary><span class="t">${esc(x.b)}<i>–</i><br>${esc(x.e)}</span><span class="n"><span class="hl">${esc(x.n)}</span> <span class="k">${esc(x.k)}</span></span><span class="r">${esc(x.r)}</span></summary><div class="info">${esc(x.t)}${x.q?`, ${esc(x.q).toLowerCase()}`:''}${x.m?`<br><a href="mailto:${esc(x.m)}">${esc(x.m)}</a>`:''}${x.bd?`<br>${esc(x.bd)}${x.r?', ауд. '+esc(x.r):''}`:''}</div></details>`).join('')}
+  if(!any)h+='<p class="muted">На этой неделе пар нет</p>';
+  view.innerHTML=h;
+  $('#wp').onclick=()=>{wk--;schedule()};$('#wn').onclick=()=>{wk++;schedule()};const c=$('#wc');if(c)c.onclick=e=>{e.preventDefault();wk=0;schedule()};
+}
+
+/* билеты */
+function tickets(k,n){
+  if(!D.tickets[k])k='const';
+  const list=D.tickets[k];
+  const item=([num,q,a])=>`<details class="tk" id="t-${k}-${num}"${num==n?' open':''}><summary><span class="num">${num}</span><span class="q"><span class="hl">${esc(q)}</span></span></summary><div class="md">${md(a)}</div></details>`;
+  let h=`<div class="ttabs">${Object.keys(D.tickets).map(x=>`<a href="#tickets-${x}" class="${x===k?'on':''}">${TK[x]} <span class="muted small">${D.tickets[x].length}</span></a>`).join('')}</div><p class="muted small" style="margin:0">Вопросы прошлых лет</p>`;
+  if(k==='civil'){h+=`<p class="muted small" style="margin:0">Сборника ответов не было, ответы составлены по ГК РФ</p><h3>1–2 модуль</h3>`+list.filter(t=>t[0]<=86).map(item).join('')+`<h3>3–4 модуль</h3>`+list.filter(t=>t[0]>86).map(item).join('')}
+  else h+=`<div style="height:calc(var(--lh)*.5)"></div>`+list.map(item).join('');
+  view.innerHTML=h;
+  if(n)document.getElementById(`t-${k}-${n}`)?.scrollIntoView({block:'start'});
+}
+
+/* о предметах */
+function about(){
+  view.innerHTML=D.subjects.filter(s=>s.about).map(s=>`<details class="ab"><summary><span class="dot" style="--h:${s.hue}"></span>${esc(s.name)}</summary><div class="md">${md(s.about)}</div></details>`).join('');
+}
+
+/* роутер */
+function route(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  let cur='';
+  if(h==='schedule'){cur='schedule';schedule()}
+  else if(h.startsWith('tickets')){cur='tickets';const [,k,n]=h.split('-');tickets(k||'const',n)}
+  else if(h==='about'){cur='about';about()}
+  else if(note(h))notePage(h);
+  else home('');
+  renderNav(cur);
+  if(!(cur==='tickets'&&h.split('-')[2]))window.scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+fetch('schedule.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(Array.isArray(j)&&j.length){SCH=j;const h=location.hash.slice(1);if(h===''||h==='schedule')route()}}).catch(()=>{});
+route();
+})();
+</script>
+</body>
+</html>
