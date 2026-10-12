@@ -7,8 +7,9 @@ GROUP = "48037"
 URL = ("https://www.hse.ru/ba/dlawyer/timetable?fromdate={a}&todate={b}&groupoid=" + GROUP +
        "&receiverType=3&timetable-courses=2&timetable-groups=" + GROUP + "&timetable-view-switcher=list")
 # (часть названия дисциплины, id предмета на сайте или None)
-KEEP = [("Гражданское право", "civil"), ("Конституционное право", "const"), ("Уголовное право", "crim"),
-        ("Основы программирования на Python", "python"), ("Экономика", None), ("Цифровая грамотность", None)]
+KEEP = [("Гражданское право", "civil"), ("Конституционное право", "const"),
+        ("Уголовное право", "crim"), ("Основы программирования на Python", "python")]
+COURSE = "2 курс"  # поле parentschedule вида «ФП_Бак 2 курс Юриспруденция: цифровой юрист …»
 KINDS = (("лекц", "Лекция"), ("семин", "Семинар"), ("практ", "Практика"))
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schedule.json")
 
@@ -60,6 +61,8 @@ def convert(x):
     hit = next((k for k in KEEP if k[0] in name), None)
     if not hit or not x.get("date") or not x.get("beginLesson"):
         return None
+    if COURSE not in str(x.get("parentschedule", "")):
+        return None
     kd = str(x.get("kindOfWork", "")).lower()
     kind = next((v for k, v in KINDS if k in kd), str(x.get("kindOfWork", "")))
     return {"d": str(x["date"]).replace(".", "-"), "b": x["beginLesson"], "e": x["endLesson"],
@@ -106,18 +109,11 @@ def parse(page):
     out = []
     for raw in re.findall(r'data-lesson-source="([^"]*)"', page):
         try:
-            x = json.loads(html.unescape(raw))
+            c = convert(json.loads(html.unescape(raw)))
         except ValueError:
             continue
-        name = str(x.get("discipline", ""))
-        hit = next((k for k in KEEP if k[0] in name), None)
-        if not hit or not x.get("date") or not x.get("beginLesson"):
-            continue
-        kd = str(x.get("kindOfWork", "")).lower()
-        kind = next((v for k, v in KINDS if k in kd), str(x.get("kindOfWork", "")))
-        out.append({"d": x["date"].replace(".", "-"), "b": x["beginLesson"], "e": x["endLesson"],
-                    "n": re.sub(r"\s*\((рус|анг)\)\s*$", "", name), "k": kind,
-                    "r": str(x.get("auditorium", "")), "s": hit[1], "t": x.get("lecturer_title") or x.get("lecturer") or ""})
+        if c:
+            out.append(c)
     return out
 
 
