@@ -112,6 +112,18 @@ main{min-width:0;padding-inline:var(--gut);padding-bottom:96px}
 .nx .nt i{display:block;margin-top:2px;font:400 13.5px/1.4 var(--sans);font-style:normal;color:var(--muted)}
 .nx .rm{align-self:center;white-space:nowrap;padding:3px 10px;border:1px solid var(--line);border-radius:999px;font:600 13px/1.4 var(--sans);color:var(--fg);font-variant-numeric:tabular-nums}
 .nx .cv{align-self:center;width:7px;height:7px;border-right:1.6px solid var(--faint);border-bottom:1.6px solid var(--faint);transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+.aboutp{max-width:760px}
+.aboutlead{margin:10px 0 26px;font:400 15px/1.5 var(--sans);color:var(--muted)}
+.ablist{border-top:1px solid var(--line)}
+.ab{border-bottom:1px solid var(--line)}
+.ab>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:17px 0;cursor:pointer;font:600 19px/1.3 var(--head,var(--serif))}
+.ab>summary::-webkit-details-marker{display:none}
+.ab .abn{flex:1;min-width:0}
+.ab .cv{width:7px;height:7px;border-right:1.6px solid var(--faint);border-bottom:1.6px solid var(--faint);transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+.ab[open] .cv{transform:rotate(-135deg) translate(-2px,0)}
+.ab .prose{padding:0 0 24px}
+html:root:root .ab .prose h3{margin:1.5em 0 .6em;padding:0;border:0;background:none;box-shadow:none;border-radius:0;font:600 12.5px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+html:root:root .ab .prose h3::before,html:root:root .ab .prose h3::after{content:none;display:none}
 .nx[open] .cv{transform:rotate(-135deg) translate(-2px,0)}
 .nx.now .nd em::after{content:" · идёт";color:var(--accent)}
 .nx.nd0.now .nd em::after{content:"идёт"}
@@ -735,7 +747,6 @@ DATA.subjects.forEach(function(s){
     n.subject=s;n.idx=i;notes[n.id]=n;allNotes.push(n);
     n.text=plain(n.md);n.tl=n.text.toLowerCase();n.ti=n.title.toLowerCase();
   });
-  if(s.about){var a={id:s.id+'-about',subject:s,about:true,title:'О предмете',short:'О предмете',date:'',idx:-1,md:s.about};notes[a.id]=a;s.aboutNote=a}
 });
 
 /* ---------- markdown ---------- */
@@ -748,17 +759,18 @@ marked.use({gfm:true,breaks:true,renderer:{
 function minLevel(md){var m=99;md.replace(/^(#{1,6})[ \t]/gm,function(a,h){if(h.length<m)m=h.length;return a});return m===99?null:m}
 
 /* ---------- состояние ---------- */
-var state={tok:'',hl:null,searching:false,heads:null};
+var state={tok:'',hl:null,searching:false,heads:null},aboutOpen='';
 var rail=$('#rail'),view=$('#view'),tabsEl=$('#tabs'),input=$('#q'),sbar=$('#searchbar');
 
 function defaultNote(s){
   var id=store('last:'+s.id);
-  return (id&&notes[id]&&notes[id].subject===s)?notes[id]:(s.notes[s.notes.length-1]||s.aboutNote);
+  return (id&&notes[id]&&notes[id].subject===s)?notes[id]:s.notes[s.notes.length-1];
 }
 function resolve(tok){
-  if(tok==='schedule')return tok;
+  if(tok==='schedule'||tok==='about')return tok;
+  if(/-about$/.test(tok)&&subjects[tok.slice(0,-6)]){aboutOpen=tok.slice(0,-6);return 'about'}
   if(notes[tok])return tok;
-  if(subjects[tok])return defaultNote(subjects[tok]).id;
+  if(subjects[tok])return subjects[tok].notes.length?defaultNote(subjects[tok]).id:(aboutOpen=tok,'about');
   return '';
 }
 function go(tok){
@@ -775,28 +787,28 @@ window.addEventListener('hashchange',function(){
 });
 
 /* ---------- навигация: предметы и вкладки ---------- */
-$('#subjects').innerHTML=DATA.subjects.map(function(s){
-  return '<a class="subj" href="#'+s.id+'" data-go="'+s.id+'" data-s="'+s.id+'" style="--h:'+s.hue+'"><span class="dot"></span><span class="nm">'+esc(s.name)+'</span><span class="ct">'+(s.notes.length||'')+'</span></a>';
-}).join('')+'<a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a>';
+var withNotes=DATA.subjects.filter(function(s){return s.notes.length});
+$('#subjects').innerHTML=withNotes.map(function(s){
+  return '<a class="subj" href="#'+s.id+'" data-go="'+s.id+'" data-s="'+s.id+'" style="--h:'+s.hue+'"><span class="dot"></span><span class="nm">'+esc(s.name)+'</span><span class="ct">'+s.notes.length+'</span></a>';
+}).join('')+'<a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a><a class="subj" href="#about" data-go="about" data-s="about" style="--h:250"><span class="dot"></span><span class="nm">О предметах</span><span class="ct"></span></a>';
 
 function centerIn(box,el){box.scrollLeft=el.offsetLeft-(box.clientWidth-el.offsetWidth)/2}
 
 function markSubject(n){
   $$('.subj').forEach(function(a){
-    var on=n?a.getAttribute('data-s')===n.subject.id:(state.tok==='schedule'&&a.getAttribute('data-s')==='schedule');
+    var on=n?a.getAttribute('data-s')===n.subject.id:((state.tok==='schedule'||state.tok==='about')&&a.getAttribute('data-s')===state.tok);
     a.classList.toggle('on',on);
     if(on){a.setAttribute('aria-current','page');if(window.innerWidth<900)centerIn(a.parentNode,a)}else a.removeAttribute('aria-current');
   });
 }
 function renderTabs(n){
   var s=n&&n.subject;
-  var list=s?(s.aboutNote?[s.aboutNote]:[]).concat(s.notes):[];
-  if(!s||list.length<2){tabsEl.hidden=true;tabsEl.innerHTML='';return}
+  if(!s||s.notes.length<2){tabsEl.hidden=true;tabsEl.innerHTML='';return}
   tabsEl.hidden=false;
   tabsEl.style.setProperty('--h',s.hue);
-  tabsEl.innerHTML=list.map(function(x){
+  tabsEl.innerHTML=s.notes.map(function(x){
     var on=x===n;
-    return '<a class="tab'+(on?' on':'')+'" role="tab" aria-selected="'+on+'" href="#'+x.id+'" data-go="'+x.id+'"><span class="td">'+esc(x.about?'инфо':(x.date||'—'))+'</span><span class="tl">'+esc(x.short)+'</span></a>';
+    return '<a class="tab'+(on?' on':'')+'" role="tab" aria-selected="'+on+'" href="#'+x.id+'" data-go="'+x.id+'"><span class="td">'+esc(x.date||'—')+'</span><span class="tl">'+esc(x.short)+'</span></a>';
   }).join('');
   var a=$('.tab.on',tabsEl);if(a)centerIn(tabsEl,a);
 }
@@ -891,11 +903,11 @@ function renderHome(){
   var last=notes[store('last')||''];
   var h='<section class="home"><h1><span class="sec">§</span>Конспекты</h1>'+
     '<p class="lead">Выберите предмет — внутри конспекты по датам. Поиск ищет сразу по всем.</p>'+
-    '<p class="stats"><span>'+plural(DATA.subjects.length,['предмет','предмета','предметов'])+' · '+plural(allNotes.length,['конспект','конспекта','конспектов'])+'</span> <span>Обновлено '+esc(UPDATED)+'</span></p>';
+    '<p class="stats"><span>'+plural(withNotes.length,['предмет','предмета','предметов'])+' · '+plural(allNotes.length,['конспект','конспекта','конспектов'])+'</span> <span>Обновлено '+esc(UPDATED)+'</span></p>';
   if(last)h+='<a class="resume" href="#'+last.id+'" data-go="'+last.id+'"><span class="k">Продолжить</span><span class="v">'+esc(last.title)+'</span></a>';
   h+=nextHtml()+bmHtml();
-  h+='<div class="idx">'+DATA.subjects.map(function(s){
-    return '<section class="isub" style="--h:'+s.hue+'"><h2><span class="dot"></span><a href="#'+s.id+'" data-go="'+s.id+'">'+esc(s.name)+'</a><span class="cnt">'+(s.notes.length||'')+'</span></h2><ul>'+(s.aboutNote?'<li><a href="#'+s.aboutNote.id+'" data-go="'+s.aboutNote.id+'"><span class="d">инфо</span><span class="t">О предмете: как считается оценка</span></a></li>':'')+
+  h+='<div class="idx">'+withNotes.map(function(s){
+    return '<section class="isub" style="--h:'+s.hue+'"><h2><span class="dot"></span><a href="#'+s.id+'" data-go="'+s.id+'">'+esc(s.name)+'</a><span class="cnt">'+s.notes.length+'</span></h2><ul>'+
       s.notes.map(function(n){return '<li><a href="#'+n.id+'" data-go="'+n.id+'"><span class="d">'+esc(n.date||'—')+'</span><span class="t">'+esc(n.title)+'</span></a></li>'}).join('')+'</ul></section>';
   }).join('')+'</div></section>';
   view.innerHTML=h;
@@ -942,7 +954,7 @@ function renderNote(n){
   var s=n.subject,ml=minLevel(n.md);
   shift=ml===null?0:2-ml;
   var html=marked.parse(n.md);
-  var pv=n.about?null:s.notes[n.idx-1],nx=n.about?null:s.notes[n.idx+1];
+  var pv=s.notes[n.idx-1],nx=s.notes[n.idx+1];
   var pager=(pv||nx)?'<nav class="pager" aria-label="Соседние конспекты">'+
     (pv?'<a class="pv" href="#'+pv.id+'" data-go="'+pv.id+'"><span class="k">← Назад'+(pv.date?' · '+esc(pv.date):'')+'</span><span class="v">'+esc(pv.title)+'</span></a>':'')+
     (nx?'<a class="nx" href="#'+nx.id+'" data-go="'+nx.id+'"><span class="k">Дальше'+(nx.date?' · '+esc(nx.date):'')+' →</span><span class="v">'+esc(nx.title)+'</span></a>':'')+'</nav>':'';
@@ -979,6 +991,21 @@ function renderNote(n){
   });
 }
 
+/* ---------- о предметах ---------- */
+function renderAbout(){
+  state.heads=null;
+  var h='<section class="results aboutp"><h1>О предметах</h1><p class="aboutlead">Как считается оценка по каждому предмету. Нажми на предмет.</p><div class="ablist">';
+  DATA.subjects.forEach(function(s){
+    if(!s.about)return;
+    var ml=minLevel(s.about);shift=ml===null?0:3-ml;
+    h+='<details class="ab" style="--h:'+s.hue+'"'+(aboutOpen===s.id?' open':'')+' id="ab-'+s.id+'"><summary><span class="dot"></span><span class="abn">'+esc(s.name)+'</span><span class="cv"></span></summary><div class="prose">'+marked.parse(s.about)+'</div></details>';
+  });
+  view.innerHTML=h+'</div></section>';
+  $$('.ab td,.ab th',view).forEach(function(c){if(c.textContent.length<=26)c.classList.add('nw')});
+  var o=$('.ab[open]',view);aboutOpen='';
+  if(o)setTimeout(function(){window.scrollTo(0,Math.max(0,o.getBoundingClientRect().top+window.scrollY-110))},0);
+}
+
 /* ---------- показ ---------- */
 function show(tok){
   state.tok=tok;state.searching=false;
@@ -986,9 +1013,10 @@ function show(tok){
   applySkin(n?skinOf(n.subject):homeSkin());
   markSubject(n);renderTabs(n);
   if(n){
-    if(!n.about){store('last',n.id);store('last:'+n.subject.id,n.id)}
+    store('last',n.id);store('last:'+n.subject.id,n.id);
     renderNote(n);
   }else if(tok==='schedule'){schedWeek=0;renderSchedule()}
+  else if(tok==='about'){renderAbout()}
   else{state.heads=null;renderHome()}
   view.classList.remove('rise');void view.offsetWidth;view.classList.add('rise');
   window.scrollTo(0,0);
