@@ -774,28 +774,19 @@ function renderTabs(n){
 /* ---------- главная ---------- */
 /* ---------- расписание ---------- */
 var MON=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'],WD=['вс','пн','вт','ср','чт','пт','сб'];
-var SCHED=JSON.parse($('#sched').textContent),SCHED_SRC='file';
+var SCHED=JSON.parse($('#sched').textContent),SCHED_SRC='file',SCHED_AT='';
 var KEEP=[['Гражданское право','civil'],['Конституционное право','const'],['Уголовное право','crim'],['Основы программирования на Python','python'],['Экономика',null],['Цифровая грамотность',null]];
-try{var cch=JSON.parse(store('sched')||'null');if(cch&&cch.list&&cch.list.length&&Date.now()-cch.at<3*864e5){SCHED=cch.list;SCHED_SRC='ruz'}}catch(e){}
+try{var cch=JSON.parse(store('sched')||'null');if(cch&&cch.list&&cch.list.length&&Date.now()-cch.at<3*864e5){SCHED=cch.list;SCHED_SRC='auto';SCHED_AT=cch.upd||''}}catch(e){}
 function two(n){return ('0'+n).slice(-2)}
 function loadLive(){
   if(!/^https?:$/.test(location.protocol)||!window.fetch)return;
-  var ctl=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ctl)ctl.abort()},7000);
-  var f=function(d){return d.getFullYear()+'.'+two(d.getMonth()+1)+'.'+two(d.getDate())};
-  fetch('https://ruz.hse.ru/api/schedule/group/48037?start='+f(new Date())+'&finish='+f(new Date(Date.now()+14*864e5))+'&lng=1',{signal:ctl?ctl.signal:undefined})
-  .then(function(r){return r.json()}).then(function(arr){
-    clearTimeout(tm);var list=[];
-    (Array.isArray(arr)?arr:[]).forEach(function(x){
-      var nm=String(x.discipline||''),m=null;
-      KEEP.forEach(function(k){if(!m&&nm.indexOf(k[0])>-1)m=k});
-      if(!m||!x.date||!x.beginLesson)return;
-      var kd=String(x.kindOfWork||'');
-      list.push({d:String(x.date).replace(/\./g,'-'),b:x.beginLesson,e:x.endLesson,n:nm.replace(/\s*\((рус|анг)\)\s*$/,''),k:/лекц/i.test(kd)?'Лекция':/семин/i.test(kd)?'Семинар':/практ/i.test(kd)?'Практика':kd,r:String(x.auditorium||'').replace(/^.*\/\s*/,''),s:m[1],t:x.lecturer_title||x.lecturer||''});
-    });
-    if(!list.length)return;
-    SCHED=list;SCHED_SRC='ruz';store('sched',JSON.stringify({at:Date.now(),list:list}));
+  fetch('schedule.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(d){
+    var list=Array.isArray(d)?d:(d&&d.list);
+    if(!Array.isArray(list)||!list.length)return;
+    SCHED=list;SCHED_SRC='auto';SCHED_AT=(d&&d.updated)||'';
+    store('sched',JSON.stringify({at:Date.now(),list:list,upd:SCHED_AT}));
     if(!state.tok&&!state.searching)renderHome();
-  }).catch(function(){clearTimeout(tm)});
+  }).catch(function(){});
 }
 function dayLabel(d){
   var t=new Date(),ts=t.getFullYear()+'-'+two(t.getMonth()+1)+'-'+two(t.getDate());
@@ -815,7 +806,7 @@ function nextHtml(){
     return '<'+tag+' class="nx-row'+(o.s<=now?' now':'')+'"'+link+'><span class="nd"><em>'+esc(dayLabel(x.d))+'</em>'+esc(x.b)+'–'+esc(x.e)+'</span><span class="nt"><b>'+esc(x.n)+'</b><i>'+esc(x.k)+(x.r?' · ауд. '+esc(x.r):'')+(x.t?' · '+esc(x.t):'')+'</i></span></'+tag+'>';
   }).join('')+'</div>';
   var fa=new Date(all[0].x.d+'T12:00:00'),fz=new Date(all[all.length-1].x.d+'T12:00:00');
-  return h+'<p class="src">'+(SCHED_SRC==='ruz'?'Расписание подгружено с ruz.hse.ru':'Расписание из файла: '+fa.getDate()+' '+MON[fa.getMonth()]+' — '+fz.getDate()+' '+MON[fz.getMonth()])+'</p></section>';
+  return h+'<p class="src">'+(SCHED_SRC==='auto'?'Расписание обновляется автоматически с hse.ru':'Расписание из файла: '+fa.getDate()+' '+MON[fa.getMonth()]+' — '+fz.getDate()+' '+MON[fz.getMonth()])+'</p></section>';
 }
 /* ---------- закладки ---------- */
 function getBm(){try{var a=JSON.parse(store('bm')||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
