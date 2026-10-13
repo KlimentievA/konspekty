@@ -42,6 +42,35 @@ try:
 except Exception as e:
     print('moex idx', e, file=sys.stderr); out['idx'] = old.get('idx')
 
+out['bonds'] = {}
+for kind, board in (('ofz', 'TQOB'), ('corp', 'TQCB')):
+    try:
+        j = get('https://iss.moex.com/iss/engines/stock/markets/bonds/boards/' + board + '/securities.json?iss.meta=off&iss.only=securities,marketdata'
+                '&securities.columns=SECID,SHORTNAME,MATDATE,OFFERDATE,COUPONPERCENT,COUPONPERIOD,PREVPRICE,FACEUNIT,FACEVALUE,YIELDATPREVWAPRICE,LISTLEVEL'
+                '&marketdata.columns=SECID,LAST,YIELD,DURATION,VALTODAY,UPDATETIME', 40)
+        s, m = iss(j['securities']), iss(j['marketdata'])
+        a_ = []
+        for k, x in s.items():
+            if kind == 'ofz' and not k.startswith(('SU24', 'SU25', 'SU26')): continue
+            y = m.get(k, {})
+            a_.append({'id': k, 'n': x.get('SHORTNAME'), 'mat': x.get('MATDATE'), 'off': x.get('OFFERDATE'), 'c': x.get('COUPONPERCENT'), 'per': x.get('COUPONPERIOD'),
+                       'p': y.get('LAST') or x.get('PREVPRICE'), 'y': y.get('YIELD') or x.get('YIELDATPREVWAPRICE'), 'd': (y.get('DURATION') or 0) / 365 or None,
+                       'vol': y.get('VALTODAY') or 0, 'cur': x.get('FACEUNIT'), 'fv': x.get('FACEVALUE'), 'lvl': x.get('LISTLEVEL')})
+        if kind == 'corp': a_ = sorted(a_, key=lambda z: z['vol'] or 0, reverse=True)[:600]
+        out['bonds'][kind] = a_
+    except Exception as e:
+        print('bonds', kind, e, file=sys.stderr)
+        out['bonds'][kind] = (old.get('bonds') or {}).get(kind)
+try:
+    j = get('https://iss.moex.com/iss/engines/stock/zcyc.json?iss.meta=off&iss.only=yearyields&yearyields.columns=tradedate,tradetime,period,value')
+    last = {}
+    for r in j['yearyields']['data']: last[r[2]] = r
+    pts = [[p_, last[p_][3]] for p_ in sorted(last) if p_ >= 0.5]
+    r0 = j['yearyields']['data'][-1]
+    out['kbd'] = {'date': r0[0] + ' ' + str(r0[1] or '')[:5] + ' (снимок)', 'pts': pts}
+except Exception as e:
+    print('kbd', e, file=sys.stderr); out['kbd'] = old.get('kbd')
+
 try:
     out['fx'] = get('https://www.cbr-xml-daily.ru/daily_json.js')
 except Exception as e:
@@ -178,8 +207,11 @@ def summarize(url, title, desc):
 done = 0
 for x in merged:
     x['id'] = hashlib.md5(x['u'].split('?')[0].encode()).hexdigest()[:10]
-    if 'sum' in x or done >= 90: continue
-    x['sum'] = summarize(x['u'], x['t'], x.get('x', '')); done += 1
+    if x.get('sum') or x.get('st', 0) >= 3 or done >= 120: continue
+    s_ = summarize(x['u'], x['t'], x.get('x', ''))
+    if not s_ and x.get('x') and len(x['x']) > 40:   # сайт не отдал статью — берём анонс из RSS
+        s_ = [q for q in SPLIT.split(x['x']) if len(q) > 30][:2]
+    x['sum'] = s_; x['st'] = x.get('st', 0) + 1; done += 1
     time.sleep(0.3)
 print('summaries', done)
 json.dump({'updated': out['updated'], 'items': merged}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))

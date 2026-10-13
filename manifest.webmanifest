@@ -1,2 +1,48 @@
-{"name":"Учёба и финансы","short_name":"Учёба","lang":"ru","start_url":"./","scope":"./","display":"standalone","background_color":"#F4F1E8","theme_color":"#F4F1E8",
-"icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
+{
+"name": "Учёба и финансы",
+"short_name": "Учёба",
+"lang": "ru",
+"start_url": "./",
+"scope": "./",
+"display": "standalone",
+"background_color": "#F4F1E8",
+"theme_color": "#F4F1E8",
+"icons": [
+{
+"src": "icon-192.png",
+"sizes": "192x192",
+"type": "image/png",
+"purpose": "any maskable"
+},
+{
+"src": "icon-512.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+],
+"shortcuts": [
+{
+"name": "Конспекты",
+"url": "ucheba.html",
+"icons": [
+{
+"src": "icon-192.png",
+"sizes": "192x192"
+}
+]
+},
+{
+"name": "Расписание",
+"url": "ucheba.html#schedule"
+},
+{
+"name": "Финансы: обучение",
+"url": "finance.html#learn"
+},
+{
+"name": "Рынки",
+"url": "finance.html#markets"
+}
+]
+}

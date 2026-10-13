@@ -1,6 +1,7 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F4F1E8">
+<meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#171611" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Финансы">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <title>Финансы</title>
 <!--ZOOM-->
@@ -144,6 +145,8 @@ details.qa+h3{margin-top:2em}
 .try:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .gfilter{width:100%;height:46px;margin:0 0 14px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:400 16px var(--sans);outline:0}
 .gfilter:focus{border-color:var(--faint)}
+.pchead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pchead h2{margin:0;flex:1 1 auto}
+@media (max-width:560px){.pchead h2{flex-basis:100%}.pchead .chip{min-height:34px;padding:4px 11px}}
 .pchart{position:relative;margin-top:10px;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:crosshair}
 .pchart svg{display:block}
 .pcs .gl{stroke:var(--line2);stroke-width:1}
@@ -193,6 +196,8 @@ details.qa+h3{margin-top:2em}
 .pctip .more{display:block;margin-top:4px;font:500 11.5px var(--sans);font-style:normal;color:var(--faint)}
 .ev2 .evt{color:inherit;text-decoration:none}.ev2 .evt:hover b{text-decoration:underline;text-underline-offset:3px}
 .pcev .chip.on{min-height:30px;padding:4px 12px;font-size:13px;text-decoration:none;margin-right:6px}
+.rq{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 18px;font:400 13.5px/1.4 var(--sans);color:var(--muted)}
+details.qa.rqon{background:color-mix(in srgb,var(--accent) 9%,transparent);border-radius:8px;padding-inline:8px}
 mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
 
 /* рынки */
@@ -371,10 +376,16 @@ function renderChapter(c){
     (nx?'<a class="nx" href="#learn/'+nx.id+'"><small>Дальше →</small><b>'+esc(nx.title)+'</b></a>':'')+
     '</nav></article>'+(heads.length>2?'<aside class="side"><p class="h">Содержание</p>'+toc+'</aside>':'')+'</div>';
   if(c.id!=='glossariy'&&c.id!=='istochniki')applyTerms(view.querySelector('.prose'));
+  var qs=view.querySelectorAll('details.qa');
+  if(qs.length>5&&(c.id==='sobesedovanie'||c.id==='stazhirovka'||c.id==='praktikum')){
+    var bar=document.createElement('div');bar.className='rq';bar.innerHTML='<button type="button" class="chip on" data-rq>Случайный вопрос</button><span>Подумай над ответом вслух, потом открой и сверься.</span>';
+    var pr=view.querySelector('.prose');pr.insertBefore(bar,pr.firstChild.nextSibling);
+  }
   if(Q){hl(view.querySelector('.prose'),Q)}
 }
 view.addEventListener('input',function(e){if(!e.target.classList.contains('gfilter'))return;var q=e.target.value.trim().toLowerCase();view.querySelectorAll('.prose tbody tr').forEach(function(tr){tr.hidden=q&&tr.textContent.toLowerCase().indexOf(q)<0})});
 view.addEventListener('click',function(e){
+  if(e.target.closest('[data-rq]')){var qs=[].slice.call(view.querySelectorAll('details.qa'));qs.forEach(function(d){d.open=false;d.classList.remove('rqon')});var q=qs[Math.floor(Math.random()*qs.length)];q.classList.add('rqon');q.scrollIntoView({behavior:'smooth',block:'center'});return}
   var a=e.target.closest('[data-to]');if(!a)return;e.preventDefault();
   var el=document.getElementById(a.getAttribute('data-to'));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
   var d=a.closest('details.toc');if(d)d.open=false;
@@ -481,14 +492,14 @@ function loadBonds(kind){
       var yl=y.YIELD||x.YIELDATPREVWAPRICE||null;
       a.push({id:k,n:x.SHORTNAME,mat:x.MATDATE,off:x.OFFERDATE,c:x.COUPONPERCENT,per:x.COUPONPERIOD,p:y.LAST||x.PREVPRICE,y:yl,d:y.DURATION?y.DURATION/365:null,vol:y.VALTODAY||0,cur:x.FACEUNIT,fv:x.FACEVALUE,lvl:x.LISTLEVEL,tm:y.UPDATETIME})});
     M.bonds[kind]=a;M.t.bonds=new Date();M.err.bonds=0})
-  .catch(function(){M.err.bonds=1});
+  .catch(function(){M.err.bonds=1;return loadSnap().then(function(sn){if(sn&&sn.bonds&&sn.bonds[kind]){M.bonds[kind]=sn.bonds[kind];M.t.bonds='snap'}})});
 }
 function loadKBD(){
   return getJSON('https://iss.moex.com/iss/engines/stock/zcyc.json?iss.meta=off&iss.only=yearyields&yearyields.columns=tradedate,tradetime,period,value')
   .then(function(j){var d=j.yearyields.data;if(!d||!d.length)throw 0;var last={};d.forEach(function(r){last[r[2]]=r});
     var pts=Object.keys(last).map(Number).sort(function(a,b){return a-b}).filter(function(p){return p>=0.5}).map(function(p){return [p,last[p][3]]});
     var r0=d[d.length-1];M.kbd={date:new Date(r0[0]).toLocaleDateString('ru-RU')+(r0[1]?' '+String(r0[1]).slice(0,5):''),pts:pts,live:1}})
-  .catch(function(){});
+  .catch(function(){return loadSnap().then(function(sn){if(sn&&sn.kbd&&sn.kbd.pts&&sn.kbd.pts.length)M.kbd=sn.kbd})});
 }
 function kbdAt(t){var p=(M.kbd||S.kbd).pts;if(t==null)return null;if(t<=p[0][0])return p[0][1];for(var i=1;i<p.length;i++)if(t<=p[i][0]){var a=p[i-1],b=p[i];return a[1]+(b[1]-a[1])*(t-a[0])/(b[0]-a[0])}return p[p.length-1][1]}
 function loadFX(){
@@ -911,7 +922,7 @@ function vCard(tic){
   var sec=SECMAP[r[2]],med=S.ru_sect.filter(function(x){return x[0]===sec})[0];
   var h='<div id="card-root" class="sect" style="margin-top:20px"><p class="eyebrow"><a href="#markets/ru">Россия</a> · '+esc(r[2])+'</p><h1 style="margin:0;font:600 clamp(28px,6vw,40px)/1.1 var(--serif)">'+esc(r[1])+' <span style="color:var(--faint);font:500 18px var(--mono)">'+tic+'</span></h1>'+
     '<div class="tiles" style="margin-top:14px" id="card-price">'+tile('Цена',px?nf(px,px<10?3:2)+' ₽':'—',l.ch!=null?pct(l.ch)+' за день':'Мосбиржа')+tile('Капитализация',nf(r[3],0)+' млрд ₽',esc(S.ru_asof))+'</div></div>';
-  h+='<div class="sect"><div class="box"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0;flex:1">График цены</h2>'+[['1m','1 мес'],['3m','3 мес'],['6m','6 мес'],['1y','1 год'],['3y','3 года'],['5y','5 лет']].map(function(x){return '<button type="button" class="chip'+(CARD.range===x[0]?' on':'')+'" data-crange="'+x[0]+'">'+x[1]+'</button>'}).join('')+'</div>';
+  h+='<div class="sect"><div class="box"><div class="pchead"><h2>График цены</h2>'+[['1m','1 мес'],['3m','3 мес'],['6m','6 мес'],['1y','1 год'],['3y','3 года'],['5y','5 лет']].map(function(x){return '<button type="button" class="chip'+(CARD.range===x[0]?' on':'')+'" data-crange="'+x[0]+'">'+x[1]+'</button>'}).join('')+'</div>';
   if(cd&&cd.length>1){
     if(PC.d!==cd){PC.d=cd;PC.sel=null;PC.hov=null;PC.mk=null;PC.tic=tic;PC.marks=pcMarks(tic,cd,!(CARD.range==='3y'||CARD.range==='5y'))}
     h+='<div id="pchart" class="pchart" role="img" aria-label="График цены '+tic+'"></div><div id="pc-info" class="pcinfo"></div><p class="note">Цены закрытия, Мосбиржа'+(CARD.range==='3y'||CARD.range==='5y'?' (по неделям)':' (по дням)')+'.</p>';
