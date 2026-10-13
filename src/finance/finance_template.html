@@ -416,11 +416,11 @@ var SUBS=[['summary','Сводка'],['ru','Россия'],['us','США'],['cry
 function subnav(){return '<nav class="sub">'+SUBS.map(function(s){return '<a class="chip'+(s[0]===cur?' on':'')+'" href="#markets/'+s[0]+'">'+s[1]+'</a>'}).join('')+'</nav>'}
 function status(key,label){
   var t=M.t[key],e=M.err[key],cls,txt;
-  if(t instanceof Date){cls='live';txt=label+': обновлено в '+hm(t)}
+  if(t instanceof Date){cls='live';txt=label+': обновлено в '+t.toLocaleTimeString('ru-RU')+' · <span data-ago="'+t.getTime()+'">'+ago(t.getTime())+'</span>'}
   else if(t==='snap'){cls='';txt=label+' недоступны из браузера — показан снимок '+(M.snap&&M.snap.updated?'от '+esc(M.snap.updated):'')}
   else if(e){cls='off';txt=label+' сейчас недоступны — показаны сохранённые данные'}
   else{cls='';txt=label+': загрузка…'}
-  return '<div class="stat '+cls+'"><span class="dot"></span><span>'+txt+'</span><button type="button" data-reload>Обновить сейчас</button><span class="auto">авто — раз в минуту</span></div>';
+  return '<div class="stat '+cls+'"><span class="dot"></span><span>'+txt+'</span><button type="button" data-reload>Обновить сейчас</button><span class="auto">обновляется само каждые 15 с</span></div>';
 }
 function tile(k,v,s){return '<div class="tile"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'}
 function stTiles(a){return a.map(function(r){return tile(esc(r[0]),esc(r[1]),esc(r[2]))}).join('')}
@@ -525,7 +525,7 @@ function vCrypto(){
   var h=status('cr','Криптокотировки'+(M.crsrc?' ('+M.crsrc+')':''));
   if(btc&&btc.cap&&tot)h+='<div class="tiles" style="margin-top:12px">'+tile('Капитализация топ-'+a.length,bigUsd(tot),'сумма монет в таблице')+tile('Доминация BTC (в топе)',nf(btc.cap/tot*100,1)+'%','доля BTC в капитализации топа')+tile('USD/RUB для пересчёта',nf(r,2),'курс ЦБ')+'</div>';
   h+=(a.length?table('cr',cols,a.map(function(x){x.pr=x.p*r;return x})):'<p class="empty">Загружаю…</p>')+
-    '<p class="sect note">Обновляется каждую минуту, пока страница открыта. Рублёвая цена — пересчёт по курсу ЦБ, а не биржевая. В РФ с 01.09.2026 действует закон о цифровых валютах: неквалифицированным инвесторам до 300 тыс. ₽ в год через одного посредника; платить криптой внутри страны запрещено.</p>';
+    '<p class="sect note">Обновляется каждые 15 секунд, пока страница открыта. Рублёвая цена — пересчёт по курсу ЦБ, а не биржевая. В РФ с 01.09.2026 действует закон о цифровых валютах: неквалифицированным инвесторам до 300 тыс. ₽ в год через одного посредника; платить криптой внутри страны запрещено.</p>';
   return h;
 }
 function svgLine(pts,opt){
@@ -641,8 +641,11 @@ function drawMarkets(full){
 }
 var loaders={summary:[loadIdx,loadFX,loadCR,loadSnap],ru:[loadRU],us:[loadSnap],crypto:[loadFX,loadCR],bonds:[loadKBD,function(){return loadBonds(BF.kind)}],fx:[loadFX],cal:[]};
 var timer;
-function refresh(){var l=loaders[cur]||[];if(cur==='summary')l=l.concat([loadRU]);return Promise.all(l.map(function(f){return f()})).then(function(){drawMarkets()},function(){drawMarkets()})}
-function startTimer(){clearInterval(timer);timer=setInterval(function(){if(state==='markets'&&!document.hidden)refresh()},60000)}
+var busy=false;
+function ago(ms){var s=Math.max(0,Math.round((Date.now()-ms)/1000));return s<5?'только что':s<60?s+' с назад':Math.floor(s/60)+' мин назад'}
+setInterval(function(){document.querySelectorAll('[data-ago]').forEach(function(e){e.textContent=ago(+e.getAttribute('data-ago'))})},1000);
+function refresh(){var l=loaders[cur]||[];if(cur==='summary')l=l.concat([loadRU]);busy=true;return Promise.all(l.map(function(f){return f()})).then(function(){busy=false;drawMarkets()},function(){busy=false;drawMarkets()})}
+function startTimer(){clearInterval(timer);timer=setInterval(function(){if(state==='markets'&&!document.hidden&&!busy)refresh()},15000)}
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&state==='markets')refresh()});
 
 
