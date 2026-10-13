@@ -1273,7 +1273,7 @@ function defaultNote(s){
   return (id&&notes[id]&&notes[id].subject===s)?notes[id]:s.notes[s.notes.length-1];
 }
 function resolve(tok){
-  if(tok==='schedule'||tok==='about')return tok;
+  if(tok==='schedule'||tok==='about'||tok==='session')return tok;
   if(tok==='tickets')return 'tickets-'+(TK[store('tk')]?store('tk'):'const');
   if(/^tickets-(const|crim|civil)(-\d+)?$/.test(tok))return tok;
   if(/^tickets-/.test(tok))return 'tickets-const';
@@ -1297,7 +1297,7 @@ window.addEventListener('hashchange',function(){
 
 /* ---------- навигация: предметы и вкладки ---------- */
 var withNotes=DATA.subjects.filter(function(s){return s.notes.length});
-$('#subjects').innerHTML='<a class="subj" href="#" data-go="" data-s="notes" style="--h:70"><span class="dot"></span><span class="nm">Конспекты</span><span class="ct">'+allNotes.length+'</span></a><a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a><a class="subj" href="#tickets" data-go="tickets" data-s="tickets" style="--h:250"><span class="dot"></span><span class="nm">Билеты</span><span class="ct"></span></a><a class="subj" href="#about" data-go="about" data-s="about" style="--h:250"><span class="dot"></span><span class="nm">О предметах</span><span class="ct"></span></a>';
+$('#subjects').innerHTML='<a class="subj" href="#" data-go="" data-s="notes" style="--h:70"><span class="dot"></span><span class="nm">Конспекты</span><span class="ct">'+allNotes.length+'</span></a><a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a><a class="subj" href="#tickets" data-go="tickets" data-s="tickets" style="--h:250"><span class="dot"></span><span class="nm">Билеты</span><span class="ct"></span></a><a class="subj" href="#session" data-go="session" data-s="session" style="--h:250"><span class="dot"></span><span class="nm">Сессия</span><span class="ct"></span></a><a class="subj" href="#about" data-go="about" data-s="about" style="--h:250"><span class="dot"></span><span class="nm">О предметах</span><span class="ct"></span></a>';
 
 function centerIn(box,el){box.scrollLeft=el.offsetLeft-(box.clientWidth-el.offsetWidth)/2}
 
@@ -1585,7 +1585,7 @@ function zachHtml(){
     var r=z[s.id]||{},st=zachState(r);t++;if(st===1)n++;
     h+='<div class="zr" data-z="'+s.id+'" style="--h:'+s.hue+'"><span class="dot"></span><span class="zn">'+esc(s.name)+'</span><input class="zg" type="text" inputmode="decimal" autocomplete="off" placeholder="оц." value="'+(r.g==null?'':esc(r.g))+'" aria-label="Оценка: '+esc(s.name)+'"><button type="button" class="zs s'+st+'" data-zs>'+ZST[st]+'</button></div>';
   });
-  return '<div class="zach"><div class="zh"><span>Сессия: что сдано</span><span id="zc">Сдано '+n+' из '+t+'</span></div>'+h+'</div>';
+  return '<div class="zach"><div class="zh"><span>Предметы</span><span id="zc">Сдано '+n+' из '+t+'</span></div>'+h+'</div>';
 }
 function zachSync(){
   var z=zachAll(),n=0;
@@ -1616,10 +1616,16 @@ view.addEventListener('click',function(e){
 window.addEventListener('pagehide',function(){if($('.zach',view))zachSave()});
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&$('.zach',view))zachSave()});
 
+/* ---------- сессия ---------- */
+function renderSession(){
+  state.heads=null;
+  view.innerHTML='<section class="results aboutp"><h1>Сессия</h1><p class="aboutlead">Что сдано, а что нет. Впиши оценку: от 4 — «Сдал», ниже 4 — «Пересдача». Или просто нажимай на кнопку справа.</p>'+zachHtml()+'</section>';
+}
+
 /* ---------- о предметах ---------- */
 function renderAbout(){
   state.heads=null;
-  var h='<section class="results aboutp"><h1>О предметах</h1><p class="aboutlead">Как считается оценка по каждому предмету. Нажми на предмет.</p>'+zachHtml()+'<div class="ablist">';
+  var h='<section class="results aboutp"><h1>О предметах</h1><p class="aboutlead">Как считается оценка по каждому предмету. Нажми на предмет.</p><div class="ablist">';
   DATA.subjects.forEach(function(s){
     if(!s.about)return;
     var ml=minLevel(s.about);shift=ml===null?0:3-ml;
@@ -1677,6 +1683,7 @@ function show(tok){
     renderNote(n);
   }else if(tok==='schedule'){schedWeek=0;renderSchedule()}
   else if(tok==='about'){renderAbout()}
+  else if(tok==='session'){renderSession()}
   else if(/^tickets-/.test(tok)){var tm=tok.match(/^tickets-(\w+)(?:-(\d+))?$/);renderTickets(tm[1],tm[2]?+tm[2]:0)}
   else{state.heads=null;renderHome()}
   view.classList.remove('rise');void view.offsetWidth;view.classList.add('rise');
