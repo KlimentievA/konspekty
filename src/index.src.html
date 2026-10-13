@@ -138,6 +138,21 @@ main{min-width:0;padding-inline:var(--gut);padding-bottom:96px}
 .ab .cv,.tk .cv{width:7px;height:7px;border-right:1.6px solid var(--faint);border-bottom:1.6px solid var(--faint);transform:rotate(45deg) translateY(-2px);transition:transform .2s}
 .ab[open] .cv,.tk[open] .cv{transform:rotate(-135deg) translate(-2px,0)}
 .ab .prose{padding:0 0 24px}
+.calc{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.calc .ct0{margin:0 0 12px;font:600 12.5px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.calc .cm{margin:0 0 16px;padding:14px 14px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.calc .cmn{margin-bottom:6px;font:600 15px/1.3 var(--sans)}
+.calc .cr{display:flex;align-items:center;gap:10px;padding:6px 0}
+.calc .cl{flex:1;min-width:0;font:400 14.5px/1.3 var(--sans)}
+.calc .cl i{margin-left:5px;font-style:normal;font-size:12.5px;color:var(--muted)}
+.calc .cr input{width:78px;height:40px;padding:0 6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);text-align:center;font:600 16px/1 var(--sans);-webkit-appearance:none;appearance:none}
+.calc .cr input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.calc .co{margin-top:8px;padding-top:10px;border-top:1px dashed var(--line);font:400 14.5px/1.5 var(--sans);color:var(--muted)}
+.calc .co .big{display:block;margin-bottom:2px;font:700 20px/1.3 var(--sans);color:var(--fg)}
+.calc .co .bad{color:#c0392b}
+.calc .ct{display:flex;justify-content:space-between;gap:12px;padding:3px 0;font-variant-numeric:tabular-nums}
+.calc .ct b{color:var(--fg);font-weight:600}
+.calc .cn{margin:0;font:400 12.5px/1.5 var(--sans);color:var(--faint)}
 html:root:root .ab .prose h3{margin:1.5em 0 .6em;padding:0;border:0;background:none;box-shadow:none;border-radius:0;font:600 12.5px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 html:root:root .ab .prose h3::before,html:root:root .ab .prose h3::after{content:none;display:none}
 .nx[open] .cv{transform:rotate(-135deg) translate(-2px,0)}
@@ -1482,6 +1497,68 @@ function renderNote(n){
   });
 }
 
+/* ---------- калькулятор оценки ---------- */
+var CR_FLOOR='Округляется только итоговая оценка, в меньшую сторону.',CR_NONE='Правило округления на странице курса не указано, считаю по обычным правилам (от 0,5 вверх).';
+var CALC={
+  const:{note:CR_FLOOR,m:[
+    {n:'Модуль 2',round:'floor',block:1,p:[['Собеседование',.7,1],['Работа на семинарах 1',.2],['Посещаемость лекций 1',.1]]},
+    {n:'Модуль 4',round:'floor',block:1,p:[['Экзамен (собеседование)',.7,1],['Работа на семинарах 2',.2],['Посещаемость лекций 2',.1]]}]},
+  civil:{note:CR_NONE,m:[
+    {n:'Модуль 2',block:1,p:[['Экзамен 1 (1–2 модуль)',.7,1],['Работа на семинарах',.2],['Посещение лекций',.1]]},
+    {n:'Модуль 4 (весь год)',block:1,p:[['Итоговый экзамен (1–4 модуль)',.7,1],['Работа на семинарах (1–4 модуль)',.2],['Посещение лекций (1–4 модуль)',.1]]}]},
+  crim:{note:CR_NONE,m:[
+    {n:'Модуль 2',block:1,p:[['Устный опрос (экзамен)',.7,1],['Доклад',.3]]},
+    {n:'Модуль 3',block:1,p:[['Устный опрос (экзамен)',.7,1],['Активность на семинарах',.2],['Посещение лекций',.1]]}]},
+  python:{note:CR_NONE,m:[
+    {n:'Модуль 2',p:[['Экзамен',.2,1],['Самостоятельная работа',.2],['Проект и защита',.25],['Активность',.15],['Контрольная работа',.2]]}]},
+  nis:{note:'Формулы за 2025/26 год, на 2026/27 могут отличаться. '+CR_NONE,m:[
+    {n:'Модуль 1',p:[['Коллоквиум',.5,1],['Активность на занятиях',.25],['Кейс-стади',.25]]},
+    {n:'Модуль 2',p:[['Итоговый тест',.5,1],['Активность на занятиях',.25],['Исследовательский отчёт',.25]]}]}
+};
+function calcSaved(){try{var o=JSON.parse(store('calc')||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}}
+function calcNum(v){v=String(v).replace(',','.').trim();if(v==='')return null;var n=parseFloat(v);return isNaN(n)?null:Math.max(0,Math.min(10,n))}
+function calcFmt(x){return String(Math.round(x*100)/100).replace('.',',')}
+function calcHtml(id){
+  var c=CALC[id];if(!c)return '';var sv=calcSaved()[id]||{};
+  return '<div class="calc" data-c="'+id+'"><div class="ct0">Калькулятор оценки</div>'+c.m.map(function(m,mi){
+    return '<div class="cm" data-m="'+mi+'"><div class="cmn">'+esc(m.n)+'</div>'+m.p.map(function(p,pi){
+      var v=(sv[mi]||{})[pi];
+      return '<label class="cr"><span class="cl">'+esc(p[0])+'<i>'+Math.round(p[1]*100)+'%</i></span><input type="text" inputmode="decimal" autocomplete="off" data-p="'+pi+'" value="'+(v==null?'':esc(v))+'" placeholder="'+(p[2]?'?':'0–10')+'" aria-label="'+esc(p[0])+'"></label>';
+    }).join('')+'<div class="co"></div></div>';
+  }).join('')+'<p class="cn">Оценки по десятибалльной шкале, дробные пиши через запятую. '+esc(c.note)+'</p></div>';
+}
+function calcRun(box){
+  var id=box.closest('.calc').getAttribute('data-c'),m=CALC[id].m[+box.getAttribute('data-m')],out=$('.co',box);
+  var ins=$$('input',box),vals=ins.map(function(i){return calcNum(i.value)});
+  var ei=-1;m.p.forEach(function(p,i){if(p[2])ei=i});
+  var base=0,miss=0;m.p.forEach(function(p,i){if(i===ei)return;if(vals[i]==null)miss++;else base+=p[1]*vals[i]});
+  var w=m.p[ei][1],name=m.p[ei][0],h='';
+  if(vals[ei]!=null){
+    if(miss){h='Заполни остальные поля, чтобы увидеть итог.'}
+    else{
+      var tot=base+w*vals[ei],g=m.round==='floor'?Math.floor(tot+1e-9):Math.floor(tot+.5+1e-9);
+      if(m.block&&vals[ei]<4)h='<span class="big bad">Неудовлетворительно</span>Экзамен блокирующий: ниже 4 — итог неудовлетворительный независимо от остального (расчёт по формуле: '+calcFmt(tot)+').';
+      else h='<span class="big">Итог '+calcFmt(tot)+' → '+g+'</span>'+(m.round==='floor'?'Округление вниз.':'Округление обычное.');
+    }
+  }else if(miss){h='Заполни остальные поля — подскажу, что нужно получить на «'+esc(name)+'».'}
+  else{
+    h='<span class="big">Нужно на «'+esc(name)+'»</span>';
+    [4,6,8,10].forEach(function(T){
+      var thr=(m.round==='floor'?T:T-.5)-1e-9,need=Math.ceil((thr-base)/w-1e-9);
+      if(m.block)need=Math.max(need,4);else need=Math.max(need,0);
+      var r=need>10?'<span class="bad">не набрать</span>':(need<=0?'уже хватает':'не ниже '+need);
+      h+='<div class="ct"><span>на итог '+T+'</span><b>'+r+'</b></div>';
+    });
+  }
+  out.innerHTML=h;
+}
+view.addEventListener('input',function(e){
+  var t=e.target;if(!t.matches||!t.matches('.calc input'))return;
+  var box=t.closest('.cm'),id=t.closest('.calc').getAttribute('data-c'),mi=box.getAttribute('data-m'),o=calcSaved();
+  o[id]=o[id]||{};o[id][mi]=o[id][mi]||{};o[id][mi][t.getAttribute('data-p')]=t.value;
+  store('calc',JSON.stringify(o));calcRun(box);
+});
+
 /* ---------- о предметах ---------- */
 function renderAbout(){
   state.heads=null;
@@ -1489,10 +1566,11 @@ function renderAbout(){
   DATA.subjects.forEach(function(s){
     if(!s.about)return;
     var ml=minLevel(s.about);shift=ml===null?0:3-ml;
-    h+='<details class="ab" style="--h:'+s.hue+'"'+(aboutOpen===s.id?' open':'')+' id="ab-'+s.id+'"><summary><span class="dot"></span><span class="abn">'+esc(s.name)+'</span><span class="cv"></span></summary><div class="prose">'+marked.parse(s.about)+'</div></details>';
+    h+='<details class="ab" style="--h:'+s.hue+'"'+(aboutOpen===s.id?' open':'')+' id="ab-'+s.id+'"><summary><span class="dot"></span><span class="abn">'+esc(s.name)+'</span><span class="cv"></span></summary><div class="prose">'+marked.parse(s.about)+'</div>'+calcHtml(s.id)+'</details>';
   });
   view.innerHTML=h+'</div></section>';
   $$('.ab td,.ab th',view).forEach(function(c){if(c.textContent.length<=26)c.classList.add('nw')});
+  $$('.calc .cm',view).forEach(calcRun);
   var o=$('.ab[open]',view);aboutOpen='';
   if(o)setTimeout(function(){window.scrollTo(0,Math.max(0,o.getBoundingClientRect().top+window.scrollY-110))},0);
 }
