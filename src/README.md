@@ -6,7 +6,7 @@
   `python3 src/finance/make_ucheba.py src/index.src.html ucheba.html`
 - `finance.html` — «Финансы»: вкладки «Обучение» (справочник) и «Рынки» (живые котировки). Собирается так:
   `python3 src/finance/build_finance.py src/finance/content src/marked.min.js finance.html`
-  Тексты глав — `src/finance/content/NN_*.md` (первая строка `# Заголовок`, вторая `short: …`; формулы в блоках ```f).
+  Тексты глав — `src/finance/content/NN_*.md` (98 — глоссарий, 99 — источники; подсказки к терминам — `src/finance/terms.py` + глоссарий) (первая строка `# Заголовок`, вторая `short: …`; формулы в блоках ```f).
   Снимок мультипликаторов — `src/finance/static_data.py` (дата в полях *_ASOF).
 - `markets.json` — снимок рынков, его обновляет GitHub Action «Обновить рынки» (`update_markets.py`) каждые 3 часа.
   Живые данные страница берёт прямо из браузера: Мосбиржа (ISS), ЦБ (cbr-xml-daily.ru), CoinGecko/Binance.
