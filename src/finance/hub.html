@@ -1,0 +1,54 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F4F1E8">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Учёба и финансы</title>
+<script>
+/* старые ссылки вида …/#civil-1 ведут в конспекты */
+(function(){var h=location.hash;if(h&&h.length>1)location.replace('ucheba.html'+h)})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Literata:opsz,wght@7..72,500..700&display=swap">
+<style>
+:root{--bg:#F4F1E8;--surface:#FBF9F3;--fg:#25221C;--muted:#665F52;--faint:#857E6E;--line:#D9D3C2;--a1:#A93D28;--a2:#1F6B57;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171611;--surface:#22211A;--fg:#E8E4D8;--muted:#A39D8E;--faint:#7A7466;--line:#33312A;--a1:#E8886B;--a2:#5FC2A3;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171611;--surface:#22211A;--fg:#E8E4D8;--muted:#A39D8E;--faint:#7A7466;--line:#33312A;--a1:#E8886B;--a2:#5FC2A3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font:400 16px/1.5 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;
+  padding:calc(env(safe-area-inset-top,0px) + 48px) 16px calc(env(safe-area-inset-bottom,0px) + 40px)}
+.w{max-width:880px;margin:0 auto}
+h1{margin:0;font:600 clamp(34px,7vw,56px)/1.05 'Literata',Georgia,serif;letter-spacing:-.02em}
+.lead{margin:12px 0 0;font:400 17px/1.5 'Literata',Georgia,serif;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;margin-top:34px}
+.card{position:relative;display:flex;flex-direction:column;gap:10px;min-height:190px;padding:22px 22px 18px;border:1px solid var(--line);border-radius:18px;background:var(--surface);text-decoration:none;color:inherit;transition:border-color .15s}
+.card:hover{border-color:var(--faint)}
+.card .ic{font:600 30px/1 'Literata',Georgia,serif}
+.card.u .ic{color:var(--a1)}.card.f .ic{color:var(--a2)}
+.card b{font:600 26px/1.15 'Literata',Georgia,serif;letter-spacing:-.01em}
+.card span{color:var(--muted);font-size:15px}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:8px}
+.links a{position:relative;z-index:1;padding:7px 12px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--fg);font:500 13.5px/1.2 inherit;min-height:36px;display:inline-flex;align-items:center}
+.links a:hover{border-color:var(--faint)}
+.card>a.cover{position:absolute;inset:0;border-radius:18px}
+.foot{margin-top:28px;font-size:12.5px;color:var(--faint)}
+</style></head><body>
+<div class="w">
+  <h1>Добро пожаловать</h1>
+  <p class="lead">Выбери раздел.</p>
+  <div class="cards">
+    <div class="card u"><a class="cover" href="ucheba.html" aria-label="Учёба"></a>
+      <div class="ic">§</div><b>Учёба</b><span>Конспекты, расписание, билеты, сессия</span>
+      <div class="links"><a href="ucheba.html">Конспекты</a><a href="ucheba.html#schedule">Расписание</a><a href="ucheba.html#tickets">Билеты</a><a href="ucheba.html#session">Сессия</a></div>
+    </div>
+    <div class="card f"><a class="cover" href="finance.html" aria-label="Финансы"></a>
+      <div class="ic">₽</div><b>Финансы</b><span>Справочник для инвестбанкинга и рынки в реальном времени</span>
+      <div class="links"><a href="finance.html#learn">Обучение</a><a href="finance.html#markets">Рынки</a><a href="finance.html#markets/crypto">Крипта</a></div>
+    </div>
+  </div>
+  <p class="foot">Сайт работает как приложение: «Добавить на главный экран» в браузере.</p>
+</div>
+<script>
+try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
+</script>
+</body></html>
