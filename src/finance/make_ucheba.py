@@ -23,4 +23,10 @@ t=t.replace('<title>Конспекты семинаров</title>','<title>Уч�
 old='<a class="brand" href="#" data-go="" aria-label="Все предметы">'
 assert t.count(old)==1
 t=t.replace(old,btn+old,1)
+import os
+zjs=open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'zoom.js'),encoding='utf-8').read()
+t=t.replace('<title>Учёба</title>','<title>Учёба</title><script>'+zjs+'</script>',1)
+old='<div class="fzrow"><span>Размер текста</span><button type="button" data-fz="-1" aria-label="Меньше">А−</button><b>\'+Math.round(getFz()*100)+\'%</b><button type="button" data-fz="1" aria-label="Больше">А+</button></div>'
+assert t.count(old)==1, 'fzrow'
+t=t.replace(old,old+'<div class="fzrow"><span>Масштаб страницы</span><button type="button" data-sz="-1" aria-label="Уменьшить страницу">А−</button><b class="szv">\'+Math.round((window.siteZoomGet?siteZoomGet():1)*100)+\'%</b><button type="button" data-sz="1" aria-label="Увеличить страницу">А+</button></div>',1)
 open(out,'w',encoding='utf-8').write(t);print('ok',len(t.encode()))

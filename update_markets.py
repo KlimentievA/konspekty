@@ -68,3 +68,57 @@ out['us'] = us or old.get('us') or {}
 
 json.dump(out, open('markets.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 print('ok', {k: (len(v) if hasattr(v, '__len__') else v) for k, v in out.items()})
+
+# ---------------- новости (RSS) → news.json ----------------
+import re, html, email.utils
+import xml.etree.ElementTree as ET
+FEEDS = [
+    ('Интерфакс', 'ru', 'https://www.interfax.ru/rss.asp'),
+    ('РБК', 'ru', 'https://rssexport.rbc.ru/rbcnews/news/30/full.rss'),
+    ('Ведомости', 'ru', 'https://www.vedomosti.ru/rss/news'),
+    ('Коммерсантъ', 'ru', 'https://www.kommersant.ru/RSS/news.xml'),
+    ('ТАСС', 'ru', 'https://tass.ru/rss/v2.xml'),
+    ('Банк России', 'cbr', 'https://www.cbr.ru/rss/RssPress'),
+    ('CNBC', 'world', 'https://www.cnbc.com/id/10000664/device/rss/rss.html'),
+    ('MarketWatch', 'world', 'https://feeds.content.dowjones.io/public/rss/mw_topstories'),
+]
+NAMES = {'SBER': ['Сбербанк', 'Сбер'], 'GAZP': ['Газпром'], 'LKOH': ['ЛУКОЙЛ', 'Лукойл'], 'ROSN': ['Роснефть', 'Роснефти'],
+         'NVTK': ['НОВАТЭК', 'Новатэк'], 'GMKN': ['Норникел', '«Норильский никель»'], 'PLZL': ['«Полюс»', 'Полюса', 'Полюс '],
+         'TATN': ['Татнефть', 'Татнефти'], 'SNGS': ['Сургутнефтегаз'], 'SIBN': ['Газпром нефть', 'Газпром нефти'],
+         'YDEX': ['Яндекс'], 'X5': ['X5', 'Пятёрочк', 'Пятерочк'], 'MGNT': ['Магнит'], 'MTSS': ['МТС'], 'CHMF': ['Северстал'],
+         'NLMK': ['НЛМК'], 'VTBR': ['ВТБ'], 'T': ['Т-Технологи', 'Т-Банк'], 'OZON': ['Ozon', 'Озон'], 'ALRS': ['АЛРОСА', 'Алроса'],
+         'PHOR': ['ФосАгро'], 'AFLT': ['Аэрофлот'], 'MOEX': ['Мосбирж', 'Московская биржа', 'Московской бирж'], 'IRAO': ['Интер РАО'],
+         'RUAL': ['Русал', 'РУСАЛ'], 'TRNFP': ['Транснефт'], 'POSI': ['Positive Technologies', 'Позитив'], 'HEAD': ['HeadHunter', 'Хэдхантер', 'hh.ru']}
+FIN = re.compile(r'акци|бирж|рубл|ставк|ЦБ|Банк[а-я]* России|нефт|газ|дивиденд|облигац|ОФЗ|инфляц|бюджет|IPO|SPO|санкц|прибыл|выручк|МСФО|сделк|ВВП|курс|доллар|юан|индекс|банк|экспорт|налог|Минфин|ФРС|Brent|Urals|золот|рынок|инвест|капитализац|долг', re.I)
+def txt(el, tag):
+    x = el.find(tag)
+    return html.unescape(re.sub(r'<[^>]+>', ' ', x.text or '')).strip() if x is not None and x.text else ''
+def when(s):
+    try: return email.utils.parsedate_to_datetime(s).astimezone(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    except Exception: return None
+items = []
+for src, cat, url in FEEDS:
+    try:
+        r = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20).read()
+        root = ET.fromstring(r)
+        for it in root.iter('item'):
+            title, link = txt(it, 'title'), txt(it, 'link')
+            desc = txt(it, 'description')[:400]
+            d = when(txt(it, 'pubDate'))
+            if not title or not link or not d: continue
+            blob = title + ' ' + desc
+            tags = [k for k, v in NAMES.items() if any(n in blob for n in v)]
+            if cat == 'ru' and not tags and not FIN.search(blob): continue
+            items.append({'t': title, 'u': link, 's': src, 'cat': cat, 'd': d, 'x': desc[:220], 'tags': tags})
+    except Exception as e:
+        print('rss', src, e, file=sys.stderr)
+try: oldn = json.load(open('news.json')).get('items', [])
+except Exception: oldn = []
+seen, merged = set(), []
+cut = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%SZ')
+for x in sorted(items + oldn, key=lambda x: x['d'], reverse=True):
+    k = x['u'].split('?')[0]
+    if k in seen or x['d'] < cut: continue
+    seen.add(k); merged.append(x)
+json.dump({'updated': out['updated'], 'items': merged[:300]}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+print('news', len(items), 'new,', len(merged[:300]), 'kept')
