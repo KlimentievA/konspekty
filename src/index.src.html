@@ -132,6 +132,16 @@ main{min-width:0;padding-inline:var(--gut);padding-bottom:96px}
 .ab .cv,.tk .cv{width:7px;height:7px;border-right:1.6px solid var(--faint);border-bottom:1.6px solid var(--faint);transform:rotate(45deg) translateY(-2px);transition:transform .2s}
 .ab[open] .cv,.tk[open] .cv{transform:rotate(-135deg) translate(-2px,0)}
 .ab .prose{padding:0 0 24px}
+.zach{margin:0 0 26px}
+.zach .zh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 4px;font:600 12.5px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.zach .zr{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.zach .dot{flex:none;width:9px;height:9px;border-radius:50%;background:hsl(var(--h) 45% 55%)}
+.zach .zn{flex:1;min-width:0;font:500 16px/1.3 var(--sans)}
+.zach .zg{width:54px;height:36px;padding:0 4px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);text-align:center;font:600 15px/1 var(--sans);-webkit-appearance:none;appearance:none}
+.zach .zg:focus{outline:2px solid var(--accent);outline-offset:1px}
+.zach .zs{flex:none;min-width:104px;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);font:600 13.5px/1 var(--sans)}
+.zach .zs.s1{background:#3a9d5d;border-color:#3a9d5d;color:#fff}
+.zach .zs.s2{background:#d9534f;border-color:#d9534f;color:#fff}
 .calc{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
 .calc .ct0{margin:0 0 12px;font:600 12.5px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .calc .cm{margin:0 0 16px;padding:14px 14px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
@@ -1492,7 +1502,7 @@ function renderNote(n){
 }
 
 /* ---------- калькулятор оценки ---------- */
-var CR_FLOOR='Округляется только итоговая оценка, в меньшую сторону.',CR_NONE='Правило округления на странице курса не указано, считаю по обычным правилам (от 0,5 вверх).';
+var CR_FLOOR='Округляется только итоговая оценка, в меньшую сторону.',CR_NONE='Округление: итог ниже 4 не округляется вверх (3,9 → 3, пересдача), от 4 — по обычным правилам (4,9 → 5).';
 var CALC={
   const:{note:CR_FLOOR,m:[
     {n:'Модуль 2',round:'floor',block:1,p:[['Собеседование',.7,1],['Работа на семинарах 1',.2],['Посещаемость лекций 1',.1]]},
@@ -1511,6 +1521,7 @@ var CALC={
 };
 function calcSaved(){try{var o=JSON.parse(store('calc')||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}}
 function calcNum(v){v=String(v).replace(',','.').trim();if(v==='')return null;var n=parseFloat(v);return isNaN(n)?null:Math.max(0,Math.min(10,n))}
+function calcGrade(t,r){return r==='floor'||t<4?Math.floor(t+1e-9):Math.floor(t+.5+1e-9)}
 function calcFmt(x){return String(Math.round(x*100)/100).replace('.',',')}
 function calcHtml(id){
   var c=CALC[id];if(!c)return '';var sv=calcSaved()[id]||{};
@@ -1530,15 +1541,16 @@ function calcRun(box){
   if(vals[ei]!=null){
     if(miss){h='Заполни остальные поля, чтобы увидеть итог.'}
     else{
-      var tot=base+w*vals[ei],g=m.round==='floor'?Math.floor(tot+1e-9):Math.floor(tot+.5+1e-9);
+      var tot=base+w*vals[ei],g=calcGrade(tot,m.round);
       if(m.block&&vals[ei]<4)h='<span class="big bad">Неудовлетворительно</span>Экзамен блокирующий: ниже 4 — итог неудовлетворительный независимо от остального (расчёт по формуле: '+calcFmt(tot)+').';
-      else h='<span class="big">Итог '+calcFmt(tot)+' → '+g+'</span>'+(m.round==='floor'?'Округление вниз.':'Округление обычное.');
+      else if(g<4)h='<span class="big bad">Итог '+calcFmt(tot)+' → '+g+'</span>Ниже 4 — неудовлетворительно, пересдача.';
+      else h='<span class="big">Итог '+calcFmt(tot)+' → '+g+'</span>'+(m.round==='floor'?'Округление вниз.':'Округление от 0,5 вверх.');
     }
   }else if(miss){h='Заполни остальные поля — подскажу, что нужно получить на «'+esc(name)+'».'}
   else{
     h='<span class="big">Нужно на «'+esc(name)+'»</span>';
     [4,6,8,10].forEach(function(T){
-      var thr=(m.round==='floor'?T:T-.5)-1e-9,need=Math.ceil((thr-base)/w-1e-9);
+      var thr=(m.round==='floor'||T===4?T:T-.5)-1e-9,need=Math.ceil((thr-base)/w-1e-9);
       if(m.block)need=Math.max(need,4);else need=Math.max(need,0);
       var r=need>10?'<span class="bad">не набрать</span>':(need<=0?'уже хватает':'не ниже '+need);
       h+='<div class="ct"><span>на итог '+T+'</span><b>'+r+'</b></div>';
@@ -1562,10 +1574,52 @@ function calcOn(e){
 window.addEventListener('pagehide',calcSave);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')calcSave()});
 
+/* ---------- зачётка: что сдал, что нет ---------- */
+var ZST=['Не сдан','Сдал','Пересдача'];
+function zachAll(){try{var o=JSON.parse(store('zach')||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}}
+function zachState(r){var g=calcNum(r.g==null?'':r.g);if(g!=null)return g>=4?1:2;return r.s||0}
+function zachHtml(){
+  var z=zachAll(),n=0,t=0,h='';
+  DATA.subjects.forEach(function(s){
+    if(s.id==='links')return;
+    var r=z[s.id]||{},st=zachState(r);t++;if(st===1)n++;
+    h+='<div class="zr" data-z="'+s.id+'" style="--h:'+s.hue+'"><span class="dot"></span><span class="zn">'+esc(s.name)+'</span><input class="zg" type="text" inputmode="decimal" autocomplete="off" placeholder="оц." value="'+(r.g==null?'':esc(r.g))+'" aria-label="Оценка: '+esc(s.name)+'"><button type="button" class="zs s'+st+'" data-zs>'+ZST[st]+'</button></div>';
+  });
+  return '<div class="zach"><div class="zh"><span>Сессия: что сдано</span><span id="zc">Сдано '+n+' из '+t+'</span></div>'+h+'</div>';
+}
+function zachSync(){
+  var z=zachAll(),n=0;
+  $$('.zach .zr',view).forEach(function(row){
+    var r=z[row.getAttribute('data-z')]||{},st=zachState(r),b=$('.zs',row);
+    b.className='zs s'+st;b.textContent=ZST[st];if(st===1)n++;
+  });
+  var c=$('#zc');if(c)c.textContent='Сдано '+n+' из '+$$('.zach .zr',view).length;
+}
+function zachSave(){
+  var z=zachAll();
+  $$('.zach .zr',view).forEach(function(row){
+    var id=row.getAttribute('data-z'),r=z[id]||{};r.g=$('.zg',row).value;z[id]=r;
+  });
+  store('zach',JSON.stringify(z));
+}
+view.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('[data-zs]');if(!b)return;
+  var row=b.closest('.zr'),id=row.getAttribute('data-z'),g=$('.zg',row);
+  var z=zachAll(),r=z[id]||{},cur=zachState({g:g.value,s:r.s});
+  g.value='';r.g='';
+  r.s=(cur+1)%3;z[id]=r;store('zach',JSON.stringify(z));
+  zachSave();z=zachAll();z[id].s=r.s;store('zach',JSON.stringify(z));zachSync();
+});
+['input','change','focusout'].forEach(function(n){view.addEventListener(n,function(e){
+  var t=e.target;if(!t.matches||!t.matches('.zach .zg'))return;zachSave();zachSync();
+})});
+window.addEventListener('pagehide',function(){if($('.zach',view))zachSave()});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&$('.zach',view))zachSave()});
+
 /* ---------- о предметах ---------- */
 function renderAbout(){
   state.heads=null;
-  var h='<section class="results aboutp"><h1>О предметах</h1><p class="aboutlead">Как считается оценка по каждому предмету. Нажми на предмет.</p><div class="ablist">';
+  var h='<section class="results aboutp"><h1>О предметах</h1><p class="aboutlead">Как считается оценка по каждому предмету. Нажми на предмет.</p>'+zachHtml()+'<div class="ablist">';
   DATA.subjects.forEach(function(s){
     if(!s.about)return;
     var ml=minLevel(s.about);shift=ml===null?0:3-ml;
