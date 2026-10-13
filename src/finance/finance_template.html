@@ -42,6 +42,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .sw{display:flex;gap:4px;max-width:1180px;margin:0 auto;padding:4px var(--gut) 0}
 .sw a{position:relative;padding:10px 12px 12px;text-decoration:none;color:var(--muted);font:600 15px/1 var(--sans)}
 .sw a.on{color:var(--fg)}
+.sw a.out{margin-left:auto;color:var(--accent2);white-space:nowrap}
+.sw{overflow-x:auto;scrollbar-width:none}.sw::-webkit-scrollbar{display:none}.sw a{flex:none}
 .sw a.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)}
 .search{display:none;align-items:center;gap:8px;max-width:1180px;margin:4px auto 8px;padding:0 var(--gut)}
 .search.on{display:flex}
@@ -255,7 +257,7 @@ tr[data-bond],table[data-t="ru"] tbody tr{cursor:pointer}
     <button class="ibtn" id="b-theme" type="button" aria-label="Сменить тему"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></button>
   </div>
   <div class="search" id="search"><input id="q" type="search" placeholder="Поиск: WACC, EBITDA, банки…" autocomplete="off" enterkeyhint="search" aria-label="Поиск по справочнику"></div>
-  <nav class="sw" id="sw"><a href="#learn" data-s="learn">Обучение</a><a href="#calc" data-s="calc">Калькуляторы</a><a href="#markets" data-s="markets">Рынки</a></nav>
+  <nav class="sw" id="sw"><a href="#learn" data-s="learn">Обучение</a><a href="#calc" data-s="calc">Калькуляторы</a><a href="#markets" data-s="markets">Рынки</a><a href="ucheba.html" class="out" title="Перейти в раздел «Учёба»">Учёба →</a></nav>
 </header>
 <div id="prog"></div><button id="totop" type="button" aria-label="Наверх" hidden>↑</button>
 <main id="view"></main>
