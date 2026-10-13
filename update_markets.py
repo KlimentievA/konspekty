@@ -120,10 +120,67 @@ for src, cat, url in FEEDS:
 try: oldn = json.load(open('news.json')).get('items', [])
 except Exception: oldn = []
 seen, merged = set(), []
-cut = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%SZ')
+now_ = datetime.datetime.now(datetime.timezone.utc)
+cut = (now_ - datetime.timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%SZ')
+cut_tag = (now_ - datetime.timedelta(days=400)).strftime('%Y-%m-%dT%H:%M:%SZ')  # новости о компаниях храним год — по ним объясняются скачки на графиках
+oldby = {x['u'].split('?')[0]: x for x in oldn}
 for x in sorted(items + oldn, key=lambda x: x['d'], reverse=True):
     k = x['u'].split('?')[0]
-    if k in seen or x['d'] < cut or not keep(x): continue
-    seen.add(k); merged.append(x)
-json.dump({'updated': out['updated'], 'items': merged[:300]}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))
-print('news', len(items), 'new,', len(merged[:300]), 'kept')
+    if k in seen or not keep(x) or x['d'] < (cut_tag if x.get('tags') else cut): continue
+    seen.add(k)
+    if 'sum' not in x and k in oldby and 'sum' in oldby[k]: x['sum'] = oldby[k]['sum']
+    merged.append(x)
+merged = merged[:1500]
+
+# ---- суть статьи: 2–3 первых содержательных предложения (не полный текст), со ссылкой на источник ----
+import hashlib
+from html.parser import HTMLParser
+class P(HTMLParser):
+    def __init__(s):
+        super().__init__(); s.ps = []; s.cur = None; s.skip = 0; s.meta = {}
+    def handle_starttag(s, tag, a):
+        a = dict(a)
+        if tag in ('script', 'style', 'noscript', 'figcaption', 'aside', 'nav', 'footer'): s.skip += 1
+        if tag == 'meta' and (a.get('property') in ('og:description',) or a.get('name') in ('description',)): s.meta.setdefault('d', a.get('content') or '')
+        if tag == 'p' and not s.skip: s.cur = []
+    def handle_endtag(s, tag):
+        if tag in ('script', 'style', 'noscript', 'figcaption', 'aside', 'nav', 'footer') and s.skip: s.skip -= 1
+        if tag == 'p' and s.cur is not None:
+            txt_ = re.sub(r'\s+', ' ', ''.join(s.cur)).strip()
+            if txt_: s.ps.append(txt_)
+            s.cur = None
+    def handle_data(s, d):
+        if s.cur is not None and not s.skip: s.cur.append(d)
+JUNK = re.compile(r'Фото|Читайте также|Подписывайтесь|подписаться|Реклама|cookie|Telegram|Читать далее|Все права|©|Нашли ошибку|Sign up|Subscribe|newsletter|Advertisement', re.I)
+SPLIT = re.compile(r'(?<=[.!?…])\s+(?=[«"А-ЯЁA-Z0-9])')
+def summarize(url, title, desc):
+    sents = []
+    try:
+        raw = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=12).read().decode('utf-8', 'ignore')
+        pp = P(); pp.feed(raw)
+        cands = ([html.unescape(pp.meta.get('d', ''))] if pp.meta.get('d') else []) + [html.unescape(x) for x in pp.ps]
+    except Exception:
+        cands = [desc] if desc else []
+    tw = set(re.findall(r'\w+', title.lower()))
+    def same(s_):
+        w = set(re.findall(r'\w+', s_.lower()))
+        return w and len(w & tw) / len(w) > 0.6
+    for para in cands:
+        para = para.strip()
+        if len(para) < 50 or JUNK.search(para): continue
+        for snt in SPLIT.split(para):
+            snt = snt.strip()
+            if len(snt) < 40 or len(snt) > 320 or same(snt): continue
+            if any(snt[:50] == q[:50] for q in sents): continue
+            sents.append(snt)
+            if len(sents) >= 3 or sum(len(q) for q in sents) > 520: return sents
+    return sents
+done = 0
+for x in merged:
+    x['id'] = hashlib.md5(x['u'].split('?')[0].encode()).hexdigest()[:10]
+    if 'sum' in x or done >= 90: continue
+    x['sum'] = summarize(x['u'], x['t'], x.get('x', '')); done += 1
+    time.sleep(0.3)
+print('summaries', done)
+json.dump({'updated': out['updated'], 'items': merged}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+print('news', len(items), 'new,', len(merged), 'kept')
