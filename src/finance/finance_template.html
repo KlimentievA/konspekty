@@ -119,6 +119,22 @@ details.qa+h3{margin-top:2em}
 #tip{position:fixed;z-index:90;max-width:min(340px,calc(100vw - 24px));padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);box-shadow:0 10px 30px rgba(0,0,0,.18);font:400 14.5px/1.5 var(--sans);pointer-events:auto}
 #tip b{display:block;margin-bottom:4px;font:600 14.5px/1.35 var(--sans);color:var(--accent)}
 #tip a{display:inline-block;margin-top:6px;font:500 12.5px var(--sans);color:var(--muted)}
+#prog{position:fixed;left:0;right:0;top:0;height:3px;z-index:40;background:var(--accent);transform:scaleX(0);transform-origin:0 50%;transition:transform .1s linear}
+#totop{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--fg);font:600 18px/1 var(--sans);box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.resume{display:inline-flex;flex-direction:column;gap:3px;margin-top:20px;padding:13px 18px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;background:var(--surface);text-decoration:none;max-width:100%}
+.resume small{font:500 11px/1 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.resume b{font:600 17px/1.3 var(--serif)}
+.track{margin-top:34px}
+.track h2{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 4px;font:600 22px/1.2 var(--serif)}
+.track h2 span{font:400 14px/1.3 var(--sans);color:var(--muted)}
+.track .chs{margin-top:12px}
+.ch em{display:block;margin-top:6px;font:500 12px/1.2 var(--sans);font-style:normal;color:var(--faint)}
+.ch.cur{border-color:var(--accent)}
+.art .meta{margin:-12px 0 20px;font:400 13.5px/1.4 var(--sans);color:var(--faint)}
+.try{display:block;margin:28px 0 0;padding:14px 16px;border:1px solid var(--accent);border-radius:12px;background:color-mix(in srgb,var(--accent) 8%,transparent);color:var(--accent);font:600 15px/1.3 var(--sans);text-decoration:none}
+.try:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.gfilter{width:100%;height:46px;margin:0 0 14px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:400 16px var(--sans);outline:0}
+.gfilter:focus{border-color:var(--faint)}
 mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
 
 /* рынки */
@@ -222,6 +238,7 @@ tr[data-bond],table[data-t="ru"] tbody tr{cursor:pointer}
   <div class="search" id="search"><input id="q" type="search" placeholder="Поиск: WACC, EBITDA, банки…" autocomplete="off" enterkeyhint="search" aria-label="Поиск по справочнику"></div>
   <nav class="sw" id="sw"><a href="#learn" data-s="learn">Обучение</a><a href="#calc" data-s="calc">Калькуляторы</a><a href="#markets" data-s="markets">Рынки</a></nav>
 </header>
+<div id="prog"></div><button id="totop" type="button" aria-label="Наверх" hidden>↑</button>
 <main id="view"></main>
 <div id="tip" hidden></div>
 <!--DATA-->
@@ -264,24 +281,41 @@ marked.use({gfm:true,breaks:false,renderer:{
 CH.forEach(function(c,i){c.i=i;c.plain=c.md.replace(/<[^>]+>/g,' ').replace(/[#*|`>_-]{1,}/g,' ').replace(/\s+/g,' ');c.low=c.plain.toLowerCase()});
 
 /* ---------------- обучение ---------------- */
+var TRACKS=[
+ ['Шаг 1. Основы','Без этого дальше не понять ничего',['ib','otchetnost','npv-irr','koeffitsienty']],
+ ['Шаг 2. Оценка компаний','Ядро работы аналитика',['wacc','dcf','multiplikatory','metody','sektory','kpi']],
+ ['Шаг 3. Сделки и рынки','Как это применяют в банке',['ma-lbo','struktura-kapitala','rynki-kapitala','makro','rossiya']],
+ ['Шаг 4. Практика','Закрепить и подготовиться',['excel','praktikum','project-black','sobesedovanie','karera']],
+ ['Справка','Возвращайся по необходимости',['glossariy','istochniki']]];
+(function(){var order=[];TRACKS.forEach(function(tr){tr[2].forEach(function(id){var c=CH.filter(function(x){return x.id===id})[0];if(c&&order.indexOf(c)<0)order.push(c)})});
+  CH.forEach(function(c){if(order.indexOf(c)<0)order.push(c)});CH=order;CH.forEach(function(c,i){c.i=i;c.min=Math.max(2,Math.round(c.plain.split(' ').length/170))})})();
+var CALC_LINK={'npv-irr':['npv','Посчитать NPV и IRR'],'wacc':['wacc','Посчитать WACC'],'dcf':['dcf','Собрать свой DCF'],'ma-lbo':['lbo','Посчитать LBO'],'struktura-kapitala':['wacc','Поиграть со структурой капитала'],'rynki-kapitala':['npv','Калькулятор потоков'],'praktikum':['npv','Проверить ответы в калькуляторах']};
 function renderLearn(){
-  var h='<section class="hero"><h1>Справочник по корпоративным финансам</h1><p>Всё, что нужно для работы в инвестбанкинге: отчётность, NPV и IRR, WACC, DCF, мультипликаторы, методы оценки по секторам, M&A и LBO, рынки, вопросы с собеседований. Цифры по рынкам на октябрь 2026.</p></section><div class="chs">';
-  CH.forEach(function(c,i){h+='<a class="ch" href="#learn/'+c.id+'"><span class="n">'+(i+1)+'</span><span><b>'+esc(c.title)+'</b><i>'+esc(c.short)+'</i></span></a>'});
-  view.innerHTML=h+'</div>';
+  var last=CH.filter(function(x){return x.id===store('fin:last')})[0];
+  var h='<section class="hero"><h1>Справочник по корпоративным финансам</h1><p>Иди по шагам сверху вниз: каждая глава опирается на предыдущие. Подчёркнутые пунктиром термины объясняются при наведении или нажатии.</p>'+
+    (last?'<a class="resume" href="#learn/'+last.id+'"><small>Продолжить</small><b>'+esc(last.title)+'</b></a>':'<a class="resume" href="#learn/ib"><small>Начать отсюда</small><b>'+esc(CH[0].title)+'</b></a>')+'</section>';
+  TRACKS.forEach(function(tr){
+    h+='<section class="track"><h2>'+esc(tr[0])+'<span>'+esc(tr[1])+'</span></h2><div class="chs">';
+    tr[2].forEach(function(id){var c=CH.filter(function(x){return x.id===id})[0];if(!c)return;
+      h+='<a class="ch'+(last&&last.id===c.id?' cur':'')+'" href="#learn/'+c.id+'"><span class="n">'+(c.i+1)+'</span><span><b>'+esc(c.title)+'</b><i>'+esc(c.short)+'</i><em>'+c.min+' мин чтения'+(CALC_LINK[c.id]?' · есть калькулятор':'')+'</em></span></a>'});
+    h+='</div></section>';
+  });
+  view.innerHTML=h;
 }
 function renderChapter(c){
   heads=[];var body=marked.parse(c.md);
   var toc=heads.map(function(x){return '<a href="#" data-to="'+x.id+'">'+esc(x.t)+'</a>'}).join('');
   var pv=CH[c.i-1],nx=CH[c.i+1];
-  view.innerHTML='<div class="doc"><article class="art"><p class="eyebrow"><a href="#learn">Обучение</a> · '+(c.i+1)+' из '+CH.length+'</p><h1>'+esc(c.title)+'</h1>'+
+  view.innerHTML='<div class="doc"><article class="art"><p class="eyebrow"><a href="#learn">Обучение</a> · '+(c.i+1)+' из '+CH.length+'</p><h1>'+esc(c.title)+'</h1><p class="meta">'+c.min+' мин чтения'+(c.id!=='glossariy'?' · термины с пунктиром — наведи или нажми':'')+'</p>'+
     (heads.length>2?'<details class="toc"><summary>Содержание</summary><nav>'+toc+'</nav></details>':'')+
-    '<div class="prose">'+body+'</div><nav class="pager">'+
+    (c.id==='glossariy'?'<input class="gfilter" type="search" placeholder="Найти термин: EBITDA, спред, оферта…" aria-label="Фильтр глоссария">':'')+'<div class="prose">'+body+'</div>'+(CALC_LINK[c.id]?'<a class="try" href="#calc/'+CALC_LINK[c.id][0]+'">'+esc(CALC_LINK[c.id][1])+' в калькуляторе →</a>':'')+'<nav class="pager">'+
     (pv?'<a href="#learn/'+pv.id+'"><small>← Назад</small><b>'+esc(pv.title)+'</b></a>':'')+
     (nx?'<a class="nx" href="#learn/'+nx.id+'"><small>Дальше →</small><b>'+esc(nx.title)+'</b></a>':'')+
     '</nav></article>'+(heads.length>2?'<aside class="side"><p class="h">Содержание</p>'+toc+'</aside>':'')+'</div>';
   if(c.id!=='glossariy'&&c.id!=='istochniki')applyTerms(view.querySelector('.prose'));
   if(Q){hl(view.querySelector('.prose'),Q)}
 }
+view.addEventListener('input',function(e){if(!e.target.classList.contains('gfilter'))return;var q=e.target.value.trim().toLowerCase();view.querySelectorAll('.prose tbody tr').forEach(function(tr){tr.hidden=q&&tr.textContent.toLowerCase().indexOf(q)<0})});
 view.addEventListener('click',function(e){
   var a=e.target.closest('[data-to]');if(!a)return;e.preventDefault();
   var el=document.getElementById(a.getAttribute('data-to'));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
@@ -335,6 +369,10 @@ document.addEventListener('click',function(e){var el=e.target.closest('.tt');if(
 view.addEventListener('keydown',function(e){var el=e.target.closest&&e.target.closest('.tt');if(el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();showTip(el)}if(e.key==='Escape')hideTip()});
 window.addEventListener('scroll',function(){if(!tip.hidden&&tipEl){var r=tipEl.getBoundingClientRect();if(r.bottom<0||r.top>innerHeight)hideTip();else showTip(tipEl)}},{passive:true});
 window.addEventListener('hashchange',hideTip);
+var prog=document.getElementById('prog'),totop=document.getElementById('totop');
+function onScroll(){var h=document.documentElement,max=h.scrollHeight-innerHeight;var art=state==='learn'&&view.querySelector('.art');prog.style.transform='scaleX('+(art&&max>0?Math.min(1,scrollY/max):0)+')';totop.hidden=scrollY<900}
+window.addEventListener('scroll',onScroll,{passive:true});window.addEventListener('hashchange',function(){setTimeout(onScroll,50)});
+totop.onclick=function(){scrollTo({top:0,behavior:'smooth'})};
 /* поиск */
 var Q='';
 function hl(el,q){
@@ -374,7 +412,7 @@ function loadRU(){
 }
 function loadIdx(){
   return getJSON(ISS+'index/securities.json?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,CURRENTVALUE,LASTCHANGEPRC,UPDATETIME&securities=IMOEX,RTSI,RGBI,MOEXOG,MOEXFN,MOEXMM,MOEXIT')
-  .then(function(j){var m=iss(j.marketdata),o={};Object.keys(m).forEach(function(k){o[k]={v:m[k].CURRENTVALUE,ch:m[k].LASTCHANGEPRC,tm:m[k].UPDATETIME}});M.idx=o;M.err.idx=0})
+  .then(function(j){var m=iss(j.marketdata),o={};Object.keys(m).forEach(function(k){o[k]={v:m[k].CURRENTVALUE,ch:m[k].LASTCHANGEPRC,tm:m[k].UPDATETIME}});M.idx=o;M.t.idx=new Date();M.err.idx=0})
   .catch(function(){M.err.idx=1;return loadSnap().then(function(sn){if(sn&&sn.idx)M.idx=sn.idx})});
 }
 function loadBonds(kind){
@@ -416,7 +454,7 @@ var SUBS=[['summary','Сводка'],['ru','Россия'],['us','США'],['cry
 function subnav(){return '<nav class="sub">'+SUBS.map(function(s){return '<a class="chip'+(s[0]===cur?' on':'')+'" href="#markets/'+s[0]+'">'+s[1]+'</a>'}).join('')+'</nav>'}
 function status(key,label){
   var t=M.t[key],e=M.err[key],cls,txt;
-  if(t instanceof Date){cls='live';txt=label+': обновлено в '+t.toLocaleTimeString('ru-RU')+' · <span data-ago="'+t.getTime()+'">'+ago(t.getTime())+'</span>'}
+  if(t instanceof Date){cls='live';txt=label+': обновлено <span data-ago="'+t.getTime()+'">'+ago(t.getTime())+'</span>'}
   else if(t==='snap'){cls='';txt=label+' недоступны из браузера — показан снимок '+(M.snap&&M.snap.updated?'от '+esc(M.snap.updated):'')}
   else if(e){cls='off';txt=label+' сейчас недоступны — показаны сохранённые данные'}
   else{cls='';txt=label+': загрузка…'}
@@ -428,9 +466,10 @@ function stTiles(a){return a.map(function(r){return tile(esc(r[0]),esc(r[1]),esc
 function vSummary(){
   var ix=M.idx||{},h='<div class="sect"><h2>Сейчас на рынках</h2><div class="tiles">';
   var im=ix.IMOEX,rg=ix.RGBI,rt=ix.RTSI;
-  h+=tile('Индекс Мосбиржи',im?nf(im.v,2):'2 393,83',im?pct(im.ch)+' · '+(im.tm||''):'закрытие 12.10.2026');
-  h+=tile('RGBI (гособлигации)',rg?nf(rg.v,2):'—',rg?pct(rg.ch)+' · '+(rg.tm||''):'индекс цен ОФЗ');
-  h+=tile('РТС ($)',rt?nf(rt.v,2):'898,65',rt?pct(rt.ch):'закрытие 12.10.2026');
+  function lv(x){return pct(x.ch)+(x.tm?'<br>биржа '+String(x.tm).slice(0,5):'')+(M.t.idx instanceof Date?' · <span data-ago="'+M.t.idx.getTime()+'">'+ago(M.t.idx.getTime())+'</span>':'')}
+  h+=tile('Индекс Мосбиржи',im?nf(im.v,2):'2 393,83',im?lv(im):'закрытие 12.10.2026');
+  h+=tile('RGBI (гособлигации)',rg?nf(rg.v,2):'—',rg?lv(rg):'индекс цен ОФЗ');
+  h+=tile('РТС ($)',rt?nf(rt.v,2):'898,65',rt?lv(rt):'закрытие 12.10.2026');
   var fx=M.fx&&M.fx.Valute;
   h+=tile('USD/RUB (ЦБ)',fx?nf(fx.USD.Value,4):'83,9153',fx?pct((fx.USD.Value/fx.USD.Previous-1)*100)+' · на '+new Date(M.fx.Date).toLocaleDateString('ru-RU'):'13.10.2026');
   var btc=M.cr&&M.cr.filter(function(x){return x.s==='BTC'})[0],eth=M.cr&&M.cr.filter(function(x){return x.s==='ETH'})[0];
@@ -439,7 +478,7 @@ function vSummary(){
   h+=tile('Ethereum',eth?'$'+nf(eth.p,0):'—',eth?pct(eth.c24)+' за 24 ч':nc);
   var su=(M.snap&&M.snap.us)||{};
   [['^GSPC','S&P 500'],['^IXIC','Nasdaq']].forEach(function(x){var v=su[x[0]];if(v&&v.p)h+=tile(x[1],nf(v.p,2),pct(v.ch)+' · снимок '+esc(M.snap.updated||''))});
-  h+='</div><p class="note">Мосбиржа отдаёт котировки бесплатно с задержкой около 15 минут. Курсы ЦБ обновляются раз в день. Крипта — в реальном времени (CoinGecko, запасной источник Binance).</p></div>';
+  h+='</div><p class="note">«Биржа 21:14» — время значения на Мосбирже (бесплатные данные идут с задержкой около 15 минут), «N с назад» — когда сайт последний раз их проверял; проверка идёт сама каждые 15 секунд. Курсы ЦБ обновляются раз в день. Крипта — в реальном времени (CoinGecko, запасной источник Binance).</p></div>';
   h+='<div class="sect"><h2>Россия: ставки и макро</h2><div class="tiles">'+stTiles(S.macro.ru)+'</div></div>';
   h+='<div class="sect"><h2>США</h2><div class="tiles">'+stTiles(S.macro.us)+'</div><p class="note">Ставки и мультипликаторы зафиксированы на дату в подписи; источники в «Обучение → Что читать».</p></div>';
   if(M.idx&&(ix.MOEXOG||ix.MOEXFN)){
