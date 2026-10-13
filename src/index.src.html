@@ -212,6 +212,7 @@ main{min-width:0;padding-inline:var(--gut);padding-bottom:96px}
 .calc .co .bad{color:#c0392b}
 .calc .ct{display:flex;justify-content:space-between;gap:12px;padding:3px 0;font-variant-numeric:tabular-nums}
 .calc .ct b{color:var(--fg);font-weight:600}
+.calc .cn[data-saved]::before{content:'Сохранено ✓ ';color:#3a9d5d;font-weight:600}
 .calc .cn{margin:0;font:400 12.5px/1.5 var(--sans);color:var(--faint)}
 html:root:root .ab .prose h3{margin:1.5em 0 .6em;padding:0;border:0;background:none;box-shadow:none;border-radius:0;font:600 12.5px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 html:root:root .ab .prose h3::before,html:root:root .ab .prose h3::after{content:none;display:none}
@@ -1575,6 +1576,7 @@ var CALC={
     {n:'Модуль 1',p:[['Коллоквиум',.6,1],['Активность на занятиях',.25],['Кейс-стади',.15]]},
     {n:'Модуль 2',p:[['Итоговый тест',.5,1],['Активность на занятиях',.25],['Исследовательский отчёт',.25]]}]}
 };
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
 function calcSaved(){try{var o=JSON.parse(store('calc')||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}}
 function calcNum(v){v=String(v).replace(',','.').trim();if(v==='')return null;var n=parseFloat(v);return isNaN(n)?null:Math.max(0,Math.min(10,n))}
 function calcGrade(t,r){return r==='floor'||t<4?Math.floor(t+1e-9):Math.floor(t+.5+1e-9)}
@@ -1602,21 +1604,9 @@ function calcRun(box){
     var g=calcGrade(base,m.round);
     if(g<4)h='<span class="big bad">Итог '+calcFmt(base)+' → '+g+'</span>Ниже 4 — неудовлетворительно, пересдача.';
     else h='<span class="big">Итог '+calcFmt(base)+' → '+g+'</span>'+rnd;
-  }else if(miss===1&&vals[ei]==null){
-    h='<span class="big">Сейчас '+calcFmt(base)+' из 10</span>Без «'+esc(name)+'». Чтобы получить итог, нужно на «'+esc(name)+'»:';
-    [4,6,8,10].forEach(function(T){
-      var need=Math.ceil((thrOf(T)-base)/w-1e-9);need=m.block?Math.max(need,4):Math.max(need,0);
-      h+='<div class="ct"><span>на итог '+T+'</span><b>'+(need>10?'<span class="bad">не набрать</span>':(need<=0?'уже хватает':'не ниже '+need))+'</b></div>';
-    });
   }else{
-    var g0=calcGrade(base,m.round),mx=base+wMiss*10;
-    h='<span class="big'+(g0<4?' bad':'')+'">Сейчас '+calcFmt(base)+' → '+g0+'</span>Пустые поля пока считаются нулём ('+Math.round(wMiss*100)+'% оценки ещё не заполнено). Максимум, если остальное на 10: '+calcFmt(mx)+' → '+calcGrade(mx,m.round)+'.';
-    h+='<div class="ct" style="margin-top:6px"><span>чтобы получить итог</span><b>в среднем по пустым полям</b></div>';
-    [4,6,8,10].forEach(function(T){
-      var need=(thrOf(T)-base)/wMiss;
-      h+='<div class="ct"><span>'+T+'</span><b>'+(need>10?'<span class="bad">не набрать</span>':(need<=0?'уже хватает':'не ниже '+calcFmt(Math.ceil(need*10)/10)))+'</b></div>';
-    });
-    if(m.block&&vals[ei]==null)h+='<div class="ct"><span>«'+esc(name)+'»</span><b>не ниже 4 (блокирующий)</b></div>';
+    var g0=calcGrade(base,m.round);
+    h='<span class="big'+(g0<4?' bad':'')+'">Сейчас '+calcFmt(base)+' → '+g0+'</span>Заполнено '+Math.round((1-wMiss)*100)+'% оценки, пустые поля пока считаются нулём.';
   }
   out.innerHTML=h;
 }
@@ -1630,7 +1620,7 @@ function calcSave(){
 }
 function calcOn(e){
   var t=e.target;if(!t.matches||!t.matches('.calc input'))return;
-  calcSave();var box=t.closest('.cm');if(box)calcRun(box);
+  calcSave();var cn=t.closest('.calc')&&$('.cn',t.closest('.calc'));if(cn&&e.type==='input'){cn.setAttribute('data-saved','1');clearTimeout(cn._t);cn._t=setTimeout(function(){cn.removeAttribute('data-saved')},1500)}var box=t.closest('.cm');if(box)calcRun(box);
 }
 ['input','change','keyup','focusout'].forEach(function(n){view.addEventListener(n,calcOn)});
 window.addEventListener('pagehide',calcSave);
