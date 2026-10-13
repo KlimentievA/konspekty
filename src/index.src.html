@@ -137,6 +137,8 @@ main{min-width:0;padding-inline:var(--gut);padding-bottom:96px}
 .zach .zr{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
 .zach .dot{flex:none;width:9px;height:9px;border-radius:50%;background:hsl(var(--h) 45% 55%)}
 .zach .zn{flex:1;min-width:0;font:500 16px/1.3 var(--sans)}
+.zach .za{display:block;margin-top:2px;font:400 12.5px/1.3 var(--sans);color:var(--muted)}
+.zach .za:empty{display:none}
 .zach .zg{width:54px;height:36px;padding:0 4px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);text-align:center;font:600 15px/1 var(--sans);-webkit-appearance:none;appearance:none}
 .zach .zg:focus{outline:2px solid var(--accent);outline-offset:1px}
 .zach .zs{flex:none;min-width:104px;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);font:600 13.5px/1 var(--sans)}
@@ -1297,7 +1299,7 @@ window.addEventListener('hashchange',function(){
 
 /* ---------- навигация: предметы и вкладки ---------- */
 var withNotes=DATA.subjects.filter(function(s){return s.notes.length});
-$('#subjects').innerHTML='<a class="subj" href="#" data-go="" data-s="notes" style="--h:70"><span class="dot"></span><span class="nm">Конспекты</span><span class="ct">'+allNotes.length+'</span></a><a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a><a class="subj" href="#tickets" data-go="tickets" data-s="tickets" style="--h:250"><span class="dot"></span><span class="nm">Билеты</span><span class="ct"></span></a><a class="subj" href="#session" data-go="session" data-s="session" style="--h:250"><span class="dot"></span><span class="nm">Сессия</span><span class="ct"></span></a><a class="subj" href="#about" data-go="about" data-s="about" style="--h:250"><span class="dot"></span><span class="nm">О предметах</span><span class="ct"></span></a>';
+$('#subjects').innerHTML='<a class="subj" href="#" data-go="" data-s="notes" style="--h:70"><span class="dot"></span><span class="nm">Конспекты</span><span class="ct">'+allNotes.length+'</span></a><a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a><a class="subj" href="#tickets" data-go="tickets" data-s="tickets" style="--h:250"><span class="dot"></span><span class="nm">Билеты</span><span class="ct"></span></a><a class="subj" href="#about" data-go="about" data-s="about" style="--h:250"><span class="dot"></span><span class="nm">О предметах</span><span class="ct"></span></a><a class="subj" href="#session" data-go="session" data-s="session" style="--h:250"><span class="dot"></span><span class="nm">Сессия</span><span class="ct"></span></a>';
 
 function centerIn(box,el){box.scrollLeft=el.offsetLeft-(box.clientWidth-el.offsetWidth)/2}
 
@@ -1576,39 +1578,63 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 
 /* ---------- зачётка: что сдал, что нет ---------- */
 var ZST=['Не сдан','Сдал','Пересдача'];
+function calcFinal(id){
+  var c=CALC[id];if(!c)return null;var sv=calcSaved()[id]||{};
+  for(var mi=c.m.length-1;mi>=0;mi--){
+    var m=c.m[mi],vals=m.p.map(function(p,pi){return calcNum(((sv[mi]||{})[pi])==null?'':sv[mi][pi])});
+    if(vals.some(function(v){return v==null}))continue;
+    var tot=0,ei=0;m.p.forEach(function(p,i){tot+=p[1]*vals[i];if(p[2])ei=i});
+    if(m.block&&vals[ei]<4)return {g:null,fail:1,mod:m.n};
+    return {g:calcGrade(tot,m.round),mod:m.n};
+  }
+  return null;
+}
+function zachAuto(id){var a=calcFinal(id);if(!a)return null;a.st=(a.fail||a.g<4)?2:1;return a}
 function zachAll(){try{var o=JSON.parse(store('zach')||'{}');return o&&typeof o==='object'?o:{}}catch(e){return {}}}
-function zachState(r){var g=calcNum(r.g==null?'':r.g);if(g!=null)return g>=4?1:2;return r.s||0}
+function zachState(r,id){
+  var g=calcNum(r.g==null?'':r.g);if(g!=null&&String(r.g).trim()!=='')return g>=4?1:2;
+  if(r.s!=null)return r.s;
+  var a=id?zachAuto(id):null;return a?a.st:0;
+}
+function zachNote(id,r){
+  if(r.g!=null&&String(r.g).trim()!=='')return '';
+  if(r.s!=null)return '';
+  var a=zachAuto(id);if(!a)return '';
+  return 'из калькулятора: '+(a.fail?'неуд.':a.g)+' ('+a.mod+')';
+}
 function zachHtml(){
   var z=zachAll(),n=0,t=0,h='';
   DATA.subjects.forEach(function(s){
     if(s.id==='links')return;
-    var r=z[s.id]||{},st=zachState(r);t++;if(st===1)n++;
-    h+='<div class="zr" data-z="'+s.id+'" style="--h:'+s.hue+'"><span class="dot"></span><span class="zn">'+esc(s.name)+'</span><input class="zg" type="text" inputmode="decimal" autocomplete="off" placeholder="оц." value="'+(r.g==null?'':esc(r.g))+'" aria-label="Оценка: '+esc(s.name)+'"><button type="button" class="zs s'+st+'" data-zs>'+ZST[st]+'</button></div>';
+    var r=z[s.id]||{},st=zachState(r,s.id),nt=zachNote(s.id,r);t++;if(st===1)n++;
+    h+='<div class="zr" data-z="'+s.id+'" style="--h:'+s.hue+'"><span class="dot"></span><span class="zn">'+esc(s.name)+'<small class="za">'+esc(nt)+'</small></span><input class="zg" type="text" inputmode="decimal" autocomplete="off" placeholder="оц." value="'+(r.g==null?'':esc(r.g))+'" aria-label="Оценка: '+esc(s.name)+'"><button type="button" class="zs s'+st+'" data-zs>'+ZST[st]+'</button></div>';
   });
   return '<div class="zach"><div class="zh"><span>Предметы</span><span id="zc">Сдано '+n+' из '+t+'</span></div>'+h+'</div>';
 }
 function zachSync(){
   var z=zachAll(),n=0;
   $$('.zach .zr',view).forEach(function(row){
-    var r=z[row.getAttribute('data-z')]||{},st=zachState(r),b=$('.zs',row);
-    b.className='zs s'+st;b.textContent=ZST[st];if(st===1)n++;
+    var id=row.getAttribute('data-z'),r=z[id]||{},st=zachState(r,id),b=$('.zs',row),a=$('.za',row);
+    b.className='zs s'+st;b.textContent=ZST[st];if(st===1)n++;if(a)a.textContent=zachNote(id,r);
   });
   var c=$('#zc');if(c)c.textContent='Сдано '+n+' из '+$$('.zach .zr',view).length;
 }
 function zachSave(){
   var z=zachAll();
   $$('.zach .zr',view).forEach(function(row){
-    var id=row.getAttribute('data-z'),r=z[id]||{};r.g=$('.zg',row).value;z[id]=r;
+    var id=row.getAttribute('data-z'),r=z[id]||{},v=$('.zg',row).value;
+    if(v.trim()!==''&&r.g!==v)delete r.s;
+    r.g=v;z[id]=r;
   });
   store('zach',JSON.stringify(z));
 }
 view.addEventListener('click',function(e){
   var b=e.target.closest&&e.target.closest('[data-zs]');if(!b)return;
   var row=b.closest('.zr'),id=row.getAttribute('data-z'),g=$('.zg',row);
-  var z=zachAll(),r=z[id]||{},cur=zachState({g:g.value,s:r.s});
+  var z=zachAll(),r=z[id]||{},cur=zachState({g:g.value,s:r.s},id);
   g.value='';r.g='';
   r.s=(cur+1)%3;z[id]=r;store('zach',JSON.stringify(z));
-  zachSave();z=zachAll();z[id].s=r.s;store('zach',JSON.stringify(z));zachSync();
+  z=zachAll();z[id]=z[id]||{};z[id].g='';z[id].s=r.s;store('zach',JSON.stringify(z));zachSync();
 });
 ['input','change','focusout'].forEach(function(n){view.addEventListener(n,function(e){
   var t=e.target;if(!t.matches||!t.matches('.zach .zg'))return;zachSave();zachSync();
