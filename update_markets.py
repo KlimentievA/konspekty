@@ -89,7 +89,11 @@ NAMES = {'SBER': ['Сбербанк', 'Сбер'], 'GAZP': ['Газпром'], '
          'NLMK': ['НЛМК'], 'VTBR': ['ВТБ'], 'T': ['Т-Технологи', 'Т-Банк'], 'OZON': ['Ozon', 'Озон'], 'ALRS': ['АЛРОСА', 'Алроса'],
          'PHOR': ['ФосАгро'], 'AFLT': ['Аэрофлот'], 'MOEX': ['Мосбирж', 'Московская биржа', 'Московской бирж'], 'IRAO': ['Интер РАО'],
          'RUAL': ['Русал', 'РУСАЛ'], 'TRNFP': ['Транснефт'], 'POSI': ['Positive Technologies', 'Позитив'], 'HEAD': ['HeadHunter', 'Хэдхантер', 'hh.ru']}
-FIN = re.compile(r'акци|бирж|рубл|ставк|ЦБ|Банк[а-я]* России|нефт|газ|дивиденд|облигац|ОФЗ|инфляц|бюджет|IPO|SPO|санкц|прибыл|выручк|МСФО|сделк|ВВП|курс|доллар|юан|индекс|банк|экспорт|налог|Минфин|ФРС|Brent|Urals|золот|рынок|инвест|капитализац|долг', re.I)
+FIN = re.compile(r'(?<![А-Яа-яЁёA-Za-z])(акци[йияюе](?! протест)(?! памяти)(?! в поддержку)|бирж|рубл[ья]|ставк|ЦБ|Банк[а-я]* России|нефт|газа?(?![а-я])|дивиденд|облигац|ОФЗ|инфляц|бюджет|IPO|SPO|санкц|прибыль|чист[а-я]+ прибыл|выручк|МСФО|сделк|ВВП|курс[аеу]? (?:доллар|рубл|юан|евро)|доллар|юан|индекс[а-я]* Мосбирж|Мосбирж|экспорт|налог|Минфин|ФРС|Brent|Urals|золот[оа](?![а-я])|инвест|капитализац|госдолг|ипотек|котировк|размещени|эмисси|банкротств|M&A|слияни|поглощени)', re.I)
+def keep(x):
+    if x['cat'] == 'world':
+        return not re.search(r"\bMy \b|^‘|\bI \b|\bwife\b|\bhusband\b|\bsister\b|\bbrother\b", x['t'])
+    return x['cat'] != 'ru' or x.get('tags') or FIN.search(x['t'])
 def txt(el, tag):
     x = el.find(tag)
     return html.unescape(re.sub(r'<[^>]+>', ' ', x.text or '')).strip() if x is not None and x.text else ''
@@ -108,8 +112,9 @@ for src, cat, url in FEEDS:
             if not title or not link or not d: continue
             blob = title + ' ' + desc
             tags = [k for k, v in NAMES.items() if any(n in blob for n in v)]
-            if cat == 'ru' and not tags and not FIN.search(blob): continue
-            items.append({'t': title, 'u': link, 's': src, 'cat': cat, 'd': d, 'x': desc[:220], 'tags': tags})
+            tags = [k for k, v in NAMES.items() if any(n in title for n in v)]
+            x = {'t': title, 'u': link, 's': src, 'cat': cat, 'd': d, 'x': desc[:220], 'tags': tags}
+            if keep(x): items.append(x)
     except Exception as e:
         print('rss', src, e, file=sys.stderr)
 try: oldn = json.load(open('news.json')).get('items', [])
@@ -118,7 +123,7 @@ seen, merged = set(), []
 cut = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=10)).strftime('%Y-%m-%dT%H:%M:%SZ')
 for x in sorted(items + oldn, key=lambda x: x['d'], reverse=True):
     k = x['u'].split('?')[0]
-    if k in seen or x['d'] < cut: continue
+    if k in seen or x['d'] < cut or not keep(x): continue
     seen.add(k); merged.append(x)
 json.dump({'updated': out['updated'], 'items': merged[:300]}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 print('news', len(items), 'new,', len(merged[:300]), 'kept')
