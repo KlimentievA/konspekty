@@ -7,9 +7,13 @@
 Пароль сверяется по SHA-256 (в коде лежит только хэш), после ввода запоминается в localStorage и куки на год.
 Это замок от случайных посетителей: файлы сайта всё равно лежат в открытом репозитории.
 Запуск из корня репозитория: python3 src/finance/make_hub.py"""
-import hashlib, os, re
+import hashlib, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(ROOT, 'src', 'logo'))
+import hub as LOGO   # логотип: знак h и надпись hub рисуются одними линиями
+# надпись «hub» для заголовка: «ub» цветом текста, «h» — фирменным изумрудом (цвета задаются CSS, тема меняется сама)
+WORD = LOGO.wordmark('#25221C', 'hub', first='#0A9466').replace('<svg ', '<svg class="wm" role="img" aria-label="Hub" ', 1)
 TPL = open(os.path.join(ROOT, 'src', 'finance', 'hub.html'), encoding='utf-8').read()
 PROF = {'artem': ('Артем', '11231', 'artem.html'), 'nastya': ('Настя', '1591', 'nastya.html')}
 TOK = {p: hashlib.sha256(('hub:%s:%s' % (p, v[1])).encode()).hexdigest()[:24] for p, v in PROF.items()}
@@ -42,7 +46,7 @@ EXTRA_CSS = """<style>
 .lock.open{color:var(--a2)}
 .empty{margin-top:30px;padding:38px 24px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}
 .empty .ic{font:600 34px/1 'Literata',Georgia,serif;color:var(--faint);margin-bottom:10px}
-h1.brand{font-size:clamp(46px,10vw,72px);font-weight:700;letter-spacing:-.01em}h1.brand img{width:.78em;height:.78em;vertical-align:baseline;margin-right:.06em;border-radius:22%;box-shadow:0 .1em .26em rgba(4,69,47,.25)}
+h1.brand{line-height:0;margin:4px 0 14px}h1.brand .wm{height:clamp(52px,12vw,76px);width:auto;display:block}.wm [stroke=\"#25221C\"]{stroke:var(--fg)}.wm [fill=\"#25221C\"]{fill:var(--fg)}:root[data-theme=dark] .wm [stroke=\"#0A9466\"]{stroke:#2FD69C}:root[data-theme=dark] .wm [fill=\"#0A9466\"]{fill:#2FD69C}@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .wm [stroke=\"#0A9466\"]{stroke:#2FD69C}:root:not([data-theme=light]) .wm [fill=\"#0A9466\"]{fill:#2FD69C}}
 /* переключатель темы */
 .top .tr{display:flex;gap:8px;align-items:center}
 .thm{flex:none;width:36px;height:36px;padding:0!important;justify-content:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer}
@@ -120,7 +124,7 @@ cards = ''.join(
     '<div class="av %s">%s</div><b>%s</b><span>%s</span></button>' % (p, p, LOCK_CLOSED, 'a' if p == 'artem' else 'n', v[0][0], v[0],
                                                                       'Учёба и финансы' if p == 'artem' else 'Учёба')
     for p, v in PROF.items())
-index_body = ('<div class="w">\n  <div class="top"><span></span><div class="tr">' + THEME_BTN + '</div></div>\n  <h1 class="brand" aria-label="Hub"><img src="favicon.svg" alt="H" width="56" height="56"><span aria-hidden="true">ub</span></h1>\n  <p class="lead">Выбери профиль.</p>\n  <div class="cards prof">' + cards + '</div>\n  ' + foot + '\n</div>\n'
+index_body = ('<div class="w">\n  <div class="top"><span></span><div class="tr">' + THEME_BTN + '</div></div>\n  <h1 class="brand">' + WORD + '</h1>\n  <p class="lead">Выбери профиль.</p>\n  <div class="cards prof">' + cards + '</div>\n  ' + foot + '\n</div>\n'
               '<div class="pin" hidden><div class="sh" role="dialog" aria-modal="true"><div class="av" id="pav"></div><b id="pname"></b><small>Введи пароль</small>'
               '<input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Пароль"><div class="err" id="perr"></div>'
               '<button type="button" class="go" id="pgo">Войти</button><button type="button" class="cancel" id="pcancel">Отмена</button></div></div>\n'
@@ -201,9 +205,9 @@ J('news.json').then(function(n){
 })();
 </script>'''
 
-artem_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'artem') + '\n  <h1>Артем</h1>\n  <p class="lead">Учёба и финансы. Выбери раздел.</p>\n  ' + TODAY + '\n  '
+artem_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'artem') + '\n  <h1>Артем</h1>\n  '
               + cards_artem + '\n  ' + foot + '\n</div>\n' + LOGOUT_JS)
-artem_html = page('Hub · Артем', artem_body + TODAY_JS, 'artem')
+artem_html = page('Hub · Артем', artem_body, 'artem')   # просто: Артем → Учёба, Финансы (сводку «Сегодня» убрали)
 
 # ---------------- nastya.html ----------------
 nastya_cards = ('<div class="cards">\n    <div class="card u"><a class="cover" href="nastya-ucheba.html" aria-label="Учёба"></a>\n'

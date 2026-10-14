@@ -114,7 +114,7 @@ h1,.lead{animation:up .45s cubic-bezier(.2,.8,.25,1) both}.lead{animation-delay:
 .lock.open{color:var(--a2)}
 .empty{margin-top:30px;padding:38px 24px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}
 .empty .ic{font:600 34px/1 'Literata',Georgia,serif;color:var(--faint);margin-bottom:10px}
-h1.brand{font-size:clamp(46px,10vw,72px);font-weight:700;letter-spacing:-.01em}h1.brand img{width:.78em;height:.78em;vertical-align:baseline;margin-right:.06em;border-radius:22%;box-shadow:0 .1em .26em rgba(4,69,47,.25)}
+h1.brand{line-height:0;margin:4px 0 14px}h1.brand .wm{height:clamp(52px,12vw,76px);width:auto;display:block}.wm [stroke="#25221C"]{stroke:var(--fg)}.wm [fill="#25221C"]{fill:var(--fg)}:root[data-theme=dark] .wm [stroke="#0A9466"]{stroke:#2FD69C}:root[data-theme=dark] .wm [fill="#0A9466"]{fill:#2FD69C}@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .wm [stroke="#0A9466"]{stroke:#2FD69C}:root:not([data-theme=light]) .wm [fill="#0A9466"]{fill:#2FD69C}}
 /* переключатель темы */
 .top .tr{display:flex;gap:8px;align-items:center}
 .thm{flex:none;width:36px;height:36px;padding:0!important;justify-content:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer}
@@ -158,8 +158,6 @@ h1.brand{font-size:clamp(46px,10vw,72px);font-weight:700;letter-spacing:-.01em}h
 <div class="w">
   <div class="top"><a href="index.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Профили</a><div class="tr"><button type="button" data-logout="artem">Выйти</button><button type="button" class="thm" id="thm" aria-label="Светлая или тёмная тема" title="Тема"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button></div></div>
   <h1>Артем</h1>
-  <p class="lead">Учёба и финансы. Выбери раздел.</p>
-  <div class="today"><a class="tb" id="t-sched" href="ucheba.html#schedule"><h3>Пары</h3><div class="sk"></div><div class="sk" style="width:70%"></div></a><a class="tb" id="t-mkt" href="finance.html#markets"><h3>Рынок сейчас</h3><div class="sk"></div><div class="sk" style="width:60%"></div></a><a class="tb" id="t-news" href="finance.html#markets/news"><h3>Главная новость</h3><div class="sk"></div><div class="sk" style="width:80%"></div></a></div>
   <div class="cards">
     <div class="card u"><a class="cover" href="ucheba.html" aria-label="Учёба"></a>
       <div class="ic">§</div><b>Учёба</b><span>Конспекты, расписание, билеты, сессия</span>
@@ -173,43 +171,7 @@ h1.brand{font-size:clamp(46px,10vw,72px);font-weight:700;letter-spacing:-.01em}h
   <div class="zmr">Масштаб: <button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div>
 <p class="foot" id="appfoot">Приложение для Android: <a href="https://github.com/SHerlockkka/konspekty/releases/latest/download/Hub.apk" style="color:inherit">скачать Hub.apk</a>. На iPhone: Safari → «Поделиться» → «На экран Домой».</p>
 </div>
-<script>document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-logout]');if(!b)return;var p=b.getAttribute('data-logout');try{localStorage.removeItem('hub:auth:'+p)}catch(x){}document.cookie='hub_'+p+'=; max-age=0; path=/';location.href='index.html'});</script><script>
-/* сводка «Сегодня»: ближайшие пары, рынок, главная новость — из тех же файлов, что и разделы (берутся из кэша мгновенно) */
-(function(){
-function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function J(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})}
-function nf(v,d){return Number(v).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d})}
-function pc(v){if(v==null||isNaN(v))return '';return '<span class="'+(v>=0?'up':'dn')+'">'+(v>0?'+':'')+nf(v,2)+'%</span>'}
-function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
-var now=new Date(),today=ymd(now),hm=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
-J('schedule.json?t='+Date.now()).then(function(j){
-  var L=(j.list||j||[]).slice().sort(function(a,b){return (a.d+a.b)<(b.d+b.b)?-1:1});
-  var rest=L.filter(function(x){return x.d===today&&x.e>hm}),head='Сегодня',day=today;
-  if(!rest.length){var nx=L.filter(function(x){return x.d>today})[0];if(nx){day=nx.d;rest=L.filter(function(x){return x.d===day});
-    var dd=new Date(day+'T12:00:00'),diff=Math.round((new Date(day+'T00:00:00')-new Date(today+'T00:00:00'))/864e5);
-    head=diff===1?'Завтра':dd.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}}
-  var h='<h3>Пары · '+esc(head)+'</h3>';
-  if(!rest.length)h+='<p class="mut">В расписании ближайших пар нет.</p>';
-  rest.slice(0,3).forEach(function(x){var on=x.d===today&&x.b<=hm&&x.e>hm;
-    h+='<div class="row'+(on?' now':'')+'"><b>'+esc(x.b)+'</b><span>'+esc(x.n)+'<small>'+esc([x.k,x.r?'ауд. '+x.r:''].filter(Boolean).join(' · '))+(on?' · идёт сейчас':'')+'</small></span></div>'});
-  if(rest.length>3)h+='<p class="mut">и ещё '+(rest.length-3)+'</p>';
-  document.getElementById('t-sched').innerHTML=h;
-}).catch(function(){document.getElementById('t-sched').innerHTML='<h3>Пары</h3><p class="mut">Расписание откроется в разделе Учёба.</p>'});
-J('markets.json').then(function(m){
-  var h='<h3>Рынок · '+esc((m.updated||'').replace(/^\d\d\.\d\d\.\d{4}\s*/,''))+'</h3>',ix=(m.idx||{}).IMOEX,us=m.fx&&m.fx.Valute&&m.fx.Valute.USD,btc=(m.crypto||[]).filter(function(x){return x.s==='BTC'})[0],sp=(m.us||{})['^GSPC'];
-  if(ix)h+='<div class="mk"><span>Индекс Мосбиржи</span><span>'+nf(ix.v,0)+' '+pc(ix.ch)+'</span></div>';
-  if(us)h+='<div class="mk"><span>Доллар (ЦБ)</span><span>'+nf(us.Value,2)+' ₽ '+pc((us.Value/us.Previous-1)*100)+'</span></div>';
-  if(btc)h+='<div class="mk"><span>Bitcoin</span><span>$'+nf(btc.p,0)+' '+pc(btc.c24)+'</span></div>';
-  if(sp&&sp.p)h+='<div class="mk"><span>S&amp;P 500</span><span>'+nf(sp.p,0)+' '+pc(sp.ch)+'</span></div>';
-  document.getElementById('t-mkt').innerHTML=h;
-}).catch(function(){document.getElementById('t-mkt').innerHTML='<h3>Рынок</h3><p class="mut">Открой «Финансы → Рынки».</p>'});
-J('news.json').then(function(n){
-  var lim=new Date(Date.now()-30*36e5).toISOString(),a=(n.items||[]).filter(function(x){return !x.dup&&x.d>=lim}).sort(function(x,y){return (y.imp||0)-(x.imp||0)});
-  var x=a[0];if(!x)throw 0;var el=document.getElementById('t-news');el.href='finance.html#markets/news/'+x.id;
-  el.innerHTML='<h3>Главная новость'+(x.cl>1?' · '+x.cl+' изд.':'')+'</h3><div class="nt">'+esc(x.t)+'</div>'+(x.sum&&x.sum[0]?'<div class="nx">'+esc(x.sum[0])+'</div>':'');
-}).catch(function(){document.getElementById('t-news').innerHTML='<h3>Новости</h3><p class="mut">Лента — в «Финансы → Новости».</p>'});
-})();
-</script>
+<script>document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-logout]');if(!b)return;var p=b.getAttribute('data-logout');try{localStorage.removeItem('hub:auth:'+p)}catch(x){}document.cookie='hub_'+p+'=; max-age=0; path=/';location.href='index.html'});</script>
 <script>document.getElementById('thm').onclick=function(){var r=document.documentElement,d=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=d==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}}</script><script>
 try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}
 /* внутри приложения Hub: версия и проверка обновлений вместо ссылки на APK */
