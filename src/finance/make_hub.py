@@ -42,6 +42,25 @@ EXTRA_CSS = """<style>
 .lock.open{color:var(--a2)}
 .empty{margin-top:30px;padding:38px 24px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}
 .empty .ic{font:600 34px/1 'Literata',Georgia,serif;color:var(--faint);margin-bottom:10px}
+/* переключатель темы */
+.top .tr{display:flex;gap:8px;align-items:center}
+.thm{flex:none;width:36px;height:36px;padding:0!important;justify-content:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.thm svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.thm:hover{color:var(--fg)}
+/* сводка «Сегодня» */
+.today{display:grid;grid-template-columns:1.2fr 1fr 1.2fr;gap:12px;margin:26px 0 4px}
+@media (max-width:820px){.today{grid-template-columns:1fr}}
+.tb{position:relative;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);text-decoration:none;color:inherit;min-height:120px;transition:border-color .18s,transform .18s}
+.tb:hover{border-color:var(--faint);transform:translateY(-2px)}
+.tb h3{margin:0 0 8px;font:600 11.5px/1.2 'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tb .row{display:flex;gap:10px;align-items:baseline;margin:6px 0;font-size:14.5px}
+.tb .row b{flex:none;font:600 14px/1.3 'IBM Plex Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums;min-width:3.2em}
+.tb .row span{min-width:0}.tb .row small{display:block;color:var(--faint);font-size:12.5px}
+.tb .now{color:var(--a2)}.tb .mut{color:var(--muted);font-size:14px}
+.tb .mk{display:flex;justify-content:space-between;gap:8px;margin:7px 0;font-size:14.5px;font-variant-numeric:tabular-nums}.tb .mk span:last-child{white-space:nowrap}
+.tb .up{color:var(--a2)}.tb .dn{color:var(--a1)}
+.tb .nt{font:600 16px/1.35 'Literata',Georgia,serif}.tb .nx{margin-top:6px;color:var(--muted);font-size:13.5px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tb .sk{height:12px;margin:9px 0;border-radius:6px;background:var(--line);opacity:.6}
 /* окно ввода пароля */
 .pin{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35);opacity:0;transition:opacity .2s}
 .pin[hidden]{display:none}.pin.on{opacity:1}
@@ -71,19 +90,23 @@ LOCK_OPEN = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" r
 OLDLINK = "<script>\n/* старые ссылки вида …/#civil-1 ведут в конспекты */\n(function(){var h=location.hash;if(h&&h.length>1)location.replace('ucheba.html'+h)})();\n</script>"
 assert OLDLINK in head, 'oldlink'
 
+THEME_BTN = '<button type="button" class="thm" id="thm" aria-label="Светлая или тёмная тема" title="Тема"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button>'
+THEME_JS = ("<script>document.getElementById('thm').onclick=function(){var r=document.documentElement,d=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=d==='dark'?'light':'dark';"
+             "r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}}</script>")
+
 def page(title, body, gate_p=None, apple_title='Hub'):
     h = head.replace('<title>Hub</title>', '<title>%s</title>' % title)
     if gate_p: h = h.replace(OLDLINK, '')
     if gate_p:
         h = h.replace('<meta charset="utf-8">', '<meta charset="utf-8">' + gate(gate_p), 1)
     h = h.replace('</head>', EXTRA_CSS + '</head>', 1)
-    return h + '<body>\n' + body + '\n' + tail_js + '</body></html>\n'
+    return h + '<body>\n' + body + '\n' + THEME_JS + tail_js + '</body></html>\n'
 
 
 def topbar(back_href, back_text, logout=None):
     lo = ('<button type="button" data-logout="%s">Выйти</button>' % logout) if logout else ''
     return ('<div class="top"><a href="%s"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" '
-            'stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>%s</a>%s</div>') % (back_href, back_text, lo)
+            'stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>%s</a><div class="tr">%s%s</div></div>') % (back_href, back_text, lo, THEME_BTN)
 
 
 LOGOUT_JS = ("<script>document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-logout]');if(!b)return;"
@@ -96,7 +119,7 @@ cards = ''.join(
     '<div class="av %s">%s</div><b>%s</b><span>%s</span></button>' % (p, p, LOCK_CLOSED, 'a' if p == 'artem' else 'n', v[0][0], v[0],
                                                                       'Учёба и финансы' if p == 'artem' else 'Учёба')
     for p, v in PROF.items())
-index_body = ('<div class="w">\n  <h1>Hub</h1>\n  <p class="lead">Выбери профиль.</p>\n  <div class="cards prof">' + cards + '</div>\n  ' + foot + '\n</div>\n'
+index_body = ('<div class="w">\n  <div class="top"><span></span><div class="tr">' + THEME_BTN + '</div></div>\n  <h1>Hub</h1>\n  <p class="lead">Выбери профиль.</p>\n  <div class="cards prof">' + cards + '</div>\n  ' + foot + '\n</div>\n'
               '<div class="pin" hidden><div class="sh" role="dialog" aria-modal="true"><div class="av" id="pav"></div><b id="pname"></b><small>Введи пароль</small>'
               '<input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Пароль"><div class="err" id="perr"></div>'
               '<button type="button" class="go" id="pgo">Войти</button><button type="button" class="cancel" id="pcancel">Отмена</button></div></div>\n'
@@ -135,9 +158,51 @@ index_html = page('Hub', index_body)
 
 # ---------------- artem.html ----------------
 cards_artem = re.search(r'<div class="cards">.*?\n  </div>', TPL, re.S).group(0)
-artem_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'artem') + '\n  <h1>Артем</h1>\n  <p class="lead">Учёба и финансы. Выбери раздел.</p>\n  '
+TODAY = ('<div class="today">'
+         '<a class="tb" id="t-sched" href="ucheba.html#schedule"><h3>Пары</h3><div class="sk"></div><div class="sk" style="width:70%"></div></a>'
+         '<a class="tb" id="t-mkt" href="finance.html#markets"><h3>Рынок сейчас</h3><div class="sk"></div><div class="sk" style="width:60%"></div></a>'
+         '<a class="tb" id="t-news" href="finance.html#markets/news"><h3>Главная новость</h3><div class="sk"></div><div class="sk" style="width:80%"></div></a></div>')
+TODAY_JS = r'''<script>
+/* сводка «Сегодня»: ближайшие пары, рынок, главная новость — из тех же файлов, что и разделы (берутся из кэша мгновенно) */
+(function(){
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function J(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})}
+function nf(v,d){return Number(v).toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function pc(v){if(v==null||isNaN(v))return '';return '<span class="'+(v>=0?'up':'dn')+'">'+(v>0?'+':'')+nf(v,2)+'%</span>'}
+function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+var now=new Date(),today=ymd(now),hm=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+J('schedule.json?t='+Date.now()).then(function(j){
+  var L=(j.list||j||[]).slice().sort(function(a,b){return (a.d+a.b)<(b.d+b.b)?-1:1});
+  var rest=L.filter(function(x){return x.d===today&&x.e>hm}),head='Сегодня',day=today;
+  if(!rest.length){var nx=L.filter(function(x){return x.d>today})[0];if(nx){day=nx.d;rest=L.filter(function(x){return x.d===day});
+    var dd=new Date(day+'T12:00:00'),diff=Math.round((new Date(day+'T00:00:00')-new Date(today+'T00:00:00'))/864e5);
+    head=diff===1?'Завтра':dd.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}}
+  var h='<h3>Пары · '+esc(head)+'</h3>';
+  if(!rest.length)h+='<p class="mut">В расписании ближайших пар нет.</p>';
+  rest.slice(0,3).forEach(function(x){var on=x.d===today&&x.b<=hm&&x.e>hm;
+    h+='<div class="row'+(on?' now':'')+'"><b>'+esc(x.b)+'</b><span>'+esc(x.n)+'<small>'+esc([x.k,x.r?'ауд. '+x.r:''].filter(Boolean).join(' · '))+(on?' · идёт сейчас':'')+'</small></span></div>'});
+  if(rest.length>3)h+='<p class="mut">и ещё '+(rest.length-3)+'</p>';
+  document.getElementById('t-sched').innerHTML=h;
+}).catch(function(){document.getElementById('t-sched').innerHTML='<h3>Пары</h3><p class="mut">Расписание откроется в разделе Учёба.</p>'});
+J('markets.json').then(function(m){
+  var h='<h3>Рынок · '+esc((m.updated||'').replace(/^\d\d\.\d\d\.\d{4}\s*/,''))+'</h3>',ix=(m.idx||{}).IMOEX,us=m.fx&&m.fx.Valute&&m.fx.Valute.USD,btc=(m.crypto||[]).filter(function(x){return x.s==='BTC'})[0],sp=(m.us||{})['^GSPC'];
+  if(ix)h+='<div class="mk"><span>Индекс Мосбиржи</span><span>'+nf(ix.v,0)+' '+pc(ix.ch)+'</span></div>';
+  if(us)h+='<div class="mk"><span>Доллар (ЦБ)</span><span>'+nf(us.Value,2)+' ₽ '+pc((us.Value/us.Previous-1)*100)+'</span></div>';
+  if(btc)h+='<div class="mk"><span>Bitcoin</span><span>$'+nf(btc.p,0)+' '+pc(btc.c24)+'</span></div>';
+  if(sp&&sp.p)h+='<div class="mk"><span>S&amp;P 500</span><span>'+nf(sp.p,0)+' '+pc(sp.ch)+'</span></div>';
+  document.getElementById('t-mkt').innerHTML=h;
+}).catch(function(){document.getElementById('t-mkt').innerHTML='<h3>Рынок</h3><p class="mut">Открой «Финансы → Рынки».</p>'});
+J('news.json').then(function(n){
+  var lim=new Date(Date.now()-30*36e5).toISOString(),a=(n.items||[]).filter(function(x){return !x.dup&&x.d>=lim}).sort(function(x,y){return (y.imp||0)-(x.imp||0)});
+  var x=a[0];if(!x)throw 0;var el=document.getElementById('t-news');el.href='finance.html#markets/news/'+x.id;
+  el.innerHTML='<h3>Главная новость'+(x.cl>1?' · '+x.cl+' изд.':'')+'</h3><div class="nt">'+esc(x.t)+'</div>'+(x.sum&&x.sum[0]?'<div class="nx">'+esc(x.sum[0])+'</div>':'');
+}).catch(function(){document.getElementById('t-news').innerHTML='<h3>Новости</h3><p class="mut">Лента — в «Финансы → Новости».</p>'});
+})();
+</script>'''
+
+artem_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'artem') + '\n  <h1>Артем</h1>\n  <p class="lead">Учёба и финансы. Выбери раздел.</p>\n  ' + TODAY + '\n  '
               + cards_artem + '\n  ' + foot + '\n</div>\n' + LOGOUT_JS)
-artem_html = page('Hub · Артем', artem_body, 'artem')
+artem_html = page('Hub · Артем', artem_body + TODAY_JS, 'artem')
 
 # ---------------- nastya.html ----------------
 nastya_cards = ('<div class="cards">\n    <div class="card u"><a class="cover" href="nastya-ucheba.html" aria-label="Учёба"></a>\n'

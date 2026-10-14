@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Одно полное обновление данных сайта Hub:
+#   рынки (markets.json) → лента новостей (news.json, news_text*.json) → [расписание, если SCHED=1] → коммит в main;
+#   история цен и архив новостей по бумагам → ветка data.
+# Запускают workflow «Автообновление данных» (каждый час, непрерывно) и «Обновить рынки» (при изменении скриптов).
+set -u
+cd "$(git rev-parse --show-toplevel)"
+export GIT_AUTHOR_NAME=hub-bot GIT_AUTHOR_EMAIL=hub-bot@users.noreply.github.com GIT_COMMITTER_NAME=hub-bot GIT_COMMITTER_EMAIL=hub-bot@users.noreply.github.com
+REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+t0=$(date +%s)
+
+python3 update_markets.py || echo "::warning::update_markets.py завершился с ошибкой"
+python3 update_news.py    || echo "::warning::update_news.py завершился с ошибкой"
+if [ "${SCHED:-0}" = 1 ] && [ -f update_schedule.py ]; then python3 update_schedule.py || echo "::warning::расписание не обновилось"; fi
+
+FILES="markets.json news.json news_text.json news_text_arch.json schedule.json schedule_debug.txt"
+CH=$(git status --porcelain -- $FILES 2>/dev/null)
+if [ -n "$CH" ]; then
+  git add -- $FILES 2>/dev/null
+  git commit -qm "Данные обновлены"
+  for i in 1 2 3 4; do
+    git pull -q --rebase -X theirs origin main && git push -q "$REPO_URL" HEAD:main && break
+    echo "повтор отправки $i"; sleep $((i*5))
+  done
+fi
+
+rm -rf hist
+git clone -q --depth 1 -b data "$REPO_URL" hist 2>/dev/null || mkdir -p hist
+python3 update_history.py hist || echo "::warning::история цен не обновилась"
+python3 update_enews.py hist   || echo "::warning::архив новостей не обновился"
+if [ "$(cat hist/.changed 2>/dev/null || echo 0)" != "0" ]; then
+  (cd hist && rm -rf .git .changed && git init -q && git checkout -q -b data && git add -A && git commit -qm "Данные истории цен" && git push -q -f "$REPO_URL" data) \
+    || echo "::warning::ветка data не отправилась"
+fi
+rm -rf hist
+echo "обновление заняло $(( $(date +%s) - t0 )) с"

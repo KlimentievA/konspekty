@@ -1,0 +1,34 @@
+name: Сборка и проверка сайта
+# При любом изменении исходников: пересобрать страницы (если забыли — соберёт и закоммитит сам),
+# затем открыть все страницы в настоящем браузере и проверить, что нет ошибок. При ошибке GitHub пришлёт письмо.
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'scripts/build_all.sh', 'tests/**', '*.html', 'sw.js', '.github/workflows/check.yml']
+  workflow_dispatch:
+concurrency:
+  group: site-check
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Собрать страницы
+        run: |
+          bash scripts/build_all.sh
+          if [ -n "$(git status --porcelain -- '*.html' src/finance/gate_artem.html)" ]; then
+            git config user.name "hub-bot"; git config user.email "hub-bot@users.noreply.github.com"
+            git add -- '*.html' src/finance/gate_artem.html
+            git commit -m "Сборка страниц"
+            for i in 1 2 3; do git pull -q --rebase origin main && git push -q && break; sleep 5; done
+          fi
+      - name: Браузер для проверки
+        run: |
+          pip install -q playwright
+          python3 -m playwright install --with-deps chromium > /dev/null
+      - name: Проверить все страницы
+        run: python3 tests/smoke.py .

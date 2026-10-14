@@ -1,11 +1,10 @@
 name: Обновить рынки
+# Разовое обновление данных — сразу после изменения скриптов или вручную. Регулярные обновления делает «Автообновление данных».
 on:
-  schedule:
-    - cron: '17 * * * *'
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['update_markets.py', 'update_news.py', 'update_history.py', 'update_enews.py', 'newsutil.py', '.github/workflows/markets.yml']
+    paths: ['update_markets.py', 'update_news.py', 'update_history.py', 'update_enews.py', 'newsutil.py', 'scripts/update_all.sh', '.github/workflows/markets.yml']
 concurrency: markets
 permissions:
   contents: write
@@ -16,28 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install -q trafilatura || true
-      - run: python3 update_markets.py
-      - run: python3 update_news.py || true
-      - name: Сохранить
-        run: |
-          if [ -n "$(git status --porcelain markets.json news.json news_text.json news_text_arch.json)" ]; then
-            git config user.name "markets-bot"
-            git config user.email "markets-bot@users.noreply.github.com"
-            git add markets.json news.json news_text.json news_text_arch.json
-            git commit -m "Рынки обновлены"
-            git pull --rebase origin main || true
-            git push
-          fi
-      - name: История цен (ветка data)
+      - name: Обновить
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git clone -q --depth 1 -b data "https://github.com/${GITHUB_REPOSITORY}.git" hist 2>/dev/null || mkdir -p hist
-          python3 update_history.py hist
-          python3 update_enews.py hist || true
-          if [ "$(cat hist/.changed)" != "0" ]; then
-            cd hist && rm -rf .git .changed && git init -q && git checkout -q -b data
-            git config user.name "markets-bot"; git config user.email "markets-bot@users.noreply.github.com"
-            git add -A && git commit -qm "Данные истории цен"
-            git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
-          fi
+        run: bash scripts/update_all.sh

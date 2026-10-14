@@ -1,0 +1,41 @@
+name: Автообновление данных
+# Непрерывный цикл: каждый час — рынки, новости, архив новостей, история цен (раз в 3 часа — ещё и расписание).
+# Один запуск работает ~5,5 часа и в конце сам запускает следующий. Расписание (cron) — страховка, если цепочка оборвётся:
+# GitHub часто пропускает ежечасные cron-запуски, поэтому на них одних полагаться нельзя.
+on:
+  schedule:
+    - cron: '41 */2 * * *'
+  workflow_dispatch:
+concurrency:
+  group: data-loop
+  cancel-in-progress: false
+permissions:
+  contents: write
+  actions: write
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -q trafilatura || true
+      - name: Обновлять каждый час
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          end=$(( $(date +%s) + 5*3600 + 1500 ))
+          i=0
+          while :; do
+            t0=$(date +%s)
+            git fetch -q origin main && git reset -q --hard origin/main      # свежие скрипты и данные
+            SCHED=$(( i % 3 == 0 ? 1 : 0 )) bash scripts/update_all.sh || echo "::warning::итерация $i с ошибкой"
+            i=$((i+1))
+            left=$(( 3600 - ($(date +%s) - t0) )); [ $left -gt 120 ] || left=120
+            [ $(( $(date +%s) + left )) -lt $end ] || break
+            echo "следующее обновление через $((left/60)) мин"; sleep $left
+          done
+      - name: Запустить следующий цикл
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run loop.yml --ref main -R "$GITHUB_REPOSITORY" || echo "::warning::не удалось перезапустить цикл — подхватит cron"
