@@ -19,7 +19,7 @@ def fname(key): return os.path.join(OUT, 'hist', key.replace('^', '_') + '.json'
 def fresh(key):
     try:
         u = json.load(open(fname(key))).get('updated', '')
-        return (datetime.datetime.utcnow() - datetime.datetime.strptime(u, '%Y-%m-%dT%H:%MZ')).total_seconds() < 20 * 3600
+        return (datetime.datetime.utcnow() - datetime.datetime.strptime(u, '%Y-%m-%dT%H:%MZ')).total_seconds() < 6 * 3600
     except Exception:
         return False
 def day(ts): return int(ts // 86400)

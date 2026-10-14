@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['update_markets.py', 'update_history.py', '.github/workflows/markets.yml']
+    paths: ['update_markets.py', 'update_history.py', 'update_enews.py', 'newsutil.py', '.github/workflows/markets.yml']
 concurrency: markets
 permissions:
   contents: write
@@ -31,6 +31,7 @@ jobs:
         run: |
           git clone -q --depth 1 -b data "https://github.com/${GITHUB_REPOSITORY}.git" hist 2>/dev/null || mkdir -p hist
           python3 update_history.py hist
+          python3 update_enews.py hist || true
           if [ "$(cat hist/.changed)" != "0" ]; then
             cd hist && rm -rf .git .changed && git init -q && git checkout -q -b data
             git config user.name "markets-bot"; git config user.email "markets-bot@users.noreply.github.com"
