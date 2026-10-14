@@ -53,24 +53,52 @@ public class MainActivity extends Activity {
     static final String API = "https://api.github.com/repos/SHerlockkka/konspekty/releases/latest";
     static final String ACT_INSTALL = "io.github.sherlockkka.hub.INSTALL";
 
-    WebView web;
+    // Три «экрана», каждый — свой WebView, живущий в памяти: главная/профили, Учёба, Финансы.
+    // Переход между ними — мгновенное переключение, а не новая загрузка страницы.
+    static final String K_HUB = "hub", K_UCHEBA = "ucheba", K_FIN = "finance";
+    final java.util.HashMap<String, WebView> views = new java.util.HashMap<>();
+    final java.util.HashSet<String> stale = new java.util.HashSet<>();   // страницы, которые нужно перезагрузить при показе
+    android.widget.FrameLayout root;
+    WebView web;                 // видимый сейчас
     SharedPreferences prefs;
-    boolean offlineShown = false, firstPaint = true;
+    boolean offlineShown = false, firstPaint = true, preloaded = false;
     // ожидающее обновление (если пришлось сходить в настройки за разрешением)
     String pendingUrl = null; int pendingVer = 0;
     Dialog sheet; ProgressBar sheetBar; TextView sheetStatus, sheetBtn;
+
+    static String keyOf(Uri u) {
+        String p = u.getPath() == null ? "" : u.getPath();
+        if (p.endsWith("/ucheba.html")) return K_UCHEBA;
+        if (p.endsWith("/finance.html")) return K_FIN;
+        return K_HUB;
+    }
+    static String noHash(String url) { int i = url.indexOf('#'); return i < 0 ? url : url.substring(0, i); }
 
     // ---------------------------------------------------------------- жизненный цикл
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         prefs = getSharedPreferences("hub", MODE_PRIVATE);
-        web = new WebView(this);
-        web.setBackgroundColor(getResources().getColor(R.color.bg, getTheme()));
+        root = new android.widget.FrameLayout(this);
+        root.setBackgroundColor(getResources().getColor(R.color.bg, getTheme()));
+        setContentView(root);
+        web = makeView(K_HUB);
         web.setAlpha(0f);
-        setContentView(web);
+        web.setVisibility(View.VISIBLE);
+        web.postDelayed(() -> { if (web.getAlpha() < 1f) web.animate().alpha(1f).setDuration(200).start(); }, 2500);
 
-        WebSettings s = web.getSettings();
+        if (state != null) views.get(K_HUB).restoreState(state);
+        else load(getIntent());
+
+        root.postDelayed(this::showWhatsNewIfUpdated, 900);
+        root.postDelayed(() -> checkUpdate(false), 2500);
+    }
+
+    WebView makeView(String key) {
+        WebView w = new WebView(this);
+        w.setBackgroundColor(getResources().getColor(R.color.bg, getTheme()));
+        w.setVisibility(View.INVISIBLE);
+        WebSettings s = w.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);          // оценки, заметки, настройки сайта (localStorage)
         s.setDatabaseEnabled(true);
@@ -79,23 +107,30 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        if (Build.VERSION.SDK_INT >= 23) s.setOffscreenPreRaster(true);   // фоновые экраны уже отрисованы — переключение без белой вспышки
         s.setUserAgentString(s.getUserAgentString() + " HubApp/" + versionCode());
-
-        web.addJavascriptInterface(new Bridge(), "HubApp");
-        web.setWebChromeClient(new WebChromeClient());
-        web.setWebViewClient(new WebViewClient() {
+        w.addJavascriptInterface(new Bridge(w), "HubApp");
+        w.setWebChromeClient(new WebChromeClient());
+        w.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
-                if (HOST.equals(u.getHost()) && u.getPath() != null && u.getPath().startsWith("/konspekty")) return false;
                 if ("about".equals(u.getScheme()) || "data".equals(u.getScheme())) return false;
-                openOutside(u);                // источники новостей, Мосбиржа и т.п. — во внешнем браузере
+                if (!(HOST.equals(u.getHost()) && u.getPath() != null && u.getPath().startsWith("/konspekty"))) {
+                    openOutside(u);            // источники новостей, Мосбиржа и т.п. — во внешнем браузере
+                    return true;
+                }
+                String target = keyOf(u);
+                if (target.equals(key)) return false;            // переход внутри своего экрана
+                // страница просит другой экран (например, «Учёба» с главной или замок паролем → вход)
+                if (u.getQueryParameter("login") != null) stale.add(key);   // эту страницу откроем заново после входа
+                show(target, u.toString());
                 return true;
             }
 
             @Override
             public void onReceivedError(WebView v, WebResourceRequest r, WebResourceError e) {
-                if (r.isForMainFrame() && !offlineShown) {
+                if (r.isForMainFrame() && !offlineShown && v == web) {
                     offlineShown = true;
                     String bg = isNight() ? "#171611" : "#F4F1E8", fg = isNight() ? "#E8E4D8" : "#25221C";
                     v.loadDataWithBaseURL(HOME, "<html><head><meta name=viewport content='width=device-width,initial-scale=1'></head>"
@@ -110,26 +145,66 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView v, String url) {
                 if (url != null && url.startsWith("http")) offlineShown = false;
-                if (firstPaint) { firstPaint = false; web.animate().alpha(1f).setDuration(260).start(); }
-                // цвет полосы статуса = фон сайта (с учётом выбранной на сайте темы)
-                v.evaluateJavascript("(function(){function f(){try{HubApp.bar(getComputedStyle(document.body).backgroundColor)}catch(e){}}"
-                    + "f();if(!window.__hubObs){window.__hubObs=1;new MutationObserver(function(){setTimeout(f,50)}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-skin']});"
-                    + "try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){setTimeout(f,50)})}catch(e){}window.addEventListener('hashchange',function(){setTimeout(f,100)})}})()", null);
+                if (firstPaint && v == web) { firstPaint = false; v.animate().alpha(1f).setDuration(260).start(); }
+                if (v == web) paintBars(v);
+                // зашли в профиль Артема — заранее открываем в фоне Учёбу и Финансы
+                if (!preloaded && K_HUB.equals(key) && url != null && url.contains("/artem.html")) {
+                    preloaded = true;
+                    root.postDelayed(() -> { preload(K_UCHEBA, HOME + "ucheba.html"); preload(K_FIN, HOME + "finance.html"); }, 400);
+                }
             }
         });
-        web.setDownloadListener((url, ua, cd, mime, len) -> openOutside(Uri.parse(url)));
-        web.postDelayed(() -> { if (web.getAlpha() < 1f) web.animate().alpha(1f).setDuration(200).start(); }, 2500);
+        w.setDownloadListener((url, ua, cd, mime, len) -> openOutside(Uri.parse(url)));
+        root.addView(w, new android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        views.put(key, w);
+        return w;
+    }
 
-        if (state != null) web.restoreState(state);
-        else load(getIntent());
+    void preload(String key, String url) {
+        if (views.containsKey(key)) return;
+        WebView w = makeView(key);
+        w.loadUrl(url);
+        w.onPause();                           // в фоне — без лишней работы
+    }
 
-        web.postDelayed(this::showWhatsNewIfUpdated, 900);
-        web.postDelayed(() -> checkUpdate(false), 2500);
+    /** Показать экран key; если у него другой адрес — перейти (смена только #… — мгновенно, без перезагрузки). */
+    void show(String key, String url) {
+        WebView w = views.get(key);
+        boolean fresh = false;
+        if (w == null) { w = makeView(key); fresh = true; }
+        String cur = w.getUrl();
+        if (fresh || stale.remove(key) || cur == null || !cur.startsWith("http")) w.loadUrl(url);
+        else if (!url.equals(cur)) {
+            if (noHash(url).equals(noHash(cur))) {
+                int h = url.indexOf('#');
+                String hash = h < 0 ? "" : url.substring(h + 1);
+                w.evaluateJavascript("location.hash=" + JSONObject.quote(hash) + ";", null);
+            } else w.loadUrl(url);
+        }
+        if (w == web) return;
+        WebView prev = web;
+        web = w;
+        w.setAlpha(1f);
+        w.onResume();
+        w.setVisibility(View.VISIBLE);
+        w.bringToFront();
+        prev.setVisibility(View.INVISIBLE);
+        prev.onPause();
+        lastBar = null;
+        paintBars(w);
+    }
+
+    void paintBars(WebView v) {
+        v.evaluateJavascript("(function(){try{HubApp.bar(getComputedStyle(document.body).backgroundColor)}catch(e){}"
+            + "if(!window.__hubObs){window.__hubObs=1;new MutationObserver(function(){setTimeout(function(){try{HubApp.bar(getComputedStyle(document.body).backgroundColor)}catch(e){}},50)}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-skin']})}})()", null);
     }
 
     void load(Intent i) {
         Uri d = i != null ? i.getData() : null;
-        web.loadUrl(d != null && HOST.equals(d.getHost()) ? d.toString() : HOME);
+        String url = d != null && HOST.equals(d.getHost()) ? d.toString() : HOME;
+        String k = keyOf(Uri.parse(url));
+        if (K_HUB.equals(k)) views.get(K_HUB).loadUrl(url);
+        else { views.get(K_HUB).loadUrl(HOME); show(k, url); }
     }
 
     @Override
@@ -154,14 +229,20 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
         if (sheet != null && sheet.isShowing()) { sheet.dismiss(); return; }
-        if (web.canGoBack()) web.goBack();
-        else super.onBackPressed();
+        if (web.canGoBack()) { web.goBack(); return; }
+        WebView hub = views.get(K_HUB);
+        if (web != hub) {                       // из Учёбы/Финансов — назад к профилю
+            String hu = hub.getUrl();
+            show(K_HUB, hu != null && hu.startsWith("http") ? hu : HOME + "artem.html");
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        web.saveState(out);
+        views.get(K_HUB).saveState(out);
     }
 
     // ---------------------------------------------------------------- мелочи
@@ -453,6 +534,9 @@ public class MainActivity extends Activity {
     String lastBar = null;
 
     class Bridge {
+        final WebView owner;
+        Bridge(WebView w) { owner = w; }
+
         @JavascriptInterface
         public String version() { return "1." + versionCode(); }
 
@@ -461,6 +545,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void bar(String css) {
+            if (owner != web) return;                         // фоновый экран не трогает системные полосы
             if (css == null || css.equals(lastBar)) return;   // тот же цвет — ничего не трогаем (иначе телефон перерисовывает экран)
             lastBar = css;
             runOnUiThread(() -> {
