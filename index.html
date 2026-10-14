@@ -92,23 +92,76 @@ h1,.lead{animation:up .45s cubic-bezier(.2,.8,.25,1) both}.lead{animation-delay:
 .inst .go{display:flex;align-items:center;justify-content:center;margin-top:12px;height:46px;border-radius:999px;background:var(--a2);color:var(--surface);font:600 15px inherit;text-decoration:none}
 .inst .arr{position:absolute;left:50%;bottom:-16px;width:0;height:0;margin-left:-9px;border:9px solid transparent;border-top-color:var(--surface)}
 @media (min-width:700px){.inst .arr{display:none}}
+</style><style>
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-28px 0 26px}
+.top a,.top button{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);font:500 13.5px/1 'IBM Plex Sans',system-ui,sans-serif;text-decoration:none;cursor:pointer}
+.top a:hover,.top button:hover{color:var(--fg);border-color:var(--faint)}
+.prof .card{font:inherit;text-align:left;cursor:pointer;color:inherit;min-height:170px}
+.av{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font:600 24px/1 'Literata',Georgia,serif;color:var(--surface)}
+.av.a{background:var(--a1)}.av.n{background:#7A5CC2}
+:root[data-theme="dark"] .av.n{background:#A58BE8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .av.n{background:#A58BE8}}
+.lock{position:absolute;top:18px;right:18px;display:inline-flex;align-items:center;gap:6px;color:var(--faint);font-size:12.5px}
+.lock svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lock.open{color:var(--a2)}
+.empty{margin-top:30px;padding:38px 24px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}
+.empty .ic{font:600 34px/1 'Literata',Georgia,serif;color:var(--faint);margin-bottom:10px}
+/* окно ввода пароля */
+.pin{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.35);opacity:0;transition:opacity .2s}
+.pin[hidden]{display:none}.pin.on{opacity:1}
+.pin .sh{width:100%;max-width:420px;margin:0 12px calc(env(safe-area-inset-bottom,0px) + 12px);padding:22px 22px 18px;border:1px solid var(--line);border-radius:24px;background:var(--surface);
+  box-shadow:0 20px 60px rgba(0,0,0,.25);transform:translateY(30px);transition:transform .35s cubic-bezier(.2,.9,.25,1);text-align:center}
+.pin.on .sh{transform:none}
+@media (min-width:700px){.pin{align-items:center}}
+.pin .av{margin:0 auto 10px}
+.pin b{display:block;font:600 21px/1.2 'Literata',Georgia,serif}
+.pin small{display:block;margin-top:4px;color:var(--muted);font-size:14px}
+.pin input{display:block;width:100%;margin:18px 0 6px;height:56px;border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--fg);
+  font:600 26px/1 'IBM Plex Sans',system-ui,sans-serif;letter-spacing:.45em;text-align:center;padding:0 0 0 .45em;outline:none}
+.pin input:focus{border-color:var(--a2);box-shadow:0 0 0 3px color-mix(in srgb,var(--a2) 22%,transparent)}
+.pin .err{min-height:20px;color:var(--a1);font-size:13.5px}
+.pin .go{display:flex;width:100%;align-items:center;justify-content:center;height:50px;margin-top:6px;border:0;border-radius:999px;background:var(--a2);color:var(--surface);font:600 16px/1 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer}
+.pin .cancel{margin-top:6px;height:42px;width:100%;border:0;background:none;color:var(--muted);font:500 14.5px/1 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer}
+.pin.ok input{border-color:var(--a2);color:var(--a2)}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
+.pin.bad input{animation:shake .45s}
+@media (prefers-reduced-motion:reduce){.pin,.pin .sh{transition:none}.pin.bad input{animation:none}}
 </style></head><body>
 <div class="w">
   <h1>Hub</h1>
-  <p class="lead">Учёба и финансы в одном месте. Выбери раздел.</p>
-  <div class="cards">
-    <div class="card u"><a class="cover" href="ucheba.html" aria-label="Учёба"></a>
-      <div class="ic">§</div><b>Учёба</b><span>Конспекты, расписание, билеты, сессия</span>
-      <div class="links"><a href="ucheba.html">Конспекты</a><a href="ucheba.html#schedule">Расписание</a><a href="ucheba.html#tickets">Билеты</a><a href="ucheba.html#session">Сессия</a></div>
-    </div>
-    <div class="card f"><a class="cover" href="finance.html" aria-label="Финансы"></a>
-      <div class="ic">₽</div><b>Финансы</b><span>Справочник для инвестбанкинга и рынки в реальном времени</span>
-      <div class="links"><a href="finance.html#learn">Обучение</a><a href="finance.html#markets">Рынки</a><a href="finance.html#markets/crypto">Крипта</a></div>
-    </div>
-  </div>
+  <p class="lead">Выбери профиль.</p>
+  <div class="cards prof"><button type="button" class="card pf" data-p="artem"><span class="lock" data-lock="artem"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><em>пароль</em></span><div class="av a">А</div><b>Артем</b><span>Учёба и финансы</span></button><button type="button" class="card pf" data-p="nastya"><span class="lock" data-lock="nastya"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><em>пароль</em></span><div class="av n">Н</div><b>Настя</b><span>Учёба</span></button></div>
   <div class="zmr">Масштаб: <button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div>
 <p class="foot" id="appfoot">Приложение для Android: <a href="https://github.com/SHerlockkka/konspekty/releases/latest/download/Hub.apk" style="color:inherit">скачать Hub.apk</a>. На iPhone: Safari → «Поделиться» → «На экран Домой».</p>
 </div>
+<div class="pin" hidden><div class="sh" role="dialog" aria-modal="true"><div class="av" id="pav"></div><b id="pname"></b><small>Введи пароль</small><input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Пароль"><div class="err" id="perr"></div><button type="button" class="go" id="pgo">Войти</button><button type="button" class="cancel" id="pcancel">Отмена</button></div></div>
+<script>
+(function(){
+var PROF={artem:{n:'Артем',t:'b1c788442fe8f0a18b955452',home:'artem.html',c:'a'},nastya:{n:'Настя',t:'2c54db437dd05987dc351662',home:'nastya.html',c:'n'}};
+var OPEN='<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></svg>';
+function authed(p){try{if(localStorage.getItem('hub:auth:'+p)===PROF[p].t)return true}catch(e){}return document.cookie.indexOf('hub_'+p+'='+PROF[p].t)>=0}
+function remember(p){try{localStorage.setItem('hub:auth:'+p,PROF[p].t)}catch(e){}document.cookie='hub_'+p+'='+PROF[p].t+'; max-age=31536000; path=/; SameSite=Lax'}
+function sha(s){if(!(window.crypto&&crypto.subtle))return Promise.resolve('');return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ('0'+x.toString(16)).slice(-2)}).join('').slice(0,24)})}
+Object.keys(PROF).forEach(function(p){if(authed(p)){var l=document.querySelector('[data-lock="'+p+'"]');l.className='lock open';l.innerHTML=OPEN+'<em>открыто</em>'}});
+var q=new URLSearchParams(location.search),nextUrl=q.get('next')||'';if(!/^[a-z][a-z0-9\-]*\.html([?#].*)?$/i.test(nextUrl))nextUrl='';
+var box=document.querySelector('.pin'),inp=document.getElementById('pin'),err=document.getElementById('perr'),cur=null,busy=false;
+function go(p){location.href=(nextUrl&&cur===p&&q.get('login')===p)?nextUrl:PROF[p].home}
+function open(p){cur=p;var av=document.getElementById('pav');av.className='av '+PROF[p].c;av.textContent=PROF[p].n.charAt(0);document.getElementById('pname').textContent=PROF[p].n;
+  err.textContent='';inp.value='';box.classList.remove('ok','bad');box.hidden=false;requestAnimationFrame(function(){box.classList.add('on');setTimeout(function(){inp.focus()},60)})}
+function close(){box.classList.remove('on');setTimeout(function(){box.hidden=true},220);cur=null}
+function check(final){var p=cur,v=inp.value.trim();if(!p||!v||busy)return;busy=true;
+  sha('hub:'+p+':'+v).then(function(h){busy=false;if(h===PROF[p].t){remember(p);box.classList.add('ok');err.textContent='';setTimeout(function(){go(p)},180)}
+    else if(final){box.classList.remove('bad');void inp.offsetWidth;box.classList.add('bad');err.textContent='Неверный пароль';inp.select()}})}
+document.querySelectorAll('.pf').forEach(function(b){b.addEventListener('click',function(){var p=b.getAttribute('data-p');if(authed(p)){cur=p;go(p)}else open(p)})});
+inp.addEventListener('input',function(){err.textContent='';box.classList.remove('bad');check(false)});
+inp.addEventListener('keydown',function(e){if(e.key==='Enter')check(true);if(e.key==='Escape')close()});
+document.getElementById('pgo').onclick=function(){check(true)};
+document.getElementById('pcancel').onclick=close;
+box.addEventListener('click',function(e){if(e.target===box)close()});
+var lp=q.get('login');if(lp&&PROF[lp]){if(authed(lp)){cur=lp;go(lp)}else open(lp)}
+})();
+</script>
+
 <script>
 try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}
 /* внутри приложения Hub: версия и проверка обновлений вместо ссылки на APK */

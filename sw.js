@@ -3,7 +3,7 @@
    Данные (*.json) — сначала сеть (свежие котировки и новости), если сеть не ответила за 4 с — из кэша.
    Шрифты Google и история цен с GitHub — из кэша с фоновым обновлением. */
 const V = 'hub-v30', STATIC = V + '-static', DATA = 'hub-data', EXT = 'hub-ext';
-const CORE = ['./', 'index.html', 'ucheba.html', 'finance.html', 'manifest.webmanifest', 'icon-192.png', 'apple-touch-icon.png'];
+const CORE = ['./', 'index.html', 'artem.html', 'nastya.html', 'ucheba.html', 'finance.html', 'manifest.webmanifest', 'icon-192.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();

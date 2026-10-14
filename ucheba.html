@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F4F1E8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Конспекты"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style><title>Учёба</title><script>(function(){
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><script>(function(){var P='artem',T='b1c788442fe8f0a18b955452';function ok(){try{if(localStorage.getItem('hub:auth:'+P)===T)return true}catch(e){}return document.cookie.indexOf('hub_'+P+'='+T)>=0}if(!ok()){document.documentElement.style.visibility='hidden';var f=location.pathname.slice(location.pathname.lastIndexOf('/')+1)||'index.html';location.replace('index.html?login='+P+'&next='+encodeURIComponent(f+location.search+location.hash))}else{try{localStorage.setItem('hub:auth:'+P,T)}catch(e){}}})();</script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F4F1E8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Конспекты"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><style>[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style><title>Учёба</title><script>(function(){
 var Z=[0.8,0.9,1,1.1,1.2,1.3,1.45,1.6];
 function g(){try{var v=parseFloat(localStorage.getItem('siteZoom'));return v>0?v:1}catch(e){return 1}}
 function ap(v){document.documentElement.style.zoom=(v===1?'':String(v))}
@@ -20,12 +20,14 @@ document.addEventListener('DOMContentLoaded',function(){var v=g();document.query
   navigator.serviceWorker.addEventListener('message',function(e){
     if(!e.data||e.data.t!=='hub-updated'||shown||page(e.data.url)!==page(location.href))return;
     shown=true;
-    if(!touched&&Date.now()-t0<3000){location.reload();return}      // ещё ничего не трогали — просто подменяем на свежую версию
+    var rk='hubReload:'+page(location.href),last=0;try{last=+sessionStorage.getItem(rk)||0}catch(er){}
+    if(Date.now()-last<30000)return;                                  // эта страница только что перезагрузилась на свежую версию
+    if(!touched&&Date.now()-t0<3000){try{sessionStorage.setItem(rk,String(Date.now()))}catch(er){}location.reload();return}      // ещё ничего не трогали — просто подменяем на свежую версию
     var d=document.createElement('div');
     d.setAttribute('role','status');
     d.style.cssText='position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translate(-50%,140%);z-index:9999;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;border:1px solid var(--line,#D9D3C2);background:var(--surface,#FBF9F3);color:var(--fg,#25221C);box-shadow:0 10px 30px rgba(0,0,0,.18);font:500 14px/1.2 system-ui,sans-serif;white-space:nowrap;transition:transform .4s cubic-bezier(.2,.9,.25,1)';
     d.innerHTML='<span>Hub обновился</span><button type="button" style="border:0;border-radius:999px;padding:9px 14px;background:var(--a2,var(--accent,#1F6B57));color:#fff;font:600 14px/1 system-ui,sans-serif;cursor:pointer">Обновить</button>';
-    d.querySelector('button').onclick=function(){location.reload()};
+    d.querySelector('button').onclick=function(){try{sessionStorage.setItem(rk,String(Date.now()))}catch(er){}location.reload()};
     document.body.appendChild(d);requestAnimationFrame(function(){requestAnimationFrame(function(){d.style.transform='translate(-50%,0)'})});
   });
   function ask(){var c=navigator.serviceWorker.controller;if(c)c.postMessage({t:'hub-check',url:location.href})}
@@ -1292,7 +1294,7 @@ html:root[data-skin=k] .toast{background:var(--fg);color:#fff;font-family:var(--
 <div class="app">
   <header class="rail" id="rail">
     <div class="brandrow">
-      <a id="hubfix" href="./" aria-label="Учёба / Финансы" title="Учёба / Финансы"><svg viewBox="0 0 24 24"><path d="M19 12H5.5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="brand" href="#" data-go="" aria-label="Все предметы"><span class="sec">§</span><span>Конспекты</span></a>
+      <a id="hubfix" href="artem.html" aria-label="Учёба / Финансы" title="Учёба / Финансы"><svg viewBox="0 0 24 24"><path d="M19 12H5.5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a><a class="brand" href="#" data-go="" aria-label="Все предметы"><span class="sec">§</span><span>Конспекты</span></a>
       <button class="ibtn" id="btn-search" type="button" aria-label="Поиск"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
       <button class="ibtn" id="btn-style" type="button" aria-label="Сменить оформление" style="font:600 16px/1 var(--serif)">Aa</button>
       <button class="ibtn" id="btn-theme" type="button" aria-label="Сменить тему"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></button>

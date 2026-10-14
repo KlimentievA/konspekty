@@ -48,5 +48,8 @@ assert '<!--DATA-->' in tpl and '<!--MARKED-->' in tpl
 tpl = tpl.replace('<!--ZOOM-->', '<script>' + open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'zoom.js'), encoding='utf-8').read() + '</script>')
 html = tpl.replace('<!--DATA-->', '<script type="application/json" id="fdata">' + data + '</script>') \
           .replace('<!--MARKED-->', '<script>' + open(marked_path, encoding='utf-8').read() + '</script>')
+_g = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gate_artem.html')
+if os.path.exists(_g):   # замок профиля «Артем»
+    html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">' + open(_g, encoding='utf-8').read(), 1)
 open(out, 'w', encoding='utf-8').write(html)
 print('ok', len(chs), 'chapters', len(TERMS), 'terms', len(html.encode()), 'bytes')

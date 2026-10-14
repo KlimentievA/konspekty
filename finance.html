@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><script>(function(){var P='artem',T='b1c788442fe8f0a18b955452';function ok(){try{if(localStorage.getItem('hub:auth:'+P)===T)return true}catch(e){}return document.cookie.indexOf('hub_'+P+'='+T)>=0}if(!ok()){document.documentElement.style.visibility='hidden';var f=location.pathname.slice(location.pathname.lastIndexOf('/')+1)||'index.html';location.replace('index.html?login='+P+'&next='+encodeURIComponent(f+location.search+location.hash))}else{try{localStorage.setItem('hub:auth:'+P,T)}catch(e){}}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#171611" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Финансы">
@@ -168,7 +168,7 @@ details.qa+h3{margin-top:2em}
 #tip{position:fixed;z-index:90;max-width:min(340px,calc(100vw - 24px));padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);box-shadow:0 10px 30px rgba(0,0,0,.18);font:400 14.5px/1.5 var(--sans);pointer-events:auto}
 #tip b{display:block;margin-bottom:4px;font:600 14.5px/1.35 var(--sans);color:var(--accent)}
 #tip a{display:inline-block;margin-top:6px;font:500 12.5px var(--sans);color:var(--muted)}
-#prog{position:fixed;left:0;right:0;top:0;height:3px;z-index:40;background:var(--accent);transform:scaleX(0);transform-origin:0 50%;transition:transform .1s linear}
+#prog{display:none}
 #totop{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--fg);font:600 18px/1 var(--sans);box-shadow:0 4px 16px rgba(0,0,0,.15)}
 .resume{display:inline-flex;flex-direction:column;gap:3px;margin-top:20px;padding:13px 18px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;background:var(--surface);text-decoration:none;max-width:100%}
 .resume small{font:500 11px/1 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
@@ -365,7 +365,7 @@ tr[data-bond],table[data-t="ru"] tbody tr,table[data-t="us"] tbody tr,table[data
 </style></head><body>
 <header class="top">
   <div class="bar">
-    <a class="home" id="b-back" href="./" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <a class="home" id="b-back" href="artem.html" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
     <a class="brand" href="#learn"><b>₽</b> Финансы</a>
     <div class="zm" role="group" aria-label="Масштаб страницы"><button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить масштаб">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div><button class="ibtn" id="b-search" type="button" aria-label="Поиск"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
     <button class="ibtn" id="b-theme" type="button" aria-label="Сменить тему"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></button>
@@ -1284,7 +1284,7 @@ function route(){
   document.querySelectorAll('#sw a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-s')===sec)});
   state=sec;
   var bk=document.getElementById('b-back'),inCh=sec==='learn'&&CH.some(function(x){return x.id===p[1]});
-  bk.setAttribute('href',sec==='markets'?(p[1]==='idx'?'#markets':p[1]&&p[1]!=='summary'?(p[2]?'#markets/'+p[1]:'#markets'):'#learn'):sec==='calc'?'#learn':(inCh?'#learn':'./'));bk.setAttribute('aria-label',(sec==='learn'&&!inCh)?'Все разделы':'Назад');
+  bk.setAttribute('href',sec==='markets'?(p[1]==='idx'?'#markets':p[1]&&p[1]!=='summary'?(p[2]?'#markets/'+p[1]:'#markets'):'#learn'):sec==='calc'?'#learn':(inCh?'#learn':'artem.html'));bk.setAttribute('aria-label',(sec==='learn'&&!inCh)?'Все разделы':'Назад');
   if(sec==='markets'){
     cur=SUBS.some(function(s){return s[0]===p[1]})?p[1]:'summary';store('fin:sub',cur);
     CARD.tic=(cur==='ru'&&p[2])?p[2].toUpperCase():null;ASSET={kind:null,id:null};var ck=p[2]?p[1]+'/'+p[2]:'';if(ck&&ck!==LASTCARD&&!/^(ev-|[0-9a-f]{10}$)/.test(p[2]))CARD.range='1m';if(ck&&p[1]!=='news')LASTCARD=ck;if(p[2]&&(p[1]==='us'||p[1]==='crypto'||p[1]==='idx')){if(p[1]==='idx')cur='summary';openAsset(p[1]==='crypto'?'cr':p[1],p[2].toUpperCase())}NEWSID=(cur==='news'&&p[2])?p[2]:null;if(cur==='news'&&!TEXTS)setTimeout(function(){try{if(navigator.connection&&navigator.connection.saveData)return}catch(e){}if(state==='markets'&&cur==='news')loadTexts()},2500);if(CARD.tic){PC.d=null;NLIM=12;Promise.all([loadCandles(CARD.tic,CARD.range),loadDivs(CARD.tic),loadNews(),loadEN(enFile('ru',CARD.tic))]).then(function(){drawMarkets(true)})}

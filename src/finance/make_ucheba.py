@@ -2,7 +2,7 @@ import sys
 src,out=sys.argv[1:3]
 t=open(src,encoding='utf-8').read()
 # стрелка в левом верхнем углу → главная «Учёба / Финансы». Цвета берутся из переменных темы, поэтому подходит к любому оформлению.
-btn=('<a id="hubfix" href="./" aria-label="Учёба / Финансы" title="Учёба / Финансы">'
+btn=('<a id="hubfix" href="artem.html" aria-label="Учёба / Финансы" title="Учёба / Финансы">'
      '<svg viewBox="0 0 24 24"><path d="M19 12H5.5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>')
 # Стрелка живёт в шапке перед «§ Конспекты». В «Газете» и «Книге» (заголовок по центру) на компьютере —
 # зеркальная пара к круглой кнопке «Aa» справа, на телефоне — слева в строке заголовка.
@@ -34,4 +34,8 @@ t=t.replace(old,old+'<div class="fzrow"><span>Масштаб страницы</s
 import re
 t,nf=re.subn(r'<link rel="stylesheet" href="(https://fonts\.googleapis\.com/[^"]+)">',lambda m:'<link rel="stylesheet" href="%s" media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" href="%s"></noscript>'%(m.group(1),m.group(1)),t)
 assert nf==1,'fonts'
+# замок профиля «Артем» (пароль) — в самом начале <head>
+_g=os.path.join(os.path.dirname(os.path.abspath(__file__)),'gate_artem.html')
+assert t.count('<meta charset="utf-8">')>=1
+t=t.replace('<meta charset="utf-8">','<meta charset="utf-8">'+open(_g,encoding='utf-8').read(),1)
 open(out,'w',encoding='utf-8').write(t);print('ok',len(t.encode()))
