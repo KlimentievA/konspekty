@@ -2,12 +2,26 @@
    Страницы и картинки — сразу из кэша (мгновенно), а в фоне проверяется новая версия; если она вышла — странице приходит сигнал «обновлено».
    Данные (*.json) — сначала сеть (свежие котировки и новости), если сеть не ответила за 4 с — из кэша.
    Шрифты Google и история цен с GitHub — из кэша с фоновым обновлением. */
-const V = 'hub-v46', STATIC = V + '-static', DATA = 'hub-data', EXT = 'hub-ext';
+const V = 'hub-v47', STATIC = V + '-static', DATA = 'hub-data', EXT = 'hub-ext';
 const CORE = ['./', 'index.html', 'artem.html', 'nastya.html', 'ucheba.html', 'finance.html', 'manifest.webmanifest', 'icon-192.png?v=31', 'apple-touch-icon.png?v=31'];
 
+// офлайн: страницы, библиотеки и данные карты/расписания/рынков кладём в кэш заранее
+const WARM_STATIC = ['nastya-ucheba.html', 'vendor/d3.min.js', 'vendor/topojson-client.min.js'];
+const WARM_JSON = ['world.json', 'world/countries.json', 'world/regions/index.json', 'schedule.json', 'schedule_nastya.json', 'markets.json', 'news.json', 'news_text.json', 'search-index.json', 'digest.json', 'corp_cal.json', 'fin.json'];
+async function warm() {
+  const sc = await caches.open(STATIC), dc = await caches.open(DATA);
+  await Promise.allSettled(CORE.concat(WARM_STATIC).map(async u => { const r = await fetch(u, { cache: 'no-cache' }); if (r.ok) await sc.put(u, r); }));
+  const put = async u => { const r = await fetch(u, { cache: 'no-cache' }); if (r.ok) { const k = new URL(u, location.href); await dc.put(k.origin + k.pathname, await stamp(r)); } };
+  await Promise.allSettled(WARM_JSON.map(put));
+  try {
+    const ix = await (await fetch('world/regions/index.json')).json(), f = [];
+    ix.layers.forEach(l => { f.push('world/regions/' + l.id + '.json', 'world/regions/geo/' + l.id + '.json'); if (l.companies) f.push('world/companies/' + l.companies + '.json', 'world/companies/' + l.companies + '-detail.json'); if (l.sectors) f.push('world/regions/' + l.sectors + '.json'); });
+    await Promise.allSettled(f.map(put));
+  } catch (e) {}
+}
 self.addEventListener('install', e => {
   self.skipWaiting();
-  e.waitUntil(caches.open(STATIC).then(c => c.addAll(CORE)).catch(() => {}));
+  e.waitUntil(caches.open(STATIC).then(c => c.addAll(CORE)).catch(() => {}).then(() => warm()).catch(() => {}));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => ![STATIC, DATA, EXT].includes(x)).map(x => caches.delete(x)))).then(() => self.clients.claim()));
@@ -28,6 +42,7 @@ async function notify(url) {
   cs.forEach(c => { if (pth(c.url) === pth(url)) c.postMessage({ t: 'hub-updated', url }); });
 }
 self.addEventListener('message', e => {
+  if (e.data && e.data.t === 'hub-warm') { e.waitUntil(warm()); return; }
   if (!e.data || e.data.t !== 'hub-check' || !e.source) return;
   const t = UPDATED.get(pth(e.data.url));
   if (t && Date.now() - t < 20000) { UPDATED.delete(pth(e.data.url)); e.source.postMessage({ t: 'hub-updated', url: e.data.url }); }

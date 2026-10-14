@@ -207,6 +207,8 @@ J('news.json').then(function(n){
 
 artem_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'artem') + '\n  <h1>Артем</h1>\n  '
               + cards_artem + '\n  ' + foot + '\n</div>\n' + LOGOUT_JS)
+SEARCH_BTN = '<a class="sbtn" href="search.html" aria-label="Поиск по сайту"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Поиск</a>'
+artem_body = artem_body.replace('<div class="tr">', '<div class="tr">' + SEARCH_BTN, 1)
 artem_html = page('Hub · Артем', artem_body, 'artem')   # просто: Артем → Учёба, Финансы (сводку «Сегодня» убрали)
 
 # ---------------- nastya.html ----------------
@@ -275,9 +277,67 @@ nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h
            '  <div id="sch"><p class="src">Загружаю…</p></div>\n</div>\n' + NU_JS)
 nu_html = page('Учёба · Настя', nu_body, 'nastya').replace('</head>', NU_CSS + '</head>', 1)
 
+
+# ---------------- search.html: поиск по всему сайту Артема ----------------
+SEARCH_CSS = """<style>
+.sbtn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;color:var(--fg);text-decoration:none;font:500 14px/1 system-ui,sans-serif;background:var(--surface)}
+.sbtn:hover{border-color:var(--faint)}
+.sq{position:relative;margin:6px 0 12px}.sq input{width:100%;font:500 17px/1.2 system-ui,sans-serif;padding:14px 16px 14px 44px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);outline:none}
+.sq input:focus{border-color:var(--a2,#1F6B57);box-shadow:0 0 0 3px color-mix(in srgb,var(--a2,#1F6B57) 18%,transparent)}
+.sq svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--faint)}
+.sf{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}.sf button{border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:7px 12px;border-radius:999px;font:500 13px/1 system-ui,sans-serif;cursor:pointer}
+.sf button.on{background:var(--a2,#1F6B57);border-color:var(--a2,#1F6B57);color:#fff}.sf em{font-style:normal;opacity:.65;margin-left:4px}
+.sr a{display:block;padding:12px 2px;border-top:1px solid var(--line);color:var(--fg);text-decoration:none}.sr a:first-child{border-top:0}.sr a:hover b,.sr a.kb b{color:var(--a2,#1F6B57)}.sr a.kb{background:color-mix(in srgb,var(--a2,#1F6B57) 7%,transparent)}
+.sr b{display:block;font:600 16px/1.3 system-ui,sans-serif}.sr small{color:var(--faint);font:500 11px/1 system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase}.sr p{margin:4px 0 0;color:var(--muted);font:400 14px/1.4 system-ui,sans-serif}
+.sr mark{background:color-mix(in srgb,#E8B100 38%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+.sm{color:var(--muted);font:400 14px/1.5 system-ui,sans-serif;padding:18px 0}
+</style>"""
+SEARCH_JS = r"""<script>
+(function(){
+var KIND={ch:'Глава',sec:'Сектор',term:'Термин',co:'Компания',tk:'Билет',nt:'Конспект'},TAB=[['',['ch','sec','term','co','tk','nt'],'Всё'],['f',['ch','sec','term'],'Финансы'],['c',['co'],'Компании'],['u',['tk','nt'],'Учёба']];
+var IDX=null,Q='',tab='',box=document.getElementById('sr'),inp=document.getElementById('q'),tabs=document.getElementById('sf'),kb=-1,res=[];
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function norm(s){return String(s||'').toLowerCase().replace(/ё/g,'е')}
+function toks(q){return norm(q).split(/[^a-zа-я0-9]+/).filter(function(x){return x.length>0})}
+function stem(w){return w.length>5?w.slice(0,w.length-2):w.length>3?w.slice(0,w.length-1):w}
+function load(){box.innerHTML='<p class="sm">Загружаю индекс…</p>';
+  fetch('search-index.json').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){IDX=j.map(function(x){return {k:x[0],t:x[1],x:x[2],u:x[3],tn:norm(x[1]),xn:norm(x[2])}});run()})
+  .catch(function(){box.innerHTML='<p class="sm">Не удалось загрузить индекс поиска. <button type="button" class="sbtn" id="rt">Повторить</button></p>';var b=document.getElementById('rt');if(b)b.onclick=load})}
+function score(it,ts,ph){var s=0,i,t,tn=it.tn,xn=it.xn;
+  if(ph&&tn.indexOf(ph)>=0)s+=30;if(ph&&xn.indexOf(ph)>=0)s+=6;
+  for(i=0;i<ts.length;i++){t=ts[i];var st=stem(t),a=tn.indexOf(st),b=xn.indexOf(st);
+    if(a<0&&b<0)return 0;
+    if(a>=0)s+=(a===0||tn.charAt(a-1)===' ')?12:7;if(b>=0)s+=2+Math.min(3,(xn.split(st).length-1)*.5)}
+  return s}
+function snip(it,ts){var x=it.x,xn=it.xn,p=-1,i,st;for(i=0;i<ts.length&&p<0;i++){st=stem(ts[i]);p=xn.indexOf(st)}
+  var a=Math.max(0,p<0?0:p-60),sn=x.slice(a,a+170);if(a>0)sn='…'+sn;if(a+170<x.length)sn+='…';return hl(sn,ts)}
+function hl(t,ts){var h=esc(t);ts.forEach(function(w){var st=stem(w);if(st.length<2)return;h=h.replace(new RegExp('('+st.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'[а-яa-z0-9]*)','gi'),'<mark>$1</mark>')});return h}
+function run(){if(!IDX)return;var ts=toks(Q);
+  if(!ts.length){box.innerHTML='<p class="sm">Начни вводить: «WACC», «Сбербанк», «ст. 125», «лизинг»… Ищет по главам, терминам, секторам, компаниям, билетам и конспектам.</p>';tabs.innerHTML='';res=[];return}
+  var ph=norm(Q).trim(),all=[];IDX.forEach(function(it){var s=score(it,ts,ph);if(s>0)all.push({it:it,s:s})});all.sort(function(a,b){return b.s-a.s});
+  var cnt={};TAB.forEach(function(t){cnt[t[0]]=all.filter(function(r){return t[1].indexOf(r.it.k)>=0}).length});
+  tabs.innerHTML=TAB.map(function(t){return '<button type="button" data-t="'+t[0]+'" class="'+(t[0]===tab?'on':'')+'">'+t[2]+'<em>'+cnt[t[0]]+'</em></button>'}).join('');
+  var cur=TAB.filter(function(t){return t[0]===tab})[0],list=all.filter(function(r){return cur[1].indexOf(r.it.k)>=0}).slice(0,40);res=list;kb=-1;
+  box.innerHTML=list.length?list.map(function(r,i){var it=r.it;return '<a href="'+esc(it.u)+'" data-i="'+i+'"><small>'+KIND[it.k]+'</small><b>'+hl(it.t,ts)+'</b><p>'+snip(it,ts)+'</p></a>'}).join(''):'<p class="sm">Ничего не найдено по «'+esc(Q)+'». Попробуй другое слово или часть слова.</p>'}
+var tm=null;inp.addEventListener('input',function(){Q=inp.value;clearTimeout(tm);tm=setTimeout(function(){run();try{history.replaceState(null,'',Q?'?q='+encodeURIComponent(Q):location.pathname)}catch(e){}},120)});
+tabs.addEventListener('click',function(e){var b=e.target.closest('[data-t]');if(!b)return;tab=b.getAttribute('data-t');run()});
+inp.addEventListener('keydown',function(e){var as=box.querySelectorAll('a');if(!as.length)return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();kb=Math.max(0,Math.min(as.length-1,kb+(e.key==='ArrowDown'?1:-1)));as.forEach(function(a,i){a.classList.toggle('kb',i===kb)});as[kb].scrollIntoView({block:'nearest'})}
+  if(e.key==='Enter'){var a=as[Math.max(0,kb)];if(a)location.href=a.getAttribute('href')}});
+document.addEventListener('keydown',function(e){if(e.key==='/'&&document.activeElement!==inp){e.preventDefault();inp.focus()}});
+var q0=new URLSearchParams(location.search).get('q');if(q0){inp.value=q0;Q=q0}
+inp.focus();load();
+})();
+</script>"""
+search_body = ('<div class="w">\n  ' + topbar('artem.html', 'Артем') + '\n  <h1>Поиск</h1>\n'
+               '  <div class="sq"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'
+               '<input id="q" type="search" placeholder="Что найти?" autocomplete="off" enterkeyhint="search" aria-label="Поиск по сайту"></div>\n'
+               '  <div class="sf" id="sf" role="group" aria-label="Фильтр"></div>\n  <div class="sr" id="sr" aria-live="polite"></div>\n</div>\n')
+search_html = page('Hub · Поиск', search_body, 'artem').replace('</head>', SEARCH_CSS + '</head>', 1).replace('</body>', SEARCH_JS + '</body>', 1)
+
 # замок для страниц Артема (ucheba.html, finance.html) — его вставляют make_ucheba.py и build_finance.py
 open(os.path.join(ROOT, 'src', 'finance', 'gate_artem.html'), 'w', encoding='utf-8').write(gate('artem'))
 
-for name, html in (('index.html', index_html), ('artem.html', artem_html), ('nastya.html', nastya_html), ('nastya-ucheba.html', nu_html)):
+for name, html in (('index.html', index_html), ('artem.html', artem_html), ('nastya.html', nastya_html), ('nastya-ucheba.html', nu_html), ('search.html', search_html)):
     open(os.path.join(ROOT, name), 'w', encoding='utf-8').write(html)
     print('ok', name, len(html))
