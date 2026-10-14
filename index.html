@@ -61,10 +61,12 @@ h1{margin:0;font:600 clamp(34px,7vw,56px)/1.05 'Literata',Georgia,serif;letter-s
     </div>
   </div>
   <div class="zmr">Масштаб: <button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div>
-<p class="foot">Приложение для Android: <a href="https://github.com/SHerlockkka/konspekty/releases/latest/download/Hub.apk" style="color:inherit">скачать Hub.apk</a>. На iPhone: Safari → «Поделиться» → «На экран Домой».</p>
+<p class="foot" id="appfoot">Приложение для Android: <a href="https://github.com/SHerlockkka/konspekty/releases/latest/download/Hub.apk" style="color:inherit">скачать Hub.apk</a>. На iPhone: Safari → «Поделиться» → «На экран Домой».</p>
 </div>
 <script>
 try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}
+/* внутри приложения Hub: версия и проверка обновлений вместо ссылки на APK */
+if(window.HubApp){try{var af=document.getElementById('appfoot');af.innerHTML='Приложение Hub '+HubApp.version()+' · <button type="button" id="upd" style="font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer">Проверить обновления</button>';document.getElementById('upd').onclick=function(){HubApp.checkUpdate()}}catch(e){}}
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
 </script>
 </body></html>

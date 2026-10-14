@@ -30,5 +30,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "app-v1.${{ github.run_number }}" Hub.apk --title "Hub 1.${{ github.run_number }}" --latest \
-            --notes "Приложение Hub для Android. Скачай Hub.apk на телефоне и открой; при первом запуске разреши установку из этого источника."
+          gh release create "app-v1.${{ github.run_number }}" Hub.apk --title "Hub 1.${{ github.run_number }}" --latest --notes-file android/RELEASE_NOTES.md
