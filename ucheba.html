@@ -72,6 +72,8 @@ color-scheme:dark;
 color-scheme:dark;
 }
 *{box-sizing:border-box}
+*{-webkit-tap-highlight-color:transparent}a,button,summary,label,input,select{touch-action:manipulation}
+@media(hover:none){a,button,summary,.chip,.card{transition:opacity .16s ease,transform .16s ease,background-color .2s ease}a:active,button:active,summary:active,.chip:active{opacity:.62}.card:active{transform:scale(.985)}}
 html{-webkit-text-size-adjust:100%;scroll-behavior:auto}
 body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 a{color:inherit}

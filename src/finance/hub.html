@@ -67,6 +67,8 @@ document.addEventListener('DOMContentLoaded',function(){var v=g();document.query
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171611;--surface:#22211A;--fg:#E8E4D8;--muted:#A39D8E;--faint:#7A7466;--line:#33312A;--a1:#E8886B;--a2:#5FC2A3;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#171611;--surface:#22211A;--fg:#E8E4D8;--muted:#A39D8E;--faint:#7A7466;--line:#33312A;--a1:#E8886B;--a2:#5FC2A3;color-scheme:dark}
 *{box-sizing:border-box}
+*{-webkit-tap-highlight-color:transparent}a,button,summary,label,input,select{touch-action:manipulation}
+@media(hover:none){a,button,summary,.chip,.card{transition:opacity .16s ease,transform .16s ease,background-color .2s ease}a:active,button:active,summary:active,.chip:active{opacity:.62}.card:active{transform:scale(.985)}}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font:400 16px/1.5 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;
   padding:calc(env(safe-area-inset-top,0px) + 48px) 16px calc(env(safe-area-inset-bottom,0px) + 40px)}
 .w{max-width:880px;margin:0 auto}
