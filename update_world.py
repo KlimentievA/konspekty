@@ -144,7 +144,7 @@ if len(imf) < len(IND) // 2:
                 imf[code] = res
                 log('DBnomics', code, len(res), 'стран')
         if imf:
-            m_, y_ = ed.split(':')[1].split('-')
+            y_, m_ = ed.split(':')[1].split('-')
             os.environ.setdefault('WEO_EDITION', ('апрель' if m_ == '04' else 'октябрь') + ' ' + y_)
     except Exception as e:
         log('DBnomics:', e)
@@ -223,6 +223,9 @@ if (d.month, d.day) >= (10, 14): ed_m, ed_y = 'октябрь', d.year
 elif (d.month, d.day) >= (4, 14): ed_m, ed_y = 'апрель', d.year
 else: ed_m, ed_y = 'октябрь', d.year - 1
 weo = os.environ.get('WEO_EDITION') or '%s %d' % (ed_m, ed_y)
+try:
+    if os.environ.get('WEO_EDITION'): ed_y = int(os.environ['WEO_EDITION'].split()[-1])   # выпуск из запасного источника может быть старее
+except Exception: pass
 last_actual = ed_y - 1
 srcs = set(src.values())
 out = {
