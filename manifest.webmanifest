@@ -9,25 +9,25 @@
 "theme_color": "#F4F1E8",
 "icons": [
 {
-"src": "icon-192.png",
+"src": "icon-192.png?v=31",
 "sizes": "192x192",
 "type": "image/png",
 "purpose": "any"
 },
 {
-"src": "icon-512.png",
+"src": "icon-512.png?v=31",
 "sizes": "512x512",
 "type": "image/png",
 "purpose": "any"
 },
 {
-"src": "icon-maskable-512.png",
+"src": "icon-maskable-512.png?v=31",
 "sizes": "512x512",
 "type": "image/png",
 "purpose": "maskable"
 },
 {
-"src": "favicon.svg",
+"src": "favicon.svg?v=31",
 "sizes": "any",
 "type": "image/svg+xml",
 "purpose": "any"
@@ -39,7 +39,7 @@
 "url": "ucheba.html",
 "icons": [
 {
-"src": "icon-192.png",
+"src": "icon-192.png?v=31",
 "sizes": "192x192"
 }
 ]
