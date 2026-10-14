@@ -5,8 +5,8 @@
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <title>Финансы</title>
 <!--ZOOM-->
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400..700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://iss.moex.com" crossorigin><link rel="preconnect" href="https://api.coingecko.com" crossorigin><link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400..700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400..700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>
 <style>
 :root{
   --bg:#F4F1E8;--rail:#ECE8DB;--surface:#FBF9F3;--fg:#25221C;--muted:#665F52;--faint:#857E6E;
@@ -302,6 +302,27 @@ tr[data-bond],table[data-t="ru"] tbody tr,table[data-t="us"] tbody tr,table[data
   details.qa>div{padding-left:0}
   .f{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
 }
+
+/* ---------- анимации: короткие и спокойные; отключаются, если в системе включено «уменьшить движение» ---------- */
+@keyframes vin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fin{from{opacity:0}to{opacity:1}}
+@keyframes shim{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes flu{0%{background:color-mix(in srgb,var(--up) 28%,transparent)}100%{background:transparent}}
+@keyframes fld{0%{background:color-mix(in srgb,var(--down) 28%,transparent)}100%{background:transparent}}
+@keyframes draw{to{stroke-dashoffset:0}}
+#view.enter{animation:vin .28s cubic-bezier(.2,.8,.25,1) both}
+.flu{animation:flu 1.4s ease-out;border-radius:6px}.fld{animation:fld 1.4s ease-out;border-radius:6px}
+.empty.skel{position:relative;min-height:110px;color:transparent;border-radius:14px;user-select:none;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--line) 55%,transparent) 25%,color-mix(in srgb,var(--line) 20%,transparent) 50%,color-mix(in srgb,var(--line) 55%,transparent) 75%);background-size:200% 100%;animation:shim 1.4s linear infinite}
+.chip{transition:background-color .16s,color .16s,border-color .16s,transform .12s}.chip:active{transform:scale(.96)}
+.tile{transition:border-color .18s,transform .18s,box-shadow .18s}
+.tile.lk:hover,.nw.big:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.07)}
+.nw.big{transition:transform .18s,box-shadow .18s,border-color .18s}
+.ntop .nw.big{animation:vin .35s cubic-bezier(.2,.8,.25,1) both}.ntop .nw.big:nth-child(2){animation-delay:.04s}.ntop .nw.big:nth-child(3){animation-delay:.08s}.ntop .nw.big:nth-child(4){animation-delay:.12s}.ntop .nw.big:nth-child(5){animation-delay:.16s}
+.pcs .pl.drawin{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .7s cubic-bezier(.3,.7,.3,1) forwards}.pcs .area.drawin{animation:fin .7s ease both}
+.pctip{animation:fin .12s ease both}
+.reader .gist{animation:vin .3s .05s cubic-bezier(.2,.8,.25,1) both}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style></head><body>
 <header class="top">
   <div class="bar">
@@ -541,8 +562,8 @@ function status(key,label){
   else{cls='';txt=label+': загрузка…'}
   return '<div class="stat '+cls+'"><span class="dot"></span><span>'+txt+'</span><button type="button" data-reload>Обновить сейчас</button><span class="auto">обновляется само каждые 15 с</span></div>';
 }
-function tile(k,v,s){return '<div class="tile"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'}
-function tileL(href,k,v,s){return '<a class="tile lk" href="'+href+'"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></a>'}
+function tile(k,v,s){return '<div class="tile"><div class="k">'+k+'</div><div class="v" data-fk="t|'+String(k).replace(/"/g,'')+'">'+v+'</div><div class="s">'+s+'</div></div>'}
+function tileL(href,k,v,s){return '<a class="tile lk" href="'+href+'"><div class="k">'+k+'</div><div class="v" data-fk="t|'+String(k).replace(/"/g,'')+'">'+v+'</div><div class="s">'+s+'</div></a>'}
 function stTiles(a){return a.filter(function(r){return r[0]!=='IMOEX'&&r[0]!=='S&P 500'}).map(function(r){return tile(esc(r[0]),esc(r[1]),esc(r[2]))}).join('')}
 
 function vSummary(){
@@ -578,7 +599,7 @@ function table(id,cols,rows){
   var st=sortState[id]||{};
   if(st.k!=null){rows=rows.slice().sort(function(a,b){var x=a[st.k],y=b[st.k];if(x==null)return 1;if(y==null)return -1;if(typeof x==='string')return st.asc?x.localeCompare(y,'ru'):y.localeCompare(x,'ru');return st.asc?x-y:y-x})}
   var h='<div class="tablewrap"><table class="dt" data-t="'+id+'"><thead><tr>'+cols.map(function(c,i){return '<th data-k="'+c.k+'" class="'+(c.num?'num ':'')+(i===0?'sticky ':'')+(st.k===c.k?'sorted'+(st.asc?' asc':''):'')+'">'+c.t+'</th>'}).join('')+'</tr></thead><tbody>';
-  rows.forEach(function(r){h+='<tr>'+cols.map(function(c,i){return '<td class="'+(c.num?'num ':'')+(c.cls||'')+(i===0?' sticky':'')+'">'+c.f(r)+'</td>'}).join('')+'</tr>'});
+  rows.forEach(function(r){var rk=r.tic||r.s||r.c||r.id||'';h+='<tr>'+cols.map(function(c,i){return '<td class="'+(c.num?'num ':'')+(c.cls||'')+(i===0?' sticky':'')+'"'+(c.k==='p'&&rk?' data-fk="'+id+'|'+rk+'"':'')+'>'+c.f(r)+'</td>'}).join('')+'</tr>'});
   return h+'</tbody></table></div>';
 }
 view.addEventListener('click',function(e){
@@ -755,15 +776,25 @@ function vFX(){
   h+=table('fx',[{k:'c',t:'Валюта',cls:'nm',f:function(r){return '<b>'+r.c+'</b><i>'+esc(r.n)+'</i>'}},{k:'nom',t:'За',num:1,f:function(r){return r.nom}},{k:'v',t:'Курс ЦБ, ₽',num:1,f:function(r){return nf(r.v,4)}},{k:'ch',t:'Изм.',num:1,f:function(r){return pct(r.ch)}}],rows);
   return h+'<p class="sect note">Официальный курс ЦБ на '+new Date(j.Date).toLocaleDateString('ru-RU')+' (устанавливается на следующий день после торгов). Источник: cbr-xml-daily.ru (зеркало данных ЦБ).</p>'+secNews('fx','Новости о валютах',8);
 }
+function skel(root){root.querySelectorAll('.empty').forEach(function(e){if(/^Загружаю/.test(e.textContent))e.classList.add('skel')})}
+/* подсветка изменившихся цен: зелёная — выросла, красная — упала */
+var FLPREV=null,FLCUR='';
+function numOf(t){var x=parseFloat(String(t).replace(/[^\d,.\-−]/g,'').replace('−','-').replace(/\s/g,'').replace(',','.'));return isNaN(x)?null:x}
+function flashEl(el,o,n){if(o==null||o===n)return;var a=numOf(o),b=numOf(n);if(a==null||b==null||a===b)return;el.classList.remove('flu','fld');void el.offsetWidth;el.classList.add(b>a?'flu':'fld')}
+function flashPrep(){FLPREV={};FLCUR=cur+'|'+(CARD.tic||'')+'|'+(ASSET.id||'');view.querySelectorAll('[data-fk]').forEach(function(e){FLPREV[e.getAttribute('data-fk')]=e.textContent})}
+function flashApply(){if(!FLPREV||FLCUR!==cur+'|'+(CARD.tic||'')+'|'+(ASSET.id||''))return;view.querySelectorAll('[data-fk]').forEach(function(e){flashEl(e,FLPREV[e.getAttribute('data-fk')],e.textContent)})}
 function drawMarkets(full){
   if(state!=='markets')return;
-  if(cur==='ru'&&CARD.tic&&full!==true&&document.getElementById('card-root')){var cp=document.getElementById('card-price'),l=(M.ru||{})[CARD.tic]||{};if(cp&&l.p){var tl=cp.querySelector('.tile');tl.querySelector('.v').innerHTML=nf(l.p,l.p<10?3:2)+' ₽';tl.querySelector('.s').innerHTML=(l.ch!=null?pct(l.ch)+' за день · ':'')+'<span data-ago="'+Date.now()+'">только что</span>'}return}
+  if(cur==='ru'&&CARD.tic&&full!==true&&document.getElementById('card-root')){var cp=document.getElementById('card-price'),l=(M.ru||{})[CARD.tic]||{};if(cp&&l.p){var tl=cp.querySelector('.tile'),ov=tl.querySelector('.v').textContent;tl.querySelector('.v').innerHTML=nf(l.p,l.p<10?3:2)+' ₽';flashEl(tl.querySelector('.v'),ov,tl.querySelector('.v').textContent);tl.querySelector('.s').innerHTML=(l.ch!=null?pct(l.ch)+' за день · ':'')+'<span data-ago="'+Date.now()+'">только что</span>'}return}
   if(full!==true){var sn=document.querySelector('[data-secnews]');if(sn&&M.news&&!sn.querySelector('.nw')){var q=sn.getAttribute('data-secnews').split('|');sn.outerHTML=secNews(q[0],q[1],+q[2])}}
   if(cur==='bonds'&&full!==true&&document.getElementById('bonds-root')){drawBondTable();var cv=document.getElementById('b-curve');if(cv)cv.innerHTML=kbdBox();return}
-  if(ASSET.kind&&full!==true&&document.getElementById('card-root')){var ai=assetInfo(ASSET.kind,ASSET.id),cq=document.getElementById('card-price');if(ai&&cq&&ai.px){var t0=cq.querySelector('.tile');t0.querySelector('.v').innerHTML=nf(ai.px,ai.px<1?4:ai.px<10?3:2)+ai.unit;t0.querySelector('.s').innerHTML=(ai.ch!=null?pct(ai.ch)+' ':'')+esc(ai.chNote||'')+(ASSET.kind==='cr'?' · <span data-ago="'+Date.now()+'">только что</span>':'')}return}
+  if(ASSET.kind&&full!==true&&document.getElementById('card-root')){var ai=assetInfo(ASSET.kind,ASSET.id),cq=document.getElementById('card-price');if(ai&&cq&&ai.px){var t0=cq.querySelector('.tile'),ov0=t0.querySelector('.v').textContent;t0.querySelector('.v').innerHTML=nf(ai.px,ai.px<1?4:ai.px<10?3:2)+ai.unit;flashEl(t0.querySelector('.v'),ov0,t0.querySelector('.v').textContent);t0.querySelector('.s').innerHTML=(ai.ch!=null?pct(ai.ch)+' ':'')+esc(ai.chNote||'')+(ASSET.kind==='cr'?' · <span data-ago="'+Date.now()+'">только что</span>':'')}return}
   var y=window.scrollY,fn=ASSET.kind?vAsset:{summary:vSummary,ru:CARD.tic?function(){return vCard(CARD.tic)}:vRU,us:vUS,crypto:vCrypto,bonds:vBonds,fx:vFX,cal:vCal,news:vNews}[cur];
-  view.innerHTML=subnav()+fn();if(cur==='bonds')drawBondTable();if((cur==='ru'&&CARD.tic)||ASSET.kind)drawPC();window.scrollTo(0,y);
+  var html=subnav()+fn(),sig=html.replace(/data-ago="\d+">[^<]*</g,'');
+  if(full!==true&&sig===LASTSIG){view.querySelectorAll('.stat [data-ago]').forEach(function(e){e.setAttribute('data-ago',Date.now())});return}   // данные не изменились — не трогаем страницу
+  LASTSIG=sig;if(full!==true)flashPrep();else FLPREV=null;view.innerHTML=html;flashApply();skel(view);if(cur==='bonds')drawBondTable();if((cur==='ru'&&CARD.tic)||ASSET.kind)drawPC();window.scrollTo(0,y);
 }
+var LASTSIG='';window.__dm=drawMarkets;
 var loaders={summary:[loadIdx,loadFX,loadCR,loadSnap,loadNews],ru:[loadRU,loadNews],us:[loadSnap,loadNews],crypto:[loadFX,loadCR,loadNews],bonds:[loadKBD,function(){return loadBonds(BF.kind)},loadNews],fx:[loadFX,loadNews],cal:[],news:[loadNews]};
 var timer;
 var busy=false;
@@ -804,7 +835,9 @@ var IMP_MAIN=10,TEXTS=null;
 function hoursAgo(h){return new Date(Date.now()-h*36e5).toISOString()}
 function topNews(a,hrs,n){var lim=hoursAgo(hrs),r=a.filter(function(x){return !x.dup&&x.d>=lim}).sort(function(x,y){return (y.imp||0)-(x.imp||0)||(x.d<y.d?1:-1)});
   if(r.length<n)r=r.concat(a.filter(function(x){return !x.dup&&x.d<lim}).slice(0,n-r.length));return r.slice(0,n)}
+var TEXTA=null;
 function loadTexts(){if(TEXTS)return Promise.resolve();return getJSON('news_text.json',20000).then(function(j){TEXTS=j}).catch(function(){TEXTS={}})}
+function loadTextsArch(){if(TEXTA)return Promise.resolve();return getJSON('news_text_arch.json',20000).then(function(j){TEXTA=j;for(var k in j)if(!TEXTS[k])TEXTS[k]=j[k]}).catch(function(){TEXTA={}})}
 function secNews(k,title,n){
   var a=topNews(((M.news&&M.news.items)||[]).filter(NFF[k]),72,n||6);
   var at=' data-secnews="'+k+'|'+esc(title)+'|'+(n||6)+'"';
@@ -849,6 +882,7 @@ function vReader(id){
   h+='<div class="nm"><span class="ns">'+esc(x.s)+'</span><span>'+fmtDT(x.d)+'</span>'+(x.tr?'<span class="trb">автоперевод</span>':'')+'</div><h1>'+esc(x.t)+'</h1>'+(x.to?'<p class="orig">Оригинал: '+esc(x.to)+'</p>':'');
   if(x.tags&&x.tags.length)h+='<div class="ntags">'+x.tags.map(function(t){return '<a class="chip sm" href="'+tagHref(t)+'">'+esc(tname(t))+' — карточка и график</a>'}).join('')+'</div>';
   if(!TEXTS&&!x.g){loadTexts().then(function(){if(NEWSID===id)drawMarkets(true)})}
+  else if(TEXTS&&!TEXTS[x.id]&&!TEXTA&&!x.g&&x.d<hoursAgo(40)){loadTextsArch().then(function(){if(NEWSID===id)drawMarkets(true)})}
   var s=(TEXTS&&TEXTS[x.id])||((x.sum&&x.sum.length)?x.sum:(x.x?[x.x]:[]));
   h+='<div class="gist"><h3>Подробно</h3>'+(s.length?(s.length>4&&s.every(function(q){return q.length<330})?s.reduce(function(acc,q,i){if(i%2===0)acc.push([]);acc[acc.length-1].push(q);return acc},[]).map(function(g){return g.join(' ')}):s).map(function(g){return '<p class="gp">'+esc(g)+'</p>'}).join('')+(!TEXTS&&!x.g?'<p class="note">Загружаю полный пересказ…</p>':''):'<p class="note">'+(x.g?'Пересказа этой статьи пока нет — открой источник по кнопке ниже.':'Содержание появится после следующего автообновления (раз в час).')+'</p>')+'</div>';
   h+='<a class="readsrc" href="'+esc(x.u||x.g)+'" target="_blank" rel="noopener">Читать полностью: '+esc(x.s)+' ↗</a>';
@@ -929,14 +963,14 @@ function pcGeom(){
     idx:function(px){var t=t0+(px-L)/(W-L-R)*(t1-t0),lo=0,hi=d.length-1;while(hi-lo>1){var m=(lo+hi)>>1;if(d[m][0]<t)lo=m;else hi=m}return Math.abs(d[lo][0]-t)<Math.abs(d[hi][0]-t)?lo:hi}};
 }
 function drawPC(){
-  var g=pcGeom();if(!g)return;var d=PC.d,h='',up=d[d.length-1][1]>=d[0][1];
+  var g=pcGeom();if(!g)return;var an=PC.anim;PC.anim=false;var d=PC.d,h='',up=d[d.length-1][1]>=d[0][1];
   h+='<svg width="'+g.W+'" height="'+g.H+'" class="pcs"><defs><linearGradient id="pcg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>';
   niceTicks(g.mn,g.mx,4).forEach(function(v){var y=g.Y(v);h+='<line x1="'+g.L+'" x2="'+(g.W-g.R)+'" y1="'+y+'" y2="'+y+'" class="gl"/><text x="'+(g.W-g.R+8)+'" y="'+(y+4)+'" class="yl">'+nf(v,v>=1000?0:v>=100?0:v>=10?1:2)+'</text>'});
   var lastX=-1e9;d.forEach(function(p,i){var x=g.X(p[0]);if(x-lastX>(g.W<520?78:110)&&x>g.L+26&&x<g.W-g.R-30){h+='<text x="'+x+'" y="'+(g.H-8)+'" class="xl">'+new Date(p[0]).toLocaleDateString('ru-RU',(d[d.length-1][0]-d[0][0])>4e10?{month:'short',year:'2-digit'}:{day:'numeric',month:'short'})+'</text>';lastX=x}});
   var line=d.map(function(p,i){return (i?'L':'M')+g.X(p[0]).toFixed(1)+','+g.Y(p[1]).toFixed(1)}).join('');
   if(PC.sel){var a=Math.min(PC.sel[0],PC.sel[1]),b=Math.max(PC.sel[0],PC.sel[1]),xa=g.X(d[a][0]),xb=g.X(d[b][0]),pos=d[b][1]>=d[a][1];
     h+='<rect x="'+xa+'" y="'+g.T+'" width="'+Math.max(1,xb-xa)+'" height="'+(g.H-g.T-g.B)+'" class="sel '+(pos?'pos':'neg')+'"/><line x1="'+xa+'" x2="'+xa+'" y1="'+g.T+'" y2="'+(g.H-g.B)+'" class="sl"/><line x1="'+xb+'" x2="'+xb+'" y1="'+g.T+'" y2="'+(g.H-g.B)+'" class="sl"/>'}
-  h+='<path d="'+line+'L'+g.X(d[d.length-1][0])+','+(g.H-g.B)+'L'+g.X(d[0][0])+','+(g.H-g.B)+'Z" fill="url(#pcg)"/><path d="'+line+'" class="pl"/>';
+  h+='<path d="'+line+'L'+g.X(d[d.length-1][0])+','+(g.H-g.B)+'L'+g.X(d[0][0])+','+(g.H-g.B)+'Z" fill="url(#pcg)" class="area'+(an?' drawin':'')+'"/><path d="'+line+'" pathLength="1" class="pl'+(an?' drawin':'')+'"/>';
   var lp=d[d.length-1];h+='<circle cx="'+g.X(lp[0])+'" cy="'+g.Y(lp[1])+'" r="3.5" class="pd"/>';
   PC.marks.forEach(function(m){var p=d[m.i];if(!p)return;var x=g.X(p[0]),y=g.Y(p[1]),on=PC.mk===m;h+='<line x1="'+x+'" x2="'+x+'" y1="'+(y+7)+'" y2="'+(g.H-g.B)+'" class="mkl"/><circle cx="'+x+'" cy="'+y+'" r="'+(on?7:5.5)+'" class="'+(m.e?'mk':'mk2 '+(m.mv>0?'u':'d')+(m.n?' hn':''))+(on?' on':'')+'"/>'});
   if(PC.hov!=null){var p=d[PC.hov],x=g.X(p[0]),y=g.Y(p[1]);h+='<line x1="'+x+'" x2="'+x+'" y1="'+g.T+'" y2="'+(g.H-g.B)+'" class="cx"/><line x1="'+g.L+'" x2="'+(g.W-g.R)+'" y1="'+y+'" y2="'+y+'" class="cx"/><circle cx="'+x+'" cy="'+y+'" r="5" class="hd"/>'+
@@ -994,7 +1028,7 @@ function vCard(tic){
   h+='<div class="sect"><div class="box"><div class="pchead"><h2>График цены</h2>'+[['1m','1 мес'],['3m','3 мес'],['6m','6 мес'],['1y','1 год'],['3y','3 года'],['5y','5 лет']].map(function(x){return '<button type="button" class="chip'+(CARD.range===x[0]?' on':'')+'" data-crange="'+x[0]+'">'+x[1]+'</button>'}).join('')+'</div>';
   if(cd&&cd.length>1){
     var mkk=tic+CARD.range+(ENEWS[enFile('ru',tic)]?1:0)+(M.news?1:0);
-    if(PC.d!==cd||PC.mkey!==mkk){PC.mkey=mkk;PC.d=cd;PC.sel=null;PC.hov=null;PC.mk=null;PC.tic=tic;PC.unit=' ₽';PC.q=null;PC.kind='ru';PC.nf=enFile('ru',tic);PC.dm=null;PC.marks=pcMarks(tic,cd,!(CARD.range==='3y'||CARD.range==='5y'))}
+    if(PC.d!==cd||PC.mkey!==mkk){PC.anim=PC.d!==cd;PC.mkey=mkk;PC.d=cd;PC.sel=null;PC.hov=null;PC.mk=null;PC.tic=tic;PC.unit=' ₽';PC.q=null;PC.kind='ru';PC.nf=enFile('ru',tic);PC.dm=null;PC.marks=pcMarks(tic,cd,!(CARD.range==='3y'||CARD.range==='5y'))}
     h+='<div id="pchart" class="pchart" role="img" aria-label="График цены '+tic+'"></div><div id="pc-info" class="pcinfo"></div><p class="note">Цены закрытия, Мосбиржа'+(CARD.range==='3y'||CARD.range==='5y'?' (по неделям)':' (по дням)')+'.</p>';
   }else h+='<p class="empty">'+(CARD.err[key]?'Мосбиржа сейчас не отдаёт историю цен.':'Загружаю…')+'</p>';
   h+='</div></div>';
@@ -1071,7 +1105,7 @@ function vAsset(){
   if(cd&&a.src==='hist'&&a.px&&!cd.aug&&Date.now()-cd[cd.length-1][0]>18*36e5){cd.push([Date.now(),a.px]);cd.aug=1}
   if(cd&&cd.length>1){
     var mkk=a.key+CARD.range+(ENEWS[enFile(ASSET.kind,a.key)]?1:0)+(M.news?1:0);
-    if(PC.d!==cd||PC.mkey!==mkk){PC.mkey=mkk;PC.d=cd;PC.sel=null;PC.hov=null;PC.mk=null;PC.tic=a.key;PC.unit=a.unit||'';PC.kind=ASSET.kind;PC.nf=enFile(ASSET.kind,a.key);PC.dm=null;PC.q=a.name+(ASSET.kind==='cr'?' курс':ASSET.kind==='us'?' акции':'');PC.marks=pcMarks(a.key,cd,!(CARD.range==='3y'||CARD.range==='5y'))}
+    if(PC.d!==cd||PC.mkey!==mkk){PC.anim=PC.d!==cd;PC.mkey=mkk;PC.d=cd;PC.sel=null;PC.hov=null;PC.mk=null;PC.tic=a.key;PC.unit=a.unit||'';PC.kind=ASSET.kind;PC.nf=enFile(ASSET.kind,a.key);PC.dm=null;PC.q=a.name+(ASSET.kind==='cr'?' курс':ASSET.kind==='us'?' акции':'');PC.marks=pcMarks(a.key,cd,!(CARD.range==='3y'||CARD.range==='5y'))}
     h+='<div id="pchart" class="pchart" role="img" aria-label="График '+esc(a.name)+'"></div><div id="pc-info" class="pcinfo"></div><p class="note">Цены закрытия'+(CARD.range==='3y'||CARD.range==='5y'?' по неделям':' по дням')+'. Источник: '+(a.src==='iss'?'Мосбиржа':a.src==='cg'?'CoinGecko / Binance':'Yahoo Finance (снимок раз в день)')+'.</p>';
   }else{PC.marks=[];h+='<p class="empty">'+(SERR[k]?'История цен пока недоступна'+(a.src==='hist'?' — она появится после ближайшего автообновления (раз в час).':'.'):'Загружаю…')+'</p>'}
   h+='</div></div>';
@@ -1208,7 +1242,7 @@ function route(){
   bk.setAttribute('href',sec==='markets'?(p[1]==='idx'?'#markets':p[1]&&p[1]!=='summary'?(p[2]?'#markets/'+p[1]:'#markets'):'#learn'):sec==='calc'?'#learn':(inCh?'#learn':'./'));bk.setAttribute('aria-label',(sec==='learn'&&!inCh)?'Все разделы':'Назад');
   if(sec==='markets'){
     cur=SUBS.some(function(s){return s[0]===p[1]})?p[1]:'summary';store('fin:sub',cur);
-    CARD.tic=(cur==='ru'&&p[2])?p[2].toUpperCase():null;ASSET={kind:null,id:null};var ck=p[2]?p[1]+'/'+p[2]:'';if(ck&&ck!==LASTCARD&&!/^(ev-|[0-9a-f]{10}$)/.test(p[2]))CARD.range='1m';if(ck&&p[1]!=='news')LASTCARD=ck;if(p[2]&&(p[1]==='us'||p[1]==='crypto'||p[1]==='idx')){if(p[1]==='idx')cur='summary';openAsset(p[1]==='crypto'?'cr':p[1],p[2].toUpperCase())}NEWSID=(cur==='news'&&p[2])?p[2]:null;if(CARD.tic){PC.d=null;NLIM=12;Promise.all([loadCandles(CARD.tic,CARD.range),loadDivs(CARD.tic),loadNews(),loadEN(enFile('ru',CARD.tic))]).then(function(){drawMarkets(true)})}
+    CARD.tic=(cur==='ru'&&p[2])?p[2].toUpperCase():null;ASSET={kind:null,id:null};var ck=p[2]?p[1]+'/'+p[2]:'';if(ck&&ck!==LASTCARD&&!/^(ev-|[0-9a-f]{10}$)/.test(p[2]))CARD.range='1m';if(ck&&p[1]!=='news')LASTCARD=ck;if(p[2]&&(p[1]==='us'||p[1]==='crypto'||p[1]==='idx')){if(p[1]==='idx')cur='summary';openAsset(p[1]==='crypto'?'cr':p[1],p[2].toUpperCase())}NEWSID=(cur==='news'&&p[2])?p[2]:null;if(cur==='news'&&!TEXTS)setTimeout(function(){try{if(navigator.connection&&navigator.connection.saveData)return}catch(e){}if(state==='markets'&&cur==='news')loadTexts()},2500);if(CARD.tic){PC.d=null;NLIM=12;Promise.all([loadCandles(CARD.tic,CARD.range),loadDivs(CARD.tic),loadNews(),loadEN(enFile('ru',CARD.tic))]).then(function(){drawMarkets(true)})}
     drawMarkets(true);refresh();startTimer();document.title='Рынки · Финансы';
   }else if(sec==='calc'){
     clearInterval(timer);renderCalc(p[1]);document.title='Калькуляторы · Финансы';
@@ -1218,7 +1252,8 @@ function route(){
     if(c){renderChapter(c);document.title=c.title+' · Финансы';store('fin:last',c.id)}else{renderLearn();document.title='Финансы'}
   }
 }
-window.addEventListener('hashchange',function(){window.scrollTo(0,0);route();if(!Q)return;});
+function enter(){view.classList.remove('enter');void view.offsetWidth;view.classList.add('enter')}
+window.addEventListener('hashchange',function(){window.scrollTo(0,0);route();enter();if(!Q)return;});
 route();
 })();
 </script>

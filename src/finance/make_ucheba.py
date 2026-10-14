@@ -17,6 +17,7 @@ css=('<style>'
      'html:root[data-skin=c] #hubfix,html:root[data-skin=f] #hubfix{position:fixed;z-index:70;top:12px;left:18px;margin:0;width:42px;height:42px;'
      '-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,0,0,.08)}'
      'html:root[data-skin=c] #hubfix svg,html:root[data-skin=f] #hubfix svg{width:19px;height:19px}}'
+     '@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}'
      '</style>')
 assert t.count('<title>Конспекты семинаров</title>')==1
 t=t.replace('<title>Конспекты семинаров</title>','<title>Учёба</title>'+css,1)
@@ -29,4 +30,8 @@ t=t.replace('<title>Учёба</title>','<title>Учёба</title><script>'+zjs+
 old='<div class="fzrow"><span>Размер текста</span><button type="button" data-fz="-1" aria-label="Меньше">А−</button><b>\'+Math.round(getFz()*100)+\'%</b><button type="button" data-fz="1" aria-label="Больше">А+</button></div>'
 assert t.count(old)==1, 'fzrow'
 t=t.replace(old,old+'<div class="fzrow"><span>Масштаб страницы</span><button type="button" data-sz="-1" aria-label="Уменьшить страницу">А−</button><b class="szv">\'+Math.round((window.siteZoomGet?siteZoomGet():1)*100)+\'%</b><button type="button" data-sz="1" aria-label="Увеличить страницу">А+</button></div>',1)
+# шрифты Google не блокируют первую отрисовку (в РФ они иногда грузятся долго)
+import re
+t,nf=re.subn(r'<link rel="stylesheet" href="(https://fonts\.googleapis\.com/[^"]+)">',lambda m:'<link rel="stylesheet" href="%s" media="print" onload="this.media=\'all\'"><noscript><link rel="stylesheet" href="%s"></noscript>'%(m.group(1),m.group(1)),t)
+assert nf==1,'fonts'
 open(out,'w',encoding='utf-8').write(t);print('ok',len(t.encode()))

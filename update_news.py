@@ -153,8 +153,10 @@ print('fetched', len(items))
 # ---------- слияние со старой лентой ----------
 try: oldn = json.load(open('news.json')).get('items', [])
 except Exception: oldn = []
-try: TEXT = json.load(open('news_text.json'))
-except Exception: TEXT = {}
+TEXT = {}
+for fn_ in ('news_text_arch.json', 'news_text.json'):   # свежие пересказы и архив лежат в разных файлах
+    try: TEXT.update(json.load(open(fn_)))
+    except Exception: pass
 def key(x): return (x['g'] if isinstance(x.get('g'), str) else x['u']).split('?')[0]
 for x in oldn:   # старый формат: подробный текст лежал в sum
     x.setdefault('id', hashlib.md5(key(x).encode()).hexdigest()[:10])
@@ -346,5 +348,7 @@ byid = {x['id']: x for x in merged}
 TEXT = {k: (v if byid[k]['d'] > cut30 else v[:3]) for k, v in TEXT.items() if k in ids and (byid[k]['d'] > cut10 or byid[k].get('tags'))}
 upd = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=3))).strftime('%d.%m.%Y %H:%M МСК')
 json.dump({'updated': upd, 'items': merged}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))
-json.dump(TEXT, open('news_text.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+cut2 = ago(days=2)
+json.dump({k: v for k, v in TEXT.items() if byid[k]['d'] > cut2}, open('news_text.json', 'w'), ensure_ascii=False, separators=(',', ':'))
+json.dump({k: v for k, v in TEXT.items() if byid[k]['d'] <= cut2}, open('news_text_arch.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 print('news', len(merged), 'texts', len(TEXT), 'important', sum(1 for x in merged if x['imp'] >= 6 and not x.get('dup') and x['d'] > ago(days=1)))

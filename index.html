@@ -17,13 +17,40 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 window.addEventListener('storage',function(e){if(e.key==='siteZoom')ap(g())});
 document.addEventListener('DOMContentLoaded',function(){var v=g();document.querySelectorAll('.szv').forEach(function(o){o.textContent=Math.round(v*100)+'%'})});
 })();
+/* Hub: service worker (мгновенная загрузка из кэша), тихое обновление до новой версии, фоновая подгрузка соседних разделов */
+(function(){
+  if(!('serviceWorker' in navigator)||!/^https?:$/.test(location.protocol))return;
+  try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}
+  var t0=Date.now(),touched=false,shown=false;
+  ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){window.addEventListener(ev,function(){touched=true},{passive:true,once:true})});
+  function page(u){u=(u||'').replace(/[?#].*$/,'');var f=u.slice(u.lastIndexOf('/')+1);return f||'index.html'}
+  navigator.serviceWorker.addEventListener('message',function(e){
+    if(!e.data||e.data.t!=='hub-updated'||shown||page(e.data.url)!==page(location.href))return;
+    shown=true;
+    var rk='hubReload:'+page(location.href),last=0;try{last=+sessionStorage.getItem(rk)||0}catch(er){}
+    if(Date.now()-last<30000)return;                                  // эта страница только что перезагрузилась на свежую версию
+    if(!touched&&Date.now()-t0<3000){try{sessionStorage.setItem(rk,String(Date.now()))}catch(er){}location.reload();return}      // ещё ничего не трогали — просто подменяем на свежую версию
+    var d=document.createElement('div');
+    d.setAttribute('role','status');
+    d.style.cssText='position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translate(-50%,140%);z-index:9999;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;border:1px solid var(--line,#D9D3C2);background:var(--surface,#FBF9F3);color:var(--fg,#25221C);box-shadow:0 10px 30px rgba(0,0,0,.18);font:500 14px/1.2 system-ui,sans-serif;white-space:nowrap;transition:transform .4s cubic-bezier(.2,.9,.25,1)';
+    d.innerHTML='<span>Hub обновился</span><button type="button" style="border:0;border-radius:999px;padding:9px 14px;background:var(--a2,var(--accent,#1F6B57));color:#fff;font:600 14px/1 system-ui,sans-serif;cursor:pointer">Обновить</button>';
+    d.querySelector('button').onclick=function(){try{sessionStorage.setItem(rk,String(Date.now()))}catch(er){}location.reload()};
+    document.body.appendChild(d);requestAnimationFrame(function(){requestAnimationFrame(function(){d.style.transform='translate(-50%,0)'})});
+  });
+  function ask(){var c=navigator.serviceWorker.controller;if(c)c.postMessage({t:'hub-check',url:location.href})}
+  ask();setTimeout(ask,1500);setTimeout(ask,4000);
+  window.addEventListener('load',function(){setTimeout(function(){
+    try{if(navigator.connection&&navigator.connection.saveData)return}catch(e){}
+    ['index.html','finance.html','ucheba.html'].forEach(function(p){if(page(location.href)!==p)fetch(p).catch(function(){})});
+  },5000)});
+})();
 </script>
 <script>
 /* старые ссылки вида …/#civil-1 ведут в конспекты */
 (function(){var h=location.hash;if(h&&h.length>1)location.replace('ucheba.html'+h)})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Literata:opsz,wght@7..72,500..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Literata:opsz,wght@7..72,500..700&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Literata:opsz,wght@7..72,500..700&display=swap"></noscript>
 <style>
 :root{--bg:#F4F1E8;--surface:#FBF9F3;--fg:#25221C;--muted:#665F52;--faint:#857E6E;--line:#D9D3C2;--a1:#A93D28;--a2:#1F6B57;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171611;--surface:#22211A;--fg:#E8E4D8;--muted:#A39D8E;--faint:#7A7466;--line:#33312A;--a1:#E8886B;--a2:#5FC2A3;color-scheme:dark}}
@@ -47,6 +74,12 @@ h1{margin:0;font:600 clamp(34px,7vw,56px)/1.05 'Literata',Georgia,serif;letter-s
 .card>a.cover{position:absolute;inset:0;border-radius:18px}
 .zmr{display:flex;align-items:center;gap:6px;margin-top:22px;font-size:13.5px;color:var(--muted)}.zmr button{height:34px;min-width:40px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--fg);font:600 13px/1 inherit;cursor:pointer}
 .foot{margin-top:28px;font-size:12.5px;color:var(--faint)}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+h1,.lead{animation:up .45s cubic-bezier(.2,.8,.25,1) both}.lead{animation-delay:.05s}
+.card{animation:up .5s cubic-bezier(.2,.8,.25,1) both;transition:border-color .18s,transform .18s,box-shadow .18s}.card:nth-child(1){animation-delay:.1s}.card:nth-child(2){animation-delay:.17s}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.08)}.card:active{transform:scale(.99)}
+.links a{transition:border-color .15s,background-color .15s}.links a:hover{background:var(--bg)}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 .inst{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:50;max-width:520px;margin:0 auto;padding:16px 16px 14px;border:1px solid var(--line);border-radius:22px;background:var(--surface);
   box-shadow:0 18px 50px rgba(0,0,0,.18);transform:translateY(140%);transition:transform .45s cubic-bezier(.2,.9,.25,1)}
 .inst.on{transform:none}
