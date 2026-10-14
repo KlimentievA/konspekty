@@ -43,7 +43,7 @@ def corp_cal():
             j = get('https://iss.moex.com/iss/securities/%s/dividends.json?iss.meta=off' % t, 15)
             if 'dividends' not in j:
                 if ok == 0 and not _DBG: _DBG.append(1); print('ответ без dividends:', list(j)[:6], str(j)[:300])
-                j = get('https://iss.moex.com/iss/securities/%s/dividends.json' % t, 15)
+                j = get('https://iss.moex.com/iss/securities/%s.json?iss.only=dividends&iss.meta=off' % t, 15)
             cols = j['dividends']['columns']; ix = {c: i for i, c in enumerate(cols)}
             for row in j['dividends']['data']:
                 d = row[ix['registryclosedate']]; v = row[ix['value']]
