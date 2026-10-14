@@ -306,6 +306,137 @@ tr[data-bond],table[data-t="ru"] tbody tr,table[data-t="us"] tbody tr,table[data
   .f{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere}
 }
 
+/* «Проверь себя» */
+.prose .qahint{margin:-.4em 0 .8em;font:400 13.5px/1.4 var(--sans);color:var(--faint)}
+
+/* мир: сектора и карта */
+.whero{padding-top:22px}
+.wh{margin:20px 0 0}
+.wh h1{margin:0;font:600 clamp(26px,4.6vw,38px)/1.1 var(--serif);letter-spacing:-.015em}
+.wlead{margin:8px 0 0;max-width:72ch;font:400 14.5px/1.55 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.wlead b{color:var(--fg);font-weight:600;white-space:nowrap}
+.wctl .sub{margin-top:12px}
+.wctl #w-ind{margin-top:8px}
+@media (min-width:900px){.wctl .sub{flex-wrap:wrap;overflow:visible}}
+.wctl #w-ind .chip{min-height:34px;padding:5px 12px;font-size:13.5px}
+.wgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;margin-top:14px}
+.wcol{min-width:0}
+.wmap{position:relative;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--accent) 5%,var(--surface));overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.wmap.zin{touch-action:none}
+.wmap svg{display:block;width:100%;height:auto;cursor:grab}
+.wmap svg:active{cursor:grabbing}
+.wc{stroke-width:.5;vector-effect:non-scaling-stroke;stroke-linejoin:round;transition:fill .35s ease,opacity .2s;cursor:pointer}
+.wc.hv{stroke:var(--fg)!important;stroke-width:1.1}
+.wc.sel{stroke:var(--fg)!important;stroke-width:1.9}
+.wpt{stroke-width:.8}
+.wbm .wc{cursor:default;pointer-events:none}
+.wb{stroke:var(--surface);stroke-width:.9;vector-effect:non-scaling-stroke;fill-opacity:.88;cursor:pointer;transition:fill .35s,opacity .2s}
+.wb.hv{stroke:var(--fg);stroke-width:1.4;fill-opacity:1}.wb.sel{stroke:var(--fg);stroke-width:2.2;fill-opacity:1}
+.wdim .wc:not(.lg),.wdim .wb:not(.lg){opacity:.22}
+.wload{position:absolute;inset:0;padding:12px}.wload .empty.skel{display:block;height:100%;min-height:150px}.wload p{margin:0;padding:20px}
+.wzm{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.wzm button{width:34px;height:32px;font:500 17px/1 var(--sans);color:var(--muted)}
+.wzm button+button{border-top:1px solid var(--line2)}
+.wzm button:hover{background:color-mix(in srgb,var(--fg) 7%,transparent);color:var(--fg)}
+.whint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 14px;border-radius:999px;background:color-mix(in srgb,var(--fg) 82%,transparent);color:var(--bg);font:500 13px/1.3 var(--sans);pointer-events:none;white-space:nowrap}
+.wtip{position:absolute;z-index:5;min-width:150px;max-width:230px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:0 6px 20px rgba(0,0,0,.16);font:400 12.5px/1.4 var(--sans);color:var(--muted);pointer-events:none;animation:fin .12s ease both}
+.wtip b{display:block;font:600 14.5px/1.3 var(--sans);color:var(--fg)}
+.wtip strong{display:block;margin-top:2px;font:600 17px/1.25 var(--sans);color:var(--fg);font-variant-numeric:tabular-nums}
+.wtip span,.wtip small{display:block}.wtip small{font-size:12px}.wtip .mut{color:var(--faint)}
+.wtip .wmore{pointer-events:auto;display:block;margin-top:7px;font:600 13px/1 var(--sans);color:var(--accent);padding:6px 0 2px}
+.wbar{display:flex;align-items:center;gap:12px;margin-top:12px;--p:0%;--f:100%}
+.wplay{flex:none;width:42px;height:42px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center}
+.wplay svg{width:15px;height:15px;fill:currentColor}
+.wplay:hover{opacity:.88}
+.wyr{flex:1;min-width:0;position:relative}
+.wyr input{display:block;width:100%;height:28px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer}
+.wyr input::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) 0 var(--p),transparent var(--p)),linear-gradient(90deg,transparent 0 var(--f),color-mix(in srgb,var(--accent2) 30%,var(--line)) var(--f)),var(--line)}
+.wyr input::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--accent) 0 var(--p),transparent var(--p)),linear-gradient(90deg,transparent 0 var(--f),color-mix(in srgb,var(--accent2) 30%,var(--line)) var(--f)),var(--line)}
+.wyr input::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.wyr input::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.wtk{position:relative;display:flex;justify-content:space-between;margin-top:1px;font:500 11px/1.2 var(--sans);color:var(--faint);font-variant-numeric:tabular-nums}
+.wtk .wfc{color:var(--accent2);white-space:nowrap}
+.wyl{flex:none;min-width:74px;text-align:right}
+.wyl b{display:block;font:600 24px/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.wyl span{display:inline-block;margin-top:4px;font:500 11.5px/1.2 var(--sans);color:var(--muted)}
+.wyl span.fc{color:var(--accent2)}
+.wleg{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px 16px;margin-top:14px}
+.wlt{flex-basis:100%;font:500 12.5px/1.3 var(--sans);color:var(--muted)}
+.wsw{display:flex;flex:1 1 260px;max-width:560px;padding-bottom:16px}
+.wsw span{flex:1;height:12px;position:relative;cursor:default;transition:transform .15s}
+.wsw span:hover{transform:scaleY(1.35)}
+.wsw span:first-child{border-radius:3px 0 0 3px}.wsw span:last-child{border-radius:0 3px 3px 0}
+.wsw em{position:absolute;top:15px;left:0;transform:translateX(-50%);font:500 10.5px/1 var(--sans);font-style:normal;color:var(--faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+.wsw span:hover em{transform:scaleY(.74)}
+.wsw em.o{display:none}
+.wna{display:flex;align-items:center;gap:6px;height:12px;font:500 12px/1 var(--sans);color:var(--faint)}
+.wna i{width:16px;height:12px;border-radius:3px;background:#DCD7CA}
+.wsrc{margin-top:4px}.wsrc a{color:var(--accent)}
+.wcard{min-width:0}
+.wcard h3{margin:0;font:600 22px/1.2 var(--serif);letter-spacing:-.01em}
+.wck{display:flex;align-items:flex-start;gap:10px}.wck>div{flex:1;min-width:0}
+.wck-e{margin:0 0 4px;font:500 11.5px/1.3 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.wx{flex:none;width:34px;height:34px;margin:-4px -6px 0 0;border-radius:50%;font:400 24px/1 var(--sans);color:var(--muted)}
+.wx:hover{background:color-mix(in srgb,var(--fg) 7%,transparent);color:var(--fg)}
+.wbig{margin:14px 0 2px;font:600 28px/1.1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+.wsm{margin:6px 0 0;font:400 13px/1.45 var(--sans);color:var(--muted)}
+.wsm a{color:var(--accent);text-decoration:none}.wsm a:hover{text-decoration:underline}
+.wkv{width:100%;border-collapse:collapse;margin-top:14px;font:400 13.5px/1.3 var(--sans);font-variant-numeric:tabular-nums}
+.wkv td{padding:7px 0;border-top:1px solid var(--line2)}
+.wkv thead td{border-top:0;padding-top:0;font:500 11px/1.2 var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+.wkv td.v{text-align:right;font-weight:600;white-space:nowrap;padding-left:8px}
+.wkv td.r{width:4.6em;text-align:right;font-size:11.5px;color:var(--faint);white-space:nowrap}
+.wkv tr.on td{color:var(--accent)}.wkv tr.on td.r{color:var(--accent)}
+.wspw{margin-top:16px}
+.wsp{display:block;width:100%;height:auto;cursor:pointer}
+.wsp text{font:500 10.5px var(--sans);fill:var(--faint)}
+.wsp .fzt{fill:var(--accent2)}
+.wsp .fz{fill:color-mix(in srgb,var(--accent2) 8%,transparent)}
+.wsp .gl{stroke:var(--line);stroke-width:1}
+.wsp .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.wsp .ln.fc{stroke-dasharray:3 3;opacity:.85}
+.wsp .bp{fill:var(--up)}.wsp .bn{fill:var(--down)}.wsp .fc.bp,.wsp .fc.bn{opacity:.45}
+.wsp .cur{stroke:var(--fg);stroke-width:1;stroke-dasharray:2 2;opacity:.6}
+.wsp .pt{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+.wfx{margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.wfxv{margin:2px 0 0;font:400 14.5px/1.45 var(--sans);font-variant-numeric:tabular-nums}.wfxv b{font-weight:600}
+.wfx .wsm{margin-top:4px;font-size:12px;color:var(--faint)}
+.wlinks{margin-top:14px}
+.wgrip{display:none}
+@media (min-width:1000px){
+  .wgrid{grid-template-columns:minmax(0,1fr) 330px;align-items:start}
+  .wcard{position:sticky;top:118px;max-height:calc(100vh - 136px);overflow-y:auto;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+}
+@media (max-width:999px){
+  .wcard{position:fixed;left:0;right:0;bottom:0;z-index:60;max-height:min(78vh,640px);overflow-y:auto;overscroll-behavior:contain;padding:6px 18px calc(22px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.22);transform:translateY(105%);visibility:hidden;transition:transform .32s cubic-bezier(.2,.8,.25,1),visibility 0s .32s}
+  .wcard.open{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.2,.8,.25,1),visibility 0s}
+  .wgrip{display:block;width:40px;height:4px;margin:4px auto 12px;border-radius:2px;background:var(--line)}
+  .wcard .wkv,.wcard .wspw{max-width:560px}
+}
+@media (max-width:560px){
+  .wmap{margin:0 calc(var(--gut)*-1);border-radius:0;border-inline:0}
+  .wzm button{width:32px;height:30px}
+  .wyl{min-width:62px}.wyl b{font-size:21px}
+}
+.wtw{margin-top:30px}
+.wth{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-bottom:10px}.wth h2{margin:0;flex:1 1 auto}
+.wqw{margin-bottom:6px}
+.wq{width:100%;max-width:420px;height:44px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:400 16px var(--sans);outline:0}
+.wq:focus{border-color:var(--faint)}
+.wsr{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.wsr:empty{display:none}
+.wtop{list-style:none;margin:8px 0 0;padding:0;columns:2 330px;column-gap:32px}
+.wtop li{break-inside:avoid}
+.wtop button{display:grid;grid-template-columns:2.1em minmax(0,1fr) auto;align-items:center;gap:3px 10px;width:100%;padding:8px 6px;border-bottom:1px solid var(--line2);border-radius:6px;text-align:left}
+.wtop button:hover{background:color-mix(in srgb,var(--fg) 4%,transparent)}
+.wtop button.on{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.wtop .r{font:500 12.5px/1 var(--mono);color:var(--faint)}
+.wtop .nm{font:500 15px/1.3 var(--sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wtop .v{font:600 14px/1.3 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wtop .br{grid-column:2/4;height:4px;border-radius:2px;background:var(--line2);overflow:hidden}
+.wtop .br i{display:block;height:100%;border-radius:2px;transition:width .35s ease}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wna i{background:#36342C}}
+:root[data-theme="dark"] .wna i{background:#36342C}
+
 /* ---------- анимации: короткие и спокойные; отключаются, если в системе включено «уменьшить движение» ---------- */
 @keyframes vin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes fin{from{opacity:0}to{opacity:1}}
@@ -335,7 +466,7 @@ tr[data-bond],table[data-t="ru"] tbody tr,table[data-t="us"] tbody tr,table[data
     <button class="ibtn" id="b-theme" type="button" aria-label="Сменить тему"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></button>
   </div>
   <div class="search" id="search"><input id="q" type="search" placeholder="Поиск: WACC, EBITDA, банки…" autocomplete="off" enterkeyhint="search" aria-label="Поиск по справочнику"></div>
-  <nav class="sw" id="sw"><a href="#learn" data-s="learn">Обучение</a><a href="#calc" data-s="calc">Калькуляторы</a><a href="#markets" data-s="markets">Рынки</a><a href="ucheba.html" class="out" title="Перейти в раздел «Учёба»">Учёба →</a></nav>
+  <nav class="sw" id="sw"><a href="#learn" data-s="learn">Обучение</a><a href="#calc" data-s="calc">Калькуляторы</a><a href="#markets" data-s="markets">Рынки</a><a href="#world" data-s="world">Мир</a><a href="ucheba.html" class="out" title="Перейти в раздел «Учёба»">Учёба →</a></nav>
 </header>
 <div id="prog"></div><button id="totop" type="button" aria-label="Наверх" hidden>↑</button>
 <main id="view"></main>
@@ -377,14 +508,19 @@ marked.use({gfm:true,breaks:false,renderer:{
   heading:function(text,level,raw){if(level===1)return '';if(level===2){var id='h'+heads.length;heads.push({id:id,t:raw});return '<h2 id="'+id+'">'+text+'</h2>\n'}return '<h'+level+'>'+text+'</h'+level+'>\n'},
   link:function(href,title,text){return '<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+text+'</a>'}
 }});
-CH.forEach(function(c,i){c.i=i;c.plain=c.md.replace(/<[^>]+>/g,' ').replace(/[#*|`>_-]{1,}/g,' ').replace(/\s+/g,' ');c.low=c.plain.toLowerCase()});
+function prepDoc(c,i){c.i=i;c.plain=c.md.replace(/<[^>]+>/g,' ').replace(/[#*|`>_-]{1,}/g,' ').replace(/\s+/g,' ');c.low=c.plain.toLowerCase()}
+CH.forEach(prepDoc);
+var SEC=D.sectors||[];   // сектора мировой экономики (#world/sectors)
+SEC.forEach(function(c,i){prepDoc(c,i);c.sec=1;c.min=Math.max(2,Math.round(c.plain.split(' ').length/170))});
 
 /* ---------------- обучение ---------------- */
 var TRACKS=[
- ['Шаг 1. Основы','Без этого дальше не понять ничего',['ib','otchetnost','npv-irr','koeffitsienty']],
- ['Шаг 2. Оценка компаний','Ядро работы аналитика',['wacc','dcf','multiplikatory','metody','sektory','kpi']],
- ['Шаг 3. Сделки и рынки','Как это применяют в банке',['ma-lbo','struktura-kapitala','rynki-kapitala','makro','rossiya']],
- ['Шаг 4. Практика и собеседование','Кейсы, задачи, подготовка к стажировке',['stazhirovka','keysy','sobesedovanie','praktikum','excel','project-black','karera']],
+ ['С чего начать','Маршрут: что читать и в каком порядке, книги, курсы, сертификаты',['marshrut']],
+ ['Шаг 1. Основы','Отчётность, деньги во времени, коэффициенты',['ib','otchetnost','model-3-otchetov','analiz-otchetnosti','npv-irr','koeffitsienty']],
+ ['Шаг 2. Оценка компаний','Ядро работы аналитика',['portfel-capm','wacc','dcf','multiplikatory','comps','metody','sektory','kpi']],
+ ['Шаг 3. Сделки','Как это применяют в банке: M&A, ECM/DCM, LBO, венчур',['ma-lbo','process-sdelki','ecm-dcm','struktura-kapitala','oborotny-kapital','venchur']],
+ ['Шаг 4. Рынки и макро','Облигации, деривативы, валюты, экономика, Россия',['rynki-kapitala','obligatsii','derivativy','makro','mezhdunarodnye','rossiya','povedencheskie-esg']],
+ ['Шаг 5. Практика и собеседование','Кейсы, задачи, подготовка к стажировке',['stazhirovka','keysy','sobesedovanie','praktikum','excel','project-black','karera']],
  ['Справка','Возвращайся по необходимости',['glossariy','istochniki']]];
 (function(){var order=[];TRACKS.forEach(function(tr){tr[2].forEach(function(id){var c=CH.filter(function(x){return x.id===id})[0];if(c&&order.indexOf(c)<0)order.push(c)})});
   CH.forEach(function(c){if(order.indexOf(c)<0)order.push(c)});CH=order;CH.forEach(function(c,i){c.i=i;c.min=Math.max(2,Math.round(c.plain.split(' ').length/170))})})();
@@ -402,18 +538,21 @@ function renderLearn(){
   view.innerHTML=h;
 }
 function renderChapter(c){
+  // одна разметка для глав обучения и страниц секторов (c.sec): у секторов свой список, адрес и «хлебные крошки»
+  var L=c.sec?SEC:CH,base=c.sec?'#world/sectors/':'#learn/',cl=c.sec?null:CALC_LINK[c.id],gl=!c.sec&&c.id==='glossariy';
   heads=[];var body=marked.parse(c.md);
   var toc=heads.map(function(x){return '<a href="#" data-to="'+x.id+'">'+esc(x.t)+'</a>'}).join('');
-  var pv=CH[c.i-1],nx=CH[c.i+1];
-  view.innerHTML='<div class="doc"><article class="art"><p class="eyebrow"><a href="#learn">Обучение</a> · '+(c.i+1)+' из '+CH.length+'</p><h1>'+esc(c.title)+'</h1><p class="meta">'+c.min+' мин чтения'+(c.id!=='glossariy'?' · термины с пунктиром — наведи или нажми':'')+'</p>'+
+  var pv=L[c.i-1],nx=L[c.i+1];
+  var crumb=c.sec?'<a href="#world">Мир</a> · <a href="#world/sectors">Сектора</a> · ':'<a href="#learn">Обучение</a> · ';
+  view.innerHTML='<div class="doc"><article class="art"><p class="eyebrow">'+crumb+(c.i+1)+' из '+L.length+'</p><h1>'+esc(c.title)+'</h1><p class="meta">'+c.min+' мин чтения'+(!gl?' · термины с пунктиром — наведи или нажми':'')+'</p>'+
     (heads.length>2?'<details class="toc"><summary>Содержание</summary><nav>'+toc+'</nav></details>':'')+
-    (c.id==='glossariy'?'<input class="gfilter" type="search" placeholder="Найти термин: EBITDA, спред, оферта…" aria-label="Фильтр глоссария">':'')+'<div class="prose">'+body+'</div>'+(CALC_LINK[c.id]?'<a class="try" href="#calc/'+CALC_LINK[c.id][0]+'">'+esc(CALC_LINK[c.id][1])+' в калькуляторе →</a>':'')+'<nav class="pager">'+
-    (pv?'<a href="#learn/'+pv.id+'"><small>← Назад</small><b>'+esc(pv.title)+'</b></a>':'')+
-    (nx?'<a class="nx" href="#learn/'+nx.id+'"><small>Дальше →</small><b>'+esc(nx.title)+'</b></a>':'')+
+    (gl?'<input class="gfilter" type="search" placeholder="Найти термин: EBITDA, спред, оферта…" aria-label="Фильтр глоссария">':'')+'<div class="prose">'+body+'</div>'+(cl?'<a class="try" href="#calc/'+cl[0]+'">'+esc(cl[1])+' в калькуляторе →</a>':'')+'<nav class="pager">'+
+    (pv?'<a href="'+base+pv.id+'"><small>← Назад</small><b>'+esc(pv.title)+'</b></a>':'')+
+    (nx?'<a class="nx" href="'+base+nx.id+'"><small>Дальше →</small><b>'+esc(nx.title)+'</b></a>':(c.sec?'<a class="nx" href="#world/sectors"><small>Все сектора →</small><b>Сектора мировой экономики</b></a>':''))+
     '</nav></article>'+(heads.length>2?'<aside class="side"><p class="h">Содержание</p>'+toc+'</aside>':'')+'</div>';
-  if(c.id!=='glossariy'&&c.id!=='istochniki')applyTerms(view.querySelector('.prose'));
+  if(c.sec||(c.id!=='glossariy'&&c.id!=='istochniki'))applyTerms(view.querySelector('.prose'));
   var qs=view.querySelectorAll('details.qa');
-  if(qs.length>5&&(c.id==='sobesedovanie'||c.id==='stazhirovka'||c.id==='praktikum')){
+  if(!c.sec&&qs.length>5&&(c.id==='sobesedovanie'||c.id==='stazhirovka'||c.id==='praktikum')){
     var bar=document.createElement('div');bar.className='rq';bar.innerHTML='<button type="button" class="chip on" data-rq>Случайный вопрос</button><span>Подумай над ответом вслух, потом открой и сверься.</span>';
     var pr=view.querySelector('.prose');pr.insertBefore(bar,pr.firstChild.nextSibling);
   }
@@ -488,12 +627,12 @@ function hl(el,q){
 }
 function renderSearch(q){
   var ql=q.toLowerCase(),res=[];
-  CH.forEach(function(c){var i=c.low.indexOf(ql),n=0,j=i;while(j>=0){n++;j=c.low.indexOf(ql,j+1)}if(i>=0||c.title.toLowerCase().indexOf(ql)>=0)res.push({c:c,i:i,n:n})});
+  CH.concat(SEC).forEach(function(c){var i=c.low.indexOf(ql),n=0,j=i;while(j>=0){n++;j=c.low.indexOf(ql,j+1)}if(i>=0||c.title.toLowerCase().indexOf(ql)>=0)res.push({c:c,i:i,n:n})});
   res.sort(function(a,b){return b.n-a.n});
   var re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
   view.innerHTML='<section class="results"><p class="eyebrow">Поиск</p>'+(res.length?res.map(function(r){
     var s=r.i>=0?r.c.plain.slice(Math.max(0,r.i-80),r.i+160):r.c.short;
-    return '<a class="hit" href="#learn/'+r.c.id+'" data-hl="1"><small>'+esc(r.c.title)+' · совпадений: '+r.n+'</small><b>'+esc(r.c.title)+'</b><p>…'+esc(s).replace(re,'<mark>$1</mark>')+'…</p></a>'}).join(''):'<p class="empty">Ничего не найдено по запросу «'+esc(q)+'».</p>')+'</section>';
+    return '<a class="hit" href="'+(r.c.sec?'#world/sectors/':'#learn/')+r.c.id+'" data-hl="1"><small>'+(r.c.sec?'Сектор · ':'Глава · ')+'совпадений: '+r.n+'</small><b>'+esc(r.c.title)+'</b><p>…'+esc(s).replace(re,'<mark>$1</mark>')+'…</p></a>'}).join(''):'<p class="empty">Ничего не найдено по запросу «'+esc(q)+'».</p>')+'</section>';
 }
 var qi=$('#q'),sb=$('#search');
 $('#b-search').onclick=function(){sb.classList.toggle('on');if(sb.classList.contains('on'))qi.focus();else{qi.value='';Q='';route()}};
@@ -1251,21 +1390,436 @@ function renderCalc(id){
 view.addEventListener('input',function(e){var k=e.target.getAttribute('data-cv');if(!k)return;var c=CALCS.filter(function(x){return x.id===calcCur})[0];CV[c.id][k]=e.target.value;try{localStorage.setItem('calc:'+c.id,JSON.stringify(CV[c.id]))}catch(err){}var o=document.getElementById('c-out');if(o)o.innerHTML=c.c(CV[c.id])});
 view.addEventListener('click',function(e){if(!e.target.closest('[data-creset]'))return;var c=CALCS.filter(function(x){return x.id===calcCur})[0];CV[c.id]=null;try{localStorage.removeItem('calc:'+c.id)}catch(err){}renderCalc(c.id)});
 
+/* ---------------- мир: сектора ---------------- */
+function wsub(on){return '<nav class="sub"><a class="chip'+(on==='map'?' on':'')+'" href="#world/map">Карта</a><a class="chip'+(on==='sectors'?' on':'')+'" href="#world/sectors">Сектора</a></nav>'}
+function renderSectors(){
+  view.innerHTML=wsub('sectors')+'<section class="hero whero"><h1>Сектора мировой экономики</h1><p>Как устроены 12 крупнейших секторов мировой экономики: размер, драйверы, KPI, оценка, игроки мира и России.</p></section>'+
+    (SEC.length?'<div class="chs">'+SEC.map(function(c){return '<a class="ch" href="#world/sectors/'+c.id+'"><span class="n">'+(c.i+1)+'</span><span><b>'+esc(c.title)+'</b><i>'+esc(c.short)+'</i><em>'+c.min+' мин чтения</em></span></a>'}).join('')+'</div>'
+      :'<p class="empty">Разборы секторов скоро появятся.</p>');
+}
+
+/* ---------------- мир: карта ----------------
+   d3 и topojson-client грузятся только здесь (vendor/*.js), геометрия — world/countries.json, данные МВФ — world.json (update_world.py),
+   регионы и города — world/regions/*.json (если файла нет — слоя нет). Смена показателя и года перекрашивает пути, не пересоздавая их. */
+// код МВФ: [подпись, тип шкалы, пороги]; seq — объём (изумруд), bad — «чем больше, тем хуже» (тёплая), div — расходящаяся вокруг 0
+var WI={
+  NGDPD:['ВВП','seq',[10,25,50,100,250,500,1000,2500,10000]],
+  PPPGDP:['ВВП (ППС)','seq',[25,50,100,250,500,1000,2500,5000,20000]],
+  NGDPDPC:['ВВП на душу','seq',[1000,2000,5000,10000,20000,30000,50000,75000]],
+  PPPPC:['ВВП на душу (ППС)','seq',[2500,5000,10000,20000,30000,45000,60000,90000]],
+  NGDP_RPCH:['Рост ВВП','div',[-3,-1,0,1,2,3,4,6]],
+  PCPIPCH:['Инфляция','bad',[0,2,4,6,10,20,50]],
+  LUR:['Безработица','bad',[3,5,7,10,15,25]],
+  GGXWDG_NGDP:['Госдолг','bad',[20,40,60,80,100,150]],
+  BCA_NGDPD:['Счёт текущих операций','div',[-10,-5,-2,0,2,5,10]],
+  LP:['Население','seq',[1,5,10,25,50,100,250,1000]]};
+var WORD=['NGDPD','PPPGDP','NGDPDPC','PPPPC','NGDP_RPCH','PCPIPCH','LUR','GGXWDG_NGDP','BCA_NGDPD','LP'];
+var WUNIT={NGDPD:'млрд $',PPPGDP:'млрд межд. $',NGDPDPC:'$',PPPPC:'межд. $',NGDP_RPCH:'%',PCPIPCH:'%',LUR:'%',GGXWDG_NGDP:'% ВВП',BCA_NGDPD:'% ВВП',LP:'млн человек'};
+var WLAY=[['countries','Страны'],['ru-regions','Регионы России'],['us-states','Штаты США'],['cn-provinces','Провинции Китая'],['cities','Города']];
+var WRAMP={
+  light:{seq:['#D7EDE0','#A9D9C0','#5DB991','#0A9466','#04452F'],bad:['#F5EAD6','#EDC690','#DE8C57','#B9472F','#6B1E14'],neg:['#F1BDAE','#A8261C'],pos:['#D5EDDF','#04452F'],
+    defl:'#C9D5DF',na:'#DCD7CA',land:'#E4E0D5',host:'#D3CDBD',border:'#FBF9F3',bub:'#0A9466'},
+  dark:{seq:['#21372D','#1A5841','#0A9466','#3FBD8E','#B0EBD2'],bad:['#3A2F22','#6E4626','#A95B33','#DC7D58','#F7BBA2'],neg:['#5C2B25','#F07167'],pos:['#1E4334','#8BE4BD'],
+    defl:'#33414E',na:'#36342C',land:'#2C2A24',host:'#3D3A31',border:'#1B1A15',bub:'#3FBD8E'}};
+var WCUR=(function(){var m={},s='USD:USA ECU SLV PAN TLS FSM MHL PLW PRI GUM ASM VIR VGB TCA BES|EUR:AUT BEL BGR HRV CYP EST FIN FRA DEU GRC IRL ITA LVA LTU LUX MLT NLD PRT SVK SVN ESP AND MCO SMR VAT MNE GLP MTQ REU GUF MYT SPM BLM MAF ALA|'+
+  'XOF:BEN BFA CIV GNB MLI NER SEN TGO|XAF:CMR CAF TCD COG GNQ GAB|XCD:ATG DMA GRD KNA LCA VCT AIA MSR|GBP:GBR JEY GGY IMN|AUD:AUS KIR NRU TUV NFK|NZD:NZL COK NIU PCN|XPF:NCL PYF WLF|DKK:DNK FRO GRL|CHF:CHE LIE|ANG:CUW SXM|ILS:ISR PSE|MAD:MAR ESH|'+
+  'CAD:CAN|MXN:MEX|BRL:BRA|ARS:ARG|CLP:CHL|COP:COL|PEN:PER|VES:VEN|BOB:BOL|PYG:PRY|UYU:URY|GYD:GUY|SRD:SUR|CRC:CRI|NIO:NIC|HNL:HND|GTQ:GTM|BZD:BLZ|CUP:CUB|DOP:DOM|HTG:HTI|JMD:JAM|TTD:TTO|BSD:BHS|BBD:BRB|AWG:ABW|KYD:CYM|BMD:BMU|FKP:FLK|SHP:SHN|'+
+  'CNY:CHN|HKD:HKG|MOP:MAC|TWD:TWN|JPY:JPN|KRW:KOR|KPW:PRK|MNT:MNG|INR:IND|PKR:PAK|BDT:BGD|LKR:LKA|NPR:NPL|BTN:BTN|MVR:MDV|AFN:AFG|IRR:IRN|IQD:IRQ|SYP:SYR|LBP:LBN|JOD:JOR|SAR:SAU|AED:ARE|QAR:QAT|KWD:KWT|BHD:BHR|OMR:OMN|YER:YEM|TRY:TUR|'+
+  'RUB:RUS|BYN:BLR|UAH:UKR|MDL:MDA|GEL:GEO|AMD:ARM|AZN:AZE|KZT:KAZ|UZS:UZB|TMT:TKM|KGS:KGZ|TJS:TJK|PLN:POL|CZK:CZE|HUF:HUN|RON:ROU|RSD:SRB|BAM:BIH|MKD:MKD|ALL:ALB|NOK:NOR|SEK:SWE|ISK:ISL|'+
+  'THB:THA|VND:VNM|LAK:LAO|KHR:KHM|MMK:MMR|MYR:MYS|SGD:SGP|BND:BRN|IDR:IDN|PHP:PHL|PGK:PNG|FJD:FJI|SBD:SLB|VUV:VUT|WST:WSM|TOP:TON|'+
+  'EGP:EGY|LYD:LBY|TND:TUN|DZD:DZA|SDG:SDN|SSP:SSD|ETB:ETH|ERN:ERI|DJF:DJI|SOS:SOM|KES:KEN|UGX:UGA|TZS:TZA|RWF:RWA|BIF:BDI|CDF:COD|AOA:AGO|ZMW:ZMB|MWK:MWI|MZN:MOZ|ZWG:ZWE|BWP:BWA|NAD:NAM|ZAR:ZAF|LSL:LSO|SZL:SWZ|MGA:MDG|MUR:MUS|SCR:SYC|KMF:COM|'+
+  'NGN:NGA|GHS:GHA|LRD:LBR|SLE:SLE|GNF:GIN|GMD:GMB|MRU:MRT|CVE:CPV|STN:STP';
+  s.split('|').forEach(function(p){var a=p.split(':');a[1].split(' ').forEach(function(i){m[i]=a[0]})});return m})();
+var WM={load:null,geo:null,data:null,reg:{},feat:[],byId:{},names:{},svg:null,g:null,zoom:null,proj:null,path:null,w:0,h:0,k:1,play:null,act:false,tap:null,rk:{},bub:[],hint:null};
+var WS=(function(){var s={};try{s=JSON.parse(store('world:st')||'{}')||{}}catch(e){}
+  return {layer:s.layer||'countries',ind:WI[s.ind]?s.ind:'NGDPD',year:+s.year||0,bm:s.bm||'gdp',desc:s.desc!==false,sel:null}})();
+function wSave(){store('world:st',JSON.stringify({layer:WS.layer,ind:WS.ind,year:WS.year,bm:WS.bm,desc:WS.desc}))}
+function wDark(){var t=root.getAttribute('data-theme');return t==='dark'||(!t&&!!window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)}
+function wR(){return WRAMP[wDark()?'dark':'light']}
+function wScript(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.async=true;s.onload=ok;s.onerror=function(){s.parentNode&&s.parentNode.removeChild(s);no(new Error(src))};document.head.appendChild(s)})}
+function wGet(u,opt){return fetch(u,opt||{}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
+function wLoad(){
+  if(WM.load)return WM.load;
+  var libs=Promise.all([window.d3?0:wScript('vendor/d3.min.js'),window.topojson?0:wScript('vendor/topojson-client.min.js')]);
+  var dat=wGet('world.json',{cache:'no-cache'}).catch(function(){return null});
+  var regs=Promise.all(WLAY.slice(1).map(function(l){return wGet('world/regions/'+l[0]+'.json').then(function(j){
+    var it=(j&&j.items||[]).filter(function(x){return x&&isFinite(x.lat)&&isFinite(x.lon)&&x.gdp>0&&x.name});if(it.length){j.items=it;WM.reg[l[0]]=j}}).catch(function(){})}));
+  WM.load=Promise.all([libs,wGet('world/countries.json'),dat,regs]).then(function(r){WM.geo=r[1];WM.data=wCheck(r[2]);wPrep()}).catch(function(e){WM.load=null;throw e});
+  return WM.load;
+}
+function wCheck(j){if(!j||!j.years||!j.years.length||!j.data||!j.ind)return null;return j}
+function wPrep(){
+  WM.feat=topojson.feature(WM.geo,WM.geo.objects.countries).features;
+  WM.feat.forEach(function(f){var p=f.properties||{};f.iso=p.iso3||'';f.nm=p.name||'';if(f.iso){WM.byId[f.iso]=f;WM.names[f.iso]=f.nm}});
+  var d=WM.data;
+  if(d){WM.Y=d.years;WM.y0=d.years[0];WM.y1=d.years[d.years.length-1];WM.la=Math.min(d.last_actual||WM.y1,WM.y1);
+    if(!(WS.year>=WM.y0&&WS.year<=WM.y1))WS.year=WM.la;
+    WORD=WORD.filter(function(k){return d.ind[k]});if(!WI[WS.ind]||WORD.indexOf(WS.ind)<0)WS.ind=WORD[0]||'NGDPD'}
+  if(WS.layer!=='countries'&&!WM.reg[WS.layer])WS.layer='countries';
+}
+function wv(id,code,yi){var r=WM.data&&WM.data.data[id];if(!r||!r[code])return null;var v=r[code][yi];return v==null?null:v}
+function wyi(){return WS.year-WM.y0}
+function wRank(code,yi){   // [[iso, значение], …] по убыванию — только страны, которые есть на карте
+  var k=code+'|'+yi;if(WM.rk[k])return WM.rk[k];
+  var a=[];Object.keys(WM.data.data).forEach(function(id){if(!WM.names[id])return;var v=wv(id,code,yi);if(v!=null)a.push([id,v])});
+  a.sort(function(x,y){return y[1]-x[1]});var pos={};a.forEach(function(x,i){pos[x[0]]=i+1});a.pos=pos;return WM.rk[k]=a;
+}
+function wAgg(code,yi){var a=WM.data&&WM.data.agg&&WM.data.agg.WORLD;if(a&&a[code]&&a[code][yi]!=null)return a[code][yi];
+  if(code==='NGDPD'||code==='PPPGDP'||code==='LP'){var s=0,n=0;wRank(code,yi).forEach(function(x){s+=x[1];n++});return n?s:null}return null}
+function wfmt(code,v,sh){
+  if(v==null||isNaN(v))return '—';var a=Math.abs(v);
+  if(code==='NGDPD'||code==='PPPGDP'){var u=code==='NGDPD'?' $':' межд. $';return a>=1000?nf(v/1000,a>=10000?1:2)+' трлн'+u:nf(v,a>=100?0:a>=10?1:2)+' млрд'+u}
+  if(code==='NGDPDPC')return nf(v,0)+' $';
+  if(code==='PPPPC')return nf(v,0)+' межд. $';
+  if(code==='LP')return a>=1000?nf(v/1000,2)+' млрд чел.':a>=1?nf(v,a>=100?0:1)+' млн чел.':nf(v*1000,0)+' тыс. чел.';
+  if(code==='NGDP_RPCH'||code==='BCA_NGDPD')return (v>0?'+':v<0?'−':'')+nf(a,1)+'%'+(code==='BCA_NGDPD'&&!sh?' ВВП':'');
+  if(code==='GGXWDG_NGDP')return nf(v,a>=100?0:1)+'%'+(sh?'':' ВВП');
+  return (v<0?'−':'')+nf(a,1)+'%';
+}
+function wthr(x){var a=Math.abs(x);return (x<0?'−':'')+(a>=1000?nf(a,0):String(a).replace('.',','))}
+function wColors(code){
+  var d=WI[code],th=d[2],n=th.length+1,R=wR(),c=[],i;
+  if(d[1]==='div'){var z=th.indexOf(0),nn=z+1,np=n-nn,fn=d3.interpolateLab(R.neg[0],R.neg[1]),fp=d3.interpolateLab(R.pos[0],R.pos[1]);
+    for(i=0;i<nn;i++)c.push(fn(nn>1?(nn-1-i)/(nn-1):1));for(i=0;i<np;i++)c.push(fp(np>1?i/(np-1):1));return c}
+  var f=d3.interpolateRgbBasis(R[d[1]]),st=0;if(d[1]==='bad'&&th[0]===0){c.push(R.defl);st=1}
+  for(i=st;i<n;i++)c.push(f(n-st>1?(i-st)/(n-st-1):1));return c;
+}
+function wBin(th,v){var i=0;while(i<th.length&&v>=th[i])i++;return i}
+function wBubTh(){   // пороги цвета для пузырьков: на душу — квантили слоя (округлённые), рост — как у стран
+  var L=WM.reg[WS.layer];if(!L)return [];
+  if(WS.bm==='gr')return WI.NGDP_RPCH[2];
+  var v=L.items.map(function(x){return x.gdp_pc}).filter(function(x){return x>0}).sort(function(a,b){return a-b});if(v.length<4)return [];
+  var t=[];for(var i=1;i<6;i++){var q=d3.quantileSorted(v,i/6),p=Math.pow(10,Math.floor(Math.log10(q))-1),r=Math.round(q/p)*p;if(!t.length||r>t[t.length-1])t.push(+r.toPrecision(2))}return t;
+}
+function wBubColors(th){if(WS.bm==='gr')return wColors('NGDP_RPCH');var f=d3.interpolateRgbBasis(wR().seq.slice(1)),n=th.length+1,c=[];for(var i=0;i<n;i++)c.push(f(n>1?i/(n-1):1));return c}
+function wBubVal(x){return WS.bm==='gr'?x.growth:x.gdp_pc}
+function wfmtB(x,k,L){
+  L=L||WM.reg[WS.layer]||{};var v=x[k];if(v==null||isNaN(v))return '—';
+  if(k==='gdp')return nf(v,v>=1000?0:v>=10?1:2)+' '+(L.unit||'');
+  if(k==='gdp_pc')return nf(v,v>=100?0:1)+' '+(L.unit_pc||'');
+  if(k==='pop')return v>=1?nf(v,v>=10?1:2)+' млн чел.':nf(v*1000,0)+' тыс. чел.';
+  if(k==='growth')return (v>0?'+':v<0?'−':'')+nf(Math.abs(v),1)+'%';
+  return esc(v);
+}
+
+function renderWorld(){
+  view.innerHTML=wsub('map')+'<section class="wm" id="wm">'+
+    '<div class="wh"><h1>Экономика мира</h1><p class="wlead" id="w-lead">Загружаю карту…</p></div>'+
+    '<div class="wctl"><nav class="sub" id="w-lay" hidden></nav><nav class="sub" id="w-ind" hidden></nav></div>'+
+    '<div class="wgrid"><div class="wcol">'+
+      '<div class="wmap" id="w-map"><svg id="w-svg" role="img" aria-label="Карта мира"></svg>'+
+        '<div class="wzm" role="group" aria-label="Масштаб карты"><button type="button" data-wz="1" aria-label="Приблизить">+</button><button type="button" data-wz="-1" aria-label="Отдалить">−</button><button type="button" data-wz="0" aria-label="Весь мир">⌂</button></div>'+
+        '<div class="wtip" id="w-tip" hidden></div><div class="whint" id="w-hint" hidden>Ctrl + колесо — масштаб (или нажми на карту)</div><div class="wload" id="w-load"><span class="empty skel"></span></div></div>'+
+      '<div class="wbar" id="w-bar" hidden><button type="button" class="wplay" id="w-play" aria-label="Проиграть по годам"></button>'+
+        '<div class="wyr"><input type="range" id="w-year" aria-label="Год"><div class="wtk" id="w-tk"></div></div><div class="wyl" id="w-yl"></div></div>'+
+      '<div class="wleg" id="w-leg"></div><p class="note wsrc" id="w-src"></p>'+
+    '</div><aside class="wcard" id="w-card" aria-live="polite"></aside></div>'+
+    '<div class="sect wtw" id="w-tw" hidden><div class="wth"><h2 id="w-th"></h2><button type="button" class="chip sm" id="w-sort"></button></div>'+
+      '<div class="wqw"><input type="search" class="wq" id="w-q" placeholder="Найти страну" autocomplete="off" aria-label="Найти на карте"><div class="wsr" id="w-sr"></div></div><ol class="wtop" id="w-top"></ol></div>'+
+    '</section>';
+  if(WM.geo){wBuild();return}
+  wLoad().then(function(){if(state==='world'&&$('#wm'))wBuild()}).catch(function(){var l=$('#w-load');if(l)l.innerHTML='<p class="empty">Не удалось загрузить карту. <button type="button" class="chip sm" data-wretry>Повторить</button></p>';var e=$('#w-lead');if(e)e.textContent='Нет связи.'});
+}
+function wBuild(){
+  var l=$('#w-load');if(l)l.remove();
+  var lay=$('#w-lay'),av=WLAY.filter(function(x){return x[0]==='countries'||WM.reg[x[0]]});
+  lay.hidden=av.length<2;lay.innerHTML=av.map(function(x){return '<button type="button" class="chip'+(WS.layer===x[0]?' on':'')+'" data-wl="'+x[0]+'">'+esc(x[1])+'</button>'}).join('');
+  wMap();wCtl();wPaint(true);wCard();
+}
+function wCtl(){   // второй ряд переключателей + год
+  var ind=$('#w-ind'),bar=$('#w-bar'),cn=WS.layer==='countries';
+  if(cn){ind.hidden=!WM.data;ind.innerHTML=WORD.map(function(k){return '<button type="button" class="chip'+(WS.ind===k?' on':'')+'" data-wi="'+k+'">'+esc(WI[k][0])+'</button>'}).join('')}
+  else{var L=WM.reg[WS.layer],hasG=L.items.some(function(x){return x.growth!=null}),hasP=L.items.some(function(x){return x.gdp_pc>0});
+    if(WS.bm==='gr'&&!hasG||WS.bm==='pc'&&!hasP)WS.bm='gdp';
+    var b=[['gdp',(L.metric||'ВВП')+': размер']].concat(hasP?[['pc','на душу']]:[]).concat(hasG?[['gr','рост']]:[]);
+    ind.hidden=false;ind.innerHTML=b.map(function(x){return '<button type="button" class="chip'+(WS.bm===x[0]?' on':'')+'" data-wb="'+x[0]+'">'+esc(x[1])+'</button>'}).join('')}
+  bar.hidden=!(cn&&WM.data);
+  if(cn&&WM.data){var y=$('#w-year');y.min=WM.y0;y.max=WM.y1;y.step=1;y.value=WS.year;
+    var f=(WM.la-WM.y0+0.5)/(WM.y1-WM.y0)*100;bar.style.setProperty('--f',Math.min(100,f)+'%');
+    $('#w-tk').innerHTML='<span>'+WM.y0+'</span>'+(WM.la<WM.y1?'<span class="wfc">прогноз МВФ '+(WM.la+1)+'–'+WM.y1+'</span>':'<span>'+WM.y1+'</span>')}
+  wPlayBtn();
+}
+function wMap(){
+  var box=$('#w-map');if(!box)return;
+  var w=Math.max(280,Math.round(box.clientWidth||360)),fc={type:'FeatureCollection',features:WM.feat.filter(function(f){return f.geometry&&f.geometry.type!=='Point'})};
+  var proj=d3.geoNaturalEarth1().rotate([-10,0]).fitWidth(w-8,fc),path=d3.geoPath(proj),b=path.bounds(fc);
+  proj.translate([proj.translate()[0]+4,proj.translate()[1]-b[0][1]+4]);var h=Math.ceil(b[1][1]-b[0][1])+8;
+  WM.w=w;WM.h=h;WM.proj=proj;WM.path=path;WM.k=1;
+  var svg=d3.select('#w-svg');svg.selectAll('*').remove();svg.attr('viewBox','0 0 '+w+' '+h).attr('width',w).attr('height',h);
+  var g=svg.append('g');WM.svg=svg;WM.g=g;
+  var poly=WM.feat.filter(function(f){return f.geometry&&f.geometry.type!=='Point'}),pts=WM.feat.filter(function(f){return f.geometry&&f.geometry.type==='Point'});
+  g.append('g').attr('class','wcs').selectAll('path').data(poly).join('path').attr('class','wc').attr('d',path);
+  g.append('g').attr('class','wcs wps').selectAll('circle').data(pts).join('circle').attr('class','wc wpt')
+    .attr('cx',function(d){return proj(d.geometry.coordinates)[0]}).attr('cy',function(d){return proj(d.geometry.coordinates)[1]}).attr('r',2.6);
+  g.append('g').attr('class','wbs');
+  var zoom=d3.zoom().scaleExtent([1,14]).extent([[0,0],[w,h]]).translateExtent([[0,0],[w,h]]).filter(function(e){
+      if(e.type==='wheel')return WM.act||e.ctrlKey||e.metaKey;
+      if(e.type==='touchstart')return e.touches.length>1||WM.k>1.01;   // одним пальцем при обычном масштабе листается страница
+      return !e.button;})
+    .on('zoom',function(e){WM.k=e.transform.k;g.attr('transform',e.transform);wRadii();box.classList.toggle('zin',WM.k>1.01);wTipHide()});
+  svg.call(zoom);WM.zoom=zoom;
+  svg.on('wheel.hint',function(e){if(WM.act||e.ctrlKey||e.metaKey)return;var hn=$('#w-hint');if(!hn)return;hn.hidden=false;clearTimeout(WM.hint);WM.hint=setTimeout(function(){hn.hidden=true},1400)});
+  box.onpointerdown=function(){WM.act=true};box.onmouseleave=function(){WM.act=false;wTipHide();wHover(null)};
+  svg.on('pointermove',function(e){if(e.pointerType==='touch')return;var t=e.target.closest&&e.target.closest('.wc,.wb');wHover(t);if(t)wTipShow(t,e);else wTipHide()});
+  svg.on('click',function(e){var t=e.target.closest&&e.target.closest('.wc,.wb');if(!t){wTipHide();WM.tap=null;return}
+    var id=wTid(t);if(!id)return;
+    if(!canHover&&WM.tap!==id){WM.tap=id;wHover(t);wTipShow(t,e,true);return}   // телефон: первый тап — подсказка, второй — карточка
+    WM.tap=null;wTipHide();wSelect(id)});
+}
+function wTid(t){var d=d3.select(t).datum();if(!d)return null;return t.classList.contains('wb')?'b:'+d.i:(d.iso||null)}
+function wRadii(){if(!WM.g)return;var k=WM.k;WM.g.selectAll('.wpt').attr('r',2.6/Math.pow(k,.7));WM.g.selectAll('.wb').attr('r',function(d){return d.r/Math.sqrt(k)})}
+function wHover(t){if(WM.hv&&WM.hv!==t)WM.hv.classList.remove('hv');WM.hv=t;if(t){t.classList.add('hv');if(!t.classList.contains('wb')&&!t.classList.contains('sel'))t.parentNode.appendChild(t);wRaiseSel()}}
+function wRaiseSel(){if(!WM.g)return;WM.g.selectAll('.wc.sel').each(function(){this.parentNode.appendChild(this)})}
+function wPaint(first){   // перекраска: меняет только fill/радиусы
+  if(!WM.g)return;var R=wR(),cn=WS.layer==='countries';
+  $('#w-map').classList.toggle('wbm',!cn);
+  if(cn){
+    var d=WM.data,yi=d?wyi():0,cols=d?wColors(WS.ind):[],th=WI[WS.ind][2];
+    WM.g.selectAll('.wc').style('fill',function(f){if(!d)return R.land;var v=wv(f.iso,WS.ind,yi);return v==null?R.na:cols[wBin(th,v)]}).style('stroke',R.border);
+    WM.g.select('.wbs').selectAll('circle').remove();WM.bub=[];
+  }else{
+    var host={'ru-regions':'RUS','us-states':'USA','cn-provinces':'CHN'}[WS.layer];
+    WM.g.selectAll('.wc').style('fill',function(f){return f.iso&&f.iso===host?R.host:R.land}).style('stroke',R.border);
+    var L=WM.reg[WS.layer],mx=d3.max(L.items,function(x){return x.gdp}),rm=Math.max(9,Math.min(34,WM.w*.032)),bth=wBubTh(),bc=wBubColors(bth);
+    WM.bub=L.items.map(function(x,i){var p=WM.proj([x.lon,x.lat]);return {i:i,x:x,px:p[0],py:p[1],r:Math.max(2.2,rm*Math.sqrt(x.gdp/mx))}}).sort(function(a,b){return b.r-a.r});
+    WM.g.select('.wbs').selectAll('circle').data(WM.bub,function(b){return WS.layer+b.i}).join('circle').attr('class','wb').attr('cx',function(b){return b.px}).attr('cy',function(b){return b.py})
+      .attr('r',function(b){return b.r/Math.sqrt(WM.k)}).style('fill',function(b){var v=wBubVal(b.x);return v==null||!bth.length&&WS.bm!=='gr'?R.bub:bc[wBin(bth,v)]});
+    if(first===true||first==='fit')wFitBub();
+  }
+  wSelMark();wLegend();wLead();wTop();wYearUI();
+}
+function wFitBub(){var a=WM.bub;if(!a.length||!WM.zoom)return;var x0=d3.min(a,function(b){return b.px-b.r}),x1=d3.max(a,function(b){return b.px+b.r}),y0=d3.min(a,function(b){return b.py-b.r}),y1=d3.max(a,function(b){return b.py+b.r});
+  wZoomBox(x0,y0,x1,y1,.86,7)}
+function wZoomBox(x0,y0,x1,y1,fill,km){var w=WM.w,h=WM.h,k=Math.max(1,Math.min(km||8,fill/Math.max((x1-x0)/w,(y1-y0)/h,1e-3)));
+  WM.svg.transition().duration(650).call(WM.zoom.transform,d3.zoomIdentity.translate(w/2,h/2).scale(k).translate(-(x0+x1)/2,-(y0+y1)/2))}
+function wZoomTo(id){if(id.indexOf('b:')===0){var b=WM.bub.filter(function(x){return 'b:'+x.i===id})[0];if(b)wZoomBox(b.px-40,b.py-25,b.px+40,b.py+25,.8,6);return}
+  var f=WM.byId[id];if(!f)return;var bb=WM.path.bounds(f);wZoomBox(bb[0][0],bb[0][1],bb[1][0],bb[1][1],.6,8)}
+function wSelMark(){if(!WM.g)return;WM.g.selectAll('.wc,.wb').classed('sel',function(d){return !!WS.sel&&(d.iso?d.iso===WS.sel:('b:'+d.i)===WS.sel)});wRaiseSel()}
+function wLegend(){
+  var el=$('#w-leg');if(!el)return;var cn=WS.layer==='countries',th,cols,title;
+  if(cn){if(!WM.data){el.innerHTML='';return}th=WI[WS.ind][2];cols=wColors(WS.ind);title=WI[WS.ind][0]+', '+WUNIT[WS.ind]}
+  else{var L=WM.reg[WS.layer];th=wBubTh();cols=wBubColors(th);title='Цвет — '+(WS.bm==='gr'?'реальный рост, %':(L.metric||'ВВП')+' на душу, '+(L.unit_pc||''))+' · размер кружка — '+(L.metric||'ВВП')+', '+(L.unit||'');if(!th.length&&WS.bm!=='gr'){el.innerHTML='<span class="wlt">'+esc(title)+'</span>';return}}
+  var w=(el.clientWidth||340)-90,thin=w/cols.length<40;
+  el.innerHTML='<span class="wlt">'+esc(title)+'</span><div class="wsw">'+cols.map(function(c,i){return '<span data-wbin="'+i+'" style="background:'+c+'">'+(i?'<em'+(thin&&i%2===0?' class="o"':'')+'>'+wthr(th[i-1])+'</em>':'')+'</span>'}).join('')+'</div>'+
+    (cn?'<span class="wna"><i></i>нет данных</span>':'');
+}
+function wBinHL(i){var mp=$('#w-map');if(!WM.g||!mp)return;var on=i!=null;mp.classList.toggle('wdim',on);if(!on){WM.g.selectAll('.lg').classed('lg',false);return}
+  var cn=WS.layer==='countries',th=cn?WI[WS.ind][2]:wBubTh(),yi=WM.data?wyi():0;
+  if(cn)WM.g.selectAll('.wc').classed('lg',function(f){var v=wv(f.iso,WS.ind,yi);return v!=null&&wBin(th,v)===i});
+  else WM.g.selectAll('.wb').classed('lg',function(b){var v=wBubVal(b.x);return v!=null&&wBin(th,v)===i});
+}
+function wLead(){
+  var el=$('#w-lead'),s=$('#w-src');if(!el)return;var d=WM.data;
+  if(WS.layer!=='countries'){var L=WM.reg[WS.layer],tot=d3.sum(L.items,function(x){return x.gdp}),pop=d3.sum(L.items,function(x){return x.pop||0});
+    el.innerHTML=esc(L.title||'')+(L.year?' · '+L.year+' год':'')+': '+(L.metric||'ВВП')+' всего <b>'+wfmtB({gdp:tot},'gdp',L)+'</b>'+(pop?' · население <b>'+wfmtB({pop:pop},'pop')+'</b>':'')+' · '+plural(L.items.length,WS.layer==='cities'?['город','города','городов']:['регион','региона','регионов']);
+    s.innerHTML='Источник: '+(L.url?'<a href="'+esc(L.url)+'" target="_blank" rel="noopener">'+esc(L.source||L.url)+'</a>':esc(L.source||'—'))+(L.calc||L.note?' · '+esc(L.calc||L.note):'');return}
+  if(!d){el.textContent='Данные появятся после первого обновления (раз в сутки). Пока можно смотреть карту и курсы валют.';s.textContent='Источник: МВФ, World Economic Outlook.';return}
+  var yi=wyi(),f=WS.year>WM.la,g=wAgg('NGDPD',yi),gr=wAgg('NGDP_RPCH',yi),inf=wAgg('PCPIPCH',yi),lp=wAgg('LP',yi);
+  el.innerHTML='Мир в '+WS.year+(f?' (прогноз)':'')+': ВВП <b>'+wfmt('NGDPD',g)+'</b>'+(gr!=null?' · рост <b>'+wfmt('NGDP_RPCH',gr)+'</b>':'')+(inf!=null?' · инфляция <b>'+wfmt('PCPIPCH',inf)+'</b>':'')+(lp!=null?' · население <b>'+wfmt('LP',lp)+'</b>':'');
+  var up=d.updated?new Date(d.updated):null;
+  s.innerHTML='Источник: '+esc(d.source||'МВФ, World Economic Outlook')+(d.weo?' ('+esc(d.weo)+')':'')+'; обновлено '+(up&&!isNaN(up)?up.toLocaleDateString('ru-RU'):'—')+'. Годы после '+WM.la+' — прогноз МВФ.';
+}
+function wTopRows(){
+  if(WS.layer==='countries'){if(!WM.data)return [];var a=wRank(WS.ind,wyi());if(!WS.desc)a=a.slice().reverse();return a.map(function(x){return {id:x[0],n:WM.names[x[0]],v:x[1],t:wfmt(WS.ind,x[1],1)}})}
+  var L=WM.reg[WS.layer],k=WS.bm==='gr'?'growth':WS.bm==='pc'?'gdp_pc':'gdp';
+  var b=L.items.map(function(x,i){return {id:'b:'+i,n:x.name+(x.country&&WS.layer==='cities'?' · '+x.country:''),v:x[k],t:wfmtB(x,k,L)}}).filter(function(x){return x.v!=null});
+  b.sort(function(p,q){return WS.desc?q.v-p.v:p.v-q.v});return b;
+}
+function wTop(){
+  var tw=$('#w-tw');if(!tw)return;var rows=wTopRows();tw.hidden=!rows.length&&WS.layer==='countries'&&!WM.data;
+  var cn=WS.layer==='countries',L=WM.reg[WS.layer];
+  $('#w-th').textContent='Топ-15: '+(cn?WI[WS.ind][0]+', '+WS.year:(L.title||'')+' · '+(WS.bm==='gr'?'рост':WS.bm==='pc'?'на душу':(L.metric||'ВВП')));
+  $('#w-sort').textContent=WS.desc?'сначала больше ↓':'сначала меньше ↑';
+  $('#w-q').placeholder=cn?'Найти страну':WS.layer==='cities'?'Найти город':'Найти регион';
+  var top=rows.slice(0,15),mx=d3.max(top,function(x){return Math.abs(x.v)})||1,R=wR();
+  var cols=cn&&WM.data?wColors(WS.ind):wBubColors(wBubTh()),th=cn?WI[WS.ind][2]:wBubTh();
+  var pos=WS.desc?0:rows.length+1;
+  $('#w-top').innerHTML=top.map(function(x,i){var c=cn||WS.bm!=='gdp'?cols[wBin(th,x.v)]:R.bub;
+    return '<li><button type="button" data-wsel="'+esc(x.id)+'"'+(x.id===WS.sel?' class="on"':'')+'><span class="r">'+(WS.desc?i+1:rows.length-i)+'</span><span class="nm">'+esc(x.n)+'</span><span class="v">'+x.t+'</span><span class="br"><i style="width:'+Math.max(1.5,Math.abs(x.v)/mx*100).toFixed(1)+'%;background:'+c+'"></i></span></button></li>'}).join('');
+  wSearch();
+}
+function wSearch(){
+  var q=$('#w-q'),o=$('#w-sr');if(!q||!o)return;var s=q.value.trim().toLowerCase();if(!s){o.innerHTML='';return}
+  var a=[];
+  if(WS.layer==='countries')WM.feat.forEach(function(f){if(f.iso&&f.nm.toLowerCase().indexOf(s)>=0)a.push({id:f.iso,n:f.nm,p:f.nm.toLowerCase().indexOf(s)})});
+  else WM.reg[WS.layer].items.forEach(function(x,i){var n=x.name.toLowerCase();if(n.indexOf(s)>=0)a.push({id:'b:'+i,n:x.name,p:n.indexOf(s)})});
+  a.sort(function(x,y){return x.p-y.p||x.n.localeCompare(y.n,'ru')});
+  o.innerHTML=a.length?a.slice(0,8).map(function(x){return '<button type="button" class="chip sm" data-wsel="'+esc(x.id)+'" data-wzoom="1">'+esc(x.n)+'</button>'}).join(''):'<span class="note">Не нашёл «'+esc(q.value.trim())+'»</span>';
+}
+function wYearUI(){
+  var yl=$('#w-yl'),y=$('#w-year'),bar=$('#w-bar');if(!yl||!WM.data||WS.layer!=='countries')return;
+  var f=WS.year>WM.la;y.value=WS.year;bar.style.setProperty('--p',((WS.year-WM.y0)/(WM.y1-WM.y0)*100)+'%');
+  yl.innerHTML='<b>'+WS.year+'</b><span class="'+(f?'fc':'')+'">'+(f?'прогноз МВФ':'факт')+'</span>';
+}
+function wPlayBtn(){var b=$('#w-play');if(b)b.innerHTML=WM.play?'<svg viewBox="0 0 16 16"><rect x="3" y="2.5" width="3.4" height="11" rx="1"/><rect x="9.6" y="2.5" width="3.4" height="11" rx="1"/></svg>':'<svg viewBox="0 0 16 16"><path d="M4 2.6v10.8a.8.8 0 0 0 1.2.7l8.6-5.4a.8.8 0 0 0 0-1.4L5.2 1.9A.8.8 0 0 0 4 2.6z"/></svg>'}
+function wStop(){if(WM.play){clearInterval(WM.play);WM.play=null;wPlayBtn()}}
+function wYear(y){WS.year=Math.max(WM.y0,Math.min(WM.y1,y));wSave();wPaint();if(WS.sel)wCard();if(WM.tipEl&&!$('#w-tip').hidden)wTipShow(WM.tipEl)}
+function wPlay(){if(WM.play){wStop();return}if(!WM.data)return;if(WS.year>=WM.y1)wYear(WM.y0);
+  WM.play=setInterval(function(){if(state!=='world'||!$('#w-map')){wStop();return}if(WS.year>=WM.y1){wStop();return}wYear(WS.year+1)},650);wPlayBtn()}
+
+/* подсказка над картой */
+function wTipHTML(id){
+  if(id.indexOf('b:')===0){var L=WM.reg[WS.layer],x=L.items[+id.slice(2)];if(!x)return '';
+    return '<b>'+esc(x.name)+'</b>'+(x.country&&WS.layer==='cities'?'<small>'+esc(x.country)+'</small>':'')+'<span>'+(L.metric||'ВВП')+': <strong>'+wfmtB(x,'gdp',L)+'</strong></span>'+(x.gdp_pc!=null?'<span>на душу: '+wfmtB(x,'gdp_pc',L)+'</span>':'')+(x.growth!=null?'<span>рост: '+wfmtB(x,'growth',L)+'</span>':'')}
+  var n=WM.names[id]||id;if(!WM.data)return '<b>'+esc(n)+'</b><span class="mut">нет данных</span>';
+  var yi=wyi(),v=wv(id,WS.ind,yi),r=wRank(WS.ind,yi);
+  return '<b>'+esc(n)+'</b><span>'+esc(WI[WS.ind][0])+', '+WS.year+(WS.year>WM.la?' (прогноз)':'')+'</span><strong>'+(v==null?'нет данных':wfmt(WS.ind,v))+'</strong>'+(v!=null&&r.pos[id]?'<span class="mut">'+r.pos[id]+'-е место из '+r.length+'</span>':'');
+}
+function wTipShow(t,e,touch){
+  var tip=$('#w-tip'),box=$('#w-map');if(!tip||!box)return;var id=wTid(t);if(!id)return;WM.tipEl=t;
+  tip.innerHTML=wTipHTML(id)+(touch?'<button type="button" class="wmore" data-wsel="'+esc(id)+'">Подробнее →</button>':'');tip.hidden=false;
+  var r=box.getBoundingClientRect(),z=r.width/box.offsetWidth||1,x,y;
+  if(e&&e.clientX!=null){x=(e.clientX-r.left)/z;y=(e.clientY-r.top)/z}else{var tr=t.getBoundingClientRect();x=(tr.left+tr.width/2-r.left)/z;y=(tr.top+tr.height/2-r.top)/z}
+  var tw=tip.offsetWidth,th=tip.offsetHeight,bw=box.offsetWidth,bh=box.offsetHeight;
+  var L=x+14;if(L+tw>bw-6)L=x-tw-14;if(L<6)L=Math.max(6,Math.min(bw-tw-6,x-tw/2));
+  var T=y-th-12;if(T<6)T=Math.min(bh-th-6,y+16);if(T<6)T=6;
+  tip.style.left=L+'px';tip.style.top=T+'px';
+}
+function wTipHide(){var t=$('#w-tip');if(t)t.hidden=true;WM.tipEl=null}
+
+/* карточка страны / региона */
+function wSelect(id,zoomTo){WS.sel=id;wSelMark();wCard(true);wTop();if(zoomTo)wZoomTo(id)}
+function wDesk(){return !!window.matchMedia&&matchMedia('(min-width:1000px)').matches}
+function wClose(){WS.sel=null;wSelMark();wCard();wTop()}
+function wCard(open){
+  var el=$('#w-card');if(!el)return;
+  if(!WS.sel){el.classList.remove('open');el.innerHTML=wDesk()?wWorldCard():'';return}
+  el.innerHTML='<span class="wgrip" aria-hidden="true"></span>'+(WS.sel.indexOf('b:')===0?wBubCard(+WS.sel.slice(2)):wCountryCard(WS.sel));
+  if(!wDesk()){el.classList.add('open');if(open)el.scrollTop=0}
+  var fx=el.querySelector('[data-wfx]');if(fx)wFxFill(fx,fx.getAttribute('data-wfx'));
+}
+function wWorldCard(){
+  var d=WM.data;
+  if(WS.layer!=='countries'){var L=WM.reg[WS.layer];return '<p class="wck-e">'+esc(L.title||'')+'</p><h3>Выбери '+(WS.layer==='cities'?'город':'регион')+' на карте</h3><p class="wsm">Площадь кружка пропорциональна '+esc(L.metric||'ВВП')+', цвет — '+(WS.bm==='gr'?'реальному росту':'показателю на душу населения')+'. Список ниже — нажми на строку.</p>'+(L.year?'<p class="wsm">Данные за '+L.year+' год.</p>':'')}
+  if(!d)return '<p class="wck-e">Карта мира</p><h3>Нажми на страну</h3><p class="wsm">Данные МВФ появятся после первого обновления (раз в сутки). Курс валюты страны уже доступен в карточке.</p>';
+  var yi=wyi(),g=d.agg||{},nm=d.agg_names||{},rows=['WORLD','ADVEC','OEMDC','EURO','EU','DA','LAC','MECA','SSA','EME'].filter(function(k){return g[k]&&g[k].NGDP_RPCH});
+  var wg=wAgg('NGDPD',yi),wp=wAgg('PPPGDP',yi);
+  return '<p class="wck-e">Мир · '+WS.year+(WS.year>WM.la?' · прогноз МВФ':'')+'</p><h3>Нажми на страну</h3><p class="wsm">Карточка покажет все показатели, место в мире, историю с 2000 года, прогноз МВФ и курс валюты.</p>'+
+    (rows.length?'<table class="wkv"><thead><tr><td></td><td class="v">ВВП</td><td class="v">рост</td><td class="v">инфл.</td></tr></thead>'+rows.map(function(k){var a=g[k];
+      return '<tr><td>'+esc(nm[k]||k)+'</td><td class="v">'+(a.NGDPD&&a.NGDPD[yi]!=null?wfmt('NGDPD',a.NGDPD[yi]).replace(' $',''):'—')+'</td><td class="v">'+wfmt('NGDP_RPCH',a.NGDP_RPCH[yi],1)+'</td><td class="v">'+(a.PCPIPCH?wfmt('PCPIPCH',a.PCPIPCH[yi]):'—')+'</td></tr>'}).join('')+'</table>':
+      '<table class="wkv"><tr><td>ВВП мира</td><td class="v">'+wfmt('NGDPD',wg)+'</td></tr><tr><td>ВВП мира (ППС)</td><td class="v">'+wfmt('PPPGDP',wp)+'</td></tr></table>')+
+    '<p class="wsm" style="margin-top:12px">Топ по выбранному показателю — под картой.</p>';
+}
+function wCountryCard(id){
+  var n=WM.names[id]||id,d=WM.data,h='<div class="wck"><div><p class="wck-e">'+(d?WS.year+(WS.year>WM.la?' · прогноз МВФ':' · факт'):'Страна')+'</p><h3>'+esc(n)+'</h3></div><button type="button" class="wx" data-wclose aria-label="Закрыть">×</button></div>';
+  var r=d&&d.data[id],yi=d?wyi():0;
+  if(!r)h+='<p class="wsm">'+(d?'МВФ не публикует данные по этой территории.':'Данные МВФ появятся после первого обновления.')+'</p>';
+  else{
+    var g=wv(id,'NGDPD',yi),wg=wAgg('NGDPD',yi),pp=wv(id,'PPPGDP',yi),wp=wAgg('PPPGDP',yi),rk=wRank('NGDPD',yi).pos[id];
+    h+='<div class="wbig">'+wfmt('NGDPD',g)+'</div><p class="wsm">ВВП'+(rk?' · '+rk+'-е место в мире':'')+(g!=null&&wg?' · '+nf(g/wg*100,g/wg<.01?2:1)+'% мирового ВВП':'')+(pp!=null&&wp?' · по ППС '+nf(pp/wp*100,pp/wp<.01?2:1)+'%':'')+'</p>';
+    h+='<table class="wkv">'+WORD.map(function(k){var v=wv(id,k,yi),p=v!=null?wRank(k,yi):null;
+      return '<tr'+(k===WS.ind?' class="on"':'')+'><td>'+esc(WI[k][0])+'</td><td class="v">'+wfmt(k,v,1)+'</td><td class="r">'+(p&&p.pos[id]?p.pos[id]+'/'+p.length:'')+'</td></tr>'}).join('')+'</table>';
+    h+=wSpark(id);
+  }
+  var cur=WCUR[id];
+  if(cur)h+='<div class="wfx" data-wfx="'+cur+'"></div>';
+  h+='<p class="wsm wlinks"><a href="https://www.imf.org/external/datamapper/profile/'+esc(id)+'" target="_blank" rel="noopener">Профиль на сайте МВФ ↗</a></p>';
+  return h;
+}
+function wBubCard(i){
+  var L=WM.reg[WS.layer],x=L.items[i];if(!x)return '';
+  var tot=d3.sum(L.items,function(z){return z.gdp}),rk=L.items.filter(function(z){return z.gdp>x.gdp}).length+1;
+  var h='<div class="wck"><div><p class="wck-e">'+esc(L.title||'')+(L.year?' · '+L.year:'')+'</p><h3>'+esc(x.name)+'</h3>'+(x.country?'<p class="wsm" style="margin:2px 0 0">'+esc(x.country)+'</p>':'')+'</div><button type="button" class="wx" data-wclose aria-label="Закрыть">×</button></div>';
+  h+='<div class="wbig">'+wfmtB(x,'gdp',L)+'</div><p class="wsm">'+esc(L.metric||'ВВП')+' · '+rk+'-е место из '+L.items.length+' · '+nf(x.gdp/tot*100,x.gdp/tot<.01?2:1)+'% суммы</p>';
+  h+='<table class="wkv">'+[['gdp',L.metric||'ВВП'],['gdp_pc','На душу'],['pop','Население'],['growth','Реальный рост']].filter(function(k){return x[k[0]]!=null}).map(function(k){return '<tr><td>'+esc(k[1])+'</td><td class="v">'+wfmtB(x,k[0],L)+'</td></tr>'}).join('')+'</table>';
+  if(x.note)h+='<p class="wsm">'+esc(x.note)+'</p>';
+  return h+'<p class="wsm">Источник: '+esc(L.source||'—')+'</p>';
+}
+function wSpark(id){   // ВВП (линия) и реальный рост (столбики) 2000…последний год прогноза; прогноз — штрихом на тонированном фоне
+  var r=WM.data.data[id]||{},G=r.NGDPD||[],R=r.NGDP_RPCH||[],Y=WM.Y,n=Y.length;if(!G.some(function(v){return v!=null})&&!R.some(function(v){return v!=null}))return '';
+  var w=300,l=6,rr=6,X=function(i){return l+i*(w-l-rr)/(n-1)},la=WM.la-WM.y0,yi=wyi();
+  var gm=d3.max(G)||1,gT=18,gH=58,Yg=function(v){return gT+gH-v/gm*gH};
+  var am=Math.min(15,Math.max(3,d3.max(R,function(v){return v==null?0:Math.abs(v)})||3)),bT=gT+gH+20,bH=40,b0=bT+bH/2,Yb=function(v){return b0-Math.max(-am,Math.min(am,v))/am*bH/2};
+  var s='<svg class="wsp" viewBox="0 0 '+w+' '+(bT+bH+16)+'" data-wspk="1" role="img" aria-label="ВВП и рост по годам">';
+  if(la<n-1)s+='<rect class="fz" x="'+(X(la)+X(la+1))/2+'" y="'+(gT-4)+'" width="'+(w-rr-(X(la)+X(la+1))/2+2)+'" height="'+(bT+bH-gT+6)+'"/>';
+  s+='<text x="'+l+'" y="11">ВВП, '+(G[yi]!=null?wfmt('NGDPD',G[yi]):'млрд $')+'</text>';
+  if(la<n-1)s+='<text class="fzt" x="'+(w-rr)+'" y="11" text-anchor="end">прогноз МВФ</text>';
+  function seg(a,b){var p='',m=0;for(var i=a;i<=b;i++){if(G[i]==null){m=0;continue}p+=(m?'L':'M')+X(i).toFixed(1)+' '+Yg(G[i]).toFixed(1);m=1}return p}
+  s+='<path class="gl" d="M'+l+' '+(gT+gH)+'H'+(w-rr)+'"/><path class="ln" d="'+seg(0,Math.min(la,n-1))+'"/>'+(la<n-1?'<path class="ln fc" d="'+seg(la,n-1)+'"/>':'');
+  s+='<text x="'+l+'" y="'+(bT-6)+'">Рост ВВП'+(R[yi]!=null?', '+wfmt('NGDP_RPCH',R[yi]):'')+'</text><path class="gl" d="M'+l+' '+b0+'H'+(w-rr)+'"/>';
+  var bw=Math.max(1.5,(w-l-rr)/n*.62);
+  R.forEach(function(v,i){if(v==null)return;var y=Yb(v);s+='<rect class="'+(v<0?'bn':'bp')+(i>la?' fc':'')+'" x="'+(X(i)-bw/2).toFixed(1)+'" y="'+Math.min(y,b0).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(.8,Math.abs(y-b0)).toFixed(1)+'"/>'});
+  s+='<path class="cur" d="M'+X(yi).toFixed(1)+' '+(gT-2)+'V'+(bT+bH+2)+'"/>'+(G[yi]!=null?'<circle class="pt" cx="'+X(yi).toFixed(1)+'" cy="'+Yg(G[yi]).toFixed(1)+'" r="3.2"/>':'');
+  s+='<text x="'+l+'" y="'+(bT+bH+13)+'">'+Y[0]+'</text><text x="'+(w-rr)+'" y="'+(bT+bH+13)+'" text-anchor="end">'+Y[n-1]+'</text></svg>';
+  return '<div class="wspw">'+s+'<p class="wsm">Нажми на график, чтобы выбрать год.</p></div>';
+}
+
+/* курс валюты: open.er-api.com (кэш 1 час), запасной — курсы ЦБ из markets.json */
+var WFX=null;
+function wFx(){
+  if(WFX)return WFX;var c=null;try{c=JSON.parse(localStorage.getItem('fx:erapi')||'null')}catch(e){}
+  if(c&&c.r&&Date.now()-c.t<36e5)return WFX=Promise.resolve(c);
+  WFX=getJSON('https://open.er-api.com/v6/latest/USD',8000).then(function(j){if(!j||j.result!=='success'||!j.rates||!j.rates.RUB)throw 0;
+      var o={t:Date.now(),r:j.rates,d:(j.time_last_update_unix||0)*1000||Date.now(),src:'open.er-api.com'};try{localStorage.setItem('fx:erapi',JSON.stringify(o))}catch(e){}return o})
+    .catch(function(){if(c&&c.r)return c;return loadSnap().then(function(sn){var v=sn&&sn.fx&&sn.fx.Valute;if(!v||!v.USD)return null;
+      var usd=v.USD.Value/v.USD.Nominal,r={USD:1,RUB:usd};Object.keys(v).forEach(function(k){if(v[k].Value)r[k]=usd/(v[k].Value/v[k].Nominal)});return {t:Date.now(),r:r,d:Date.parse(sn.fx.Date)||Date.now(),src:'ЦБ РФ'}})})
+    .catch(function(){return null});
+  return WFX;
+}
+var WCN=null;try{WCN=new Intl.DisplayNames(['ru'],{type:'currency'})}catch(e){}
+function wFxFill(el,cur){
+  wFx().then(function(o){
+    if(!el.isConnected)return;if(!o||!o.r[cur]||!o.r.RUB){el.remove();return}
+    var u=o.r[cur],rub=o.r.RUB,nm='';try{nm=WCN?WCN.of(cur):''}catch(e){}
+    var rows=cur==='USD'?'<b>1 $ = '+auto(rub)+' ₽</b>':cur==='RUB'?'<b>1 $ = '+auto(rub)+' ₽</b>'+(o.r.EUR?' · 1 € = '+auto(rub/o.r.EUR)+' ₽':'')+(o.r.CNY?' · 1 ¥ = '+auto(rub/o.r.CNY)+' ₽':'')
+      :'<b>1 $ = '+auto(u)+' '+cur+'</b> · 1 '+cur+' = '+auto(rub/u)+' ₽';
+    el.innerHTML='<p class="wck-e">Валюта'+(nm&&cur!=='RUB'&&cur!=='USD'?' · '+esc(nm):'')+'</p><p class="wfxv">'+rows+'</p><p class="wsm">курс на '+new Date(o.d).toLocaleDateString('ru-RU')+' · '+esc(o.src)+'</p>';
+  });
+}
+
+/* события */
+view.addEventListener('click',function(e){
+  if(state!=='world')return;var t=e.target,b;
+  if(t.closest('[data-wretry]')){renderWorld();return}
+  if(b=t.closest('[data-wl]')){var l=b.getAttribute('data-wl');if(l===WS.layer)return;wStop();WS.layer=l;WS.sel=null;wSave();
+    document.querySelectorAll('#w-lay .chip').forEach(function(c){c.classList.toggle('on',c===b)});var q=$('#w-q');if(q)q.value='';
+    wCtl();wPaint('fit');wCard();if(l==='countries'&&WM.zoom)WM.svg.transition().duration(500).call(WM.zoom.transform,d3.zoomIdentity);return}
+  if(b=t.closest('[data-wi]')){WS.ind=b.getAttribute('data-wi');wSave();document.querySelectorAll('#w-ind .chip').forEach(function(c){c.classList.toggle('on',c===b)});wPaint();if(WS.sel)wCard();return}
+  if(b=t.closest('[data-wb]')){WS.bm=b.getAttribute('data-wb');wSave();document.querySelectorAll('#w-ind .chip').forEach(function(c){c.classList.toggle('on',c===b)});wPaint();wCard();return}
+  if(b=t.closest('[data-wz]')){var z=+b.getAttribute('data-wz');if(!WM.zoom)return;if(z===0)WM.svg.transition().duration(500).call(WM.zoom.transform,d3.zoomIdentity);else WM.svg.transition().duration(300).call(WM.zoom.scaleBy,z>0?1.8:1/1.8);return}
+  if(t.closest('#w-play')){wPlay();return}
+  if(t.closest('#w-sort')){WS.desc=!WS.desc;wSave();wTop();return}
+  if(b=t.closest('[data-wsel]')){var id=b.getAttribute('data-wsel');wTipHide();WM.tap=null;wSelect(id,!!b.closest('#w-sr,#w-top')||b.hasAttribute('data-wzoom'));
+    if(!wDesk()&&b.closest('#w-sr,#w-top')){var m=$('#w-map');if(m&&m.getBoundingClientRect().top<0)m.scrollIntoView({behavior:'smooth',block:'start'})}return}
+  if(t.closest('[data-wclose]')){wClose();return}
+  if(b=t.closest('[data-wspk]')){var r=b.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*300,n=WM.Y.length;wStop();wYear(WM.y0+Math.max(0,Math.min(n-1,Math.round((x-6)/(288/(n-1))))));return}
+});
+view.addEventListener('input',function(e){if(state!=='world')return;if(e.target.id==='w-year'){wStop();wYear(+e.target.value)}else if(e.target.id==='w-q')wSearch()});
+view.addEventListener('keydown',function(e){if(state==='world'&&e.key==='Escape'&&WS.sel)wClose()});
+view.addEventListener('mouseover',function(e){if(state!=='world'||!WM.g)return;var s=e.target.closest&&e.target.closest('[data-wbin]');wBinHL(s?+s.getAttribute('data-wbin'):null)});
+view.addEventListener('mouseout',function(e){if(state==='world'&&e.target.closest&&e.target.closest('[data-wbin]'))wBinHL(null)});
+// нижний лист на телефоне: смахнуть вниз — закрыть
+(function(){var y0=null,dy=0,el=null;
+  view.addEventListener('touchstart',function(e){el=e.target.closest&&e.target.closest('.wcard.open');if(!el||el.scrollTop>0){el=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
+  view.addEventListener('touchmove',function(e){if(!el)return;dy=e.touches[0].clientY-y0;if(dy>0){el.style.transition='none';el.style.transform='translateY('+dy+'px)'}},{passive:true});
+  view.addEventListener('touchend',function(){if(!el)return;el.style.transition='';el.style.transform='';if(dy>90)wClose();el=null});})();
+var wRT=0,wLW=0;
+window.addEventListener('resize',function(){if(state!=='world'||!WM.g)return;clearTimeout(wRT);wRT=setTimeout(function(){var b=$('#w-map');if(!b||Math.abs(b.clientWidth-WM.w)<2&&wLW===innerWidth)return;wLW=innerWidth;wMap();wPaint(WS.layer!=='countries'?'fit':0);wCard()},150)});
+function wRecolor(){if(state==='world'&&WM.g){wPaint();if(WS.sel)wCard()}}
+try{new MutationObserver(wRecolor).observe(root,{attributes:true,attributeFilter:['data-theme']})}catch(e){}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',wRecolor)}catch(e){}
+
 /* ---------------- роутинг ---------------- */
 var state='',LASTCARD='';
 function route(){
   var h=decodeURIComponent(location.hash.slice(1)),p=h.split('/');
-  var sec=p[0]==='markets'?'markets':p[0]==='calc'?'calc':'learn';
+  var sec=p[0]==='markets'?'markets':p[0]==='calc'?'calc':p[0]==='world'?'world':'learn';
+  wStop();wTipHide();
   document.querySelectorAll('#sw a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-s')===sec)});
   state=sec;
   var bk=document.getElementById('b-back'),inCh=sec==='learn'&&CH.some(function(x){return x.id===p[1]});
-  bk.setAttribute('href',sec==='markets'?(p[1]==='idx'?'#markets':p[1]&&p[1]!=='summary'?(p[2]?'#markets/'+p[1]:'#markets'):'#learn'):sec==='calc'?'#learn':(inCh?'#learn':'artem.html'));bk.setAttribute('aria-label',(sec==='learn'&&!inCh)?'Все разделы':'Назад');
+  bk.setAttribute('href',sec==='world'?(p[1]==='sectors'?(p[2]?'#world/sectors':'#world'):'#learn'):sec==='markets'?(p[1]==='idx'?'#markets':p[1]&&p[1]!=='summary'?(p[2]?'#markets/'+p[1]:'#markets'):'#learn'):sec==='calc'?'#learn':(inCh?'#learn':'artem.html'));bk.setAttribute('aria-label',(sec==='learn'&&!inCh)?'Все разделы':'Назад');
   if(sec==='markets'){
     cur=SUBS.some(function(s){return s[0]===p[1]})?p[1]:'summary';store('fin:sub',cur);
     CARD.tic=(cur==='ru'&&p[2])?p[2].toUpperCase():null;ASSET={kind:null,id:null};var ck=p[2]?p[1]+'/'+p[2]:'';if(ck&&ck!==LASTCARD&&!/^(ev-|[0-9a-f]{10}$)/.test(p[2]))CARD.range='1m';if(ck&&p[1]!=='news')LASTCARD=ck;if(p[2]&&(p[1]==='us'||p[1]==='crypto'||p[1]==='idx')){if(p[1]==='idx')cur='summary';openAsset(p[1]==='crypto'?'cr':p[1],p[2].toUpperCase())}NEWSID=(cur==='news'&&p[2])?p[2]:null;if(cur==='news'&&!TEXTS)setTimeout(function(){try{if(navigator.connection&&navigator.connection.saveData)return}catch(e){}if(state==='markets'&&cur==='news')loadTexts()},2500);if(CARD.tic){PC.d=null;NLIM=12;Promise.all([loadCandles(CARD.tic,CARD.range),loadDivs(CARD.tic),loadNews(),loadEN(enFile('ru',CARD.tic))]).then(function(){drawMarkets(true)})}
     drawMarkets(true);refresh();startTimer();document.title='Рынки · Финансы';
   }else if(sec==='calc'){
     clearInterval(timer);renderCalc(p[1]);document.title='Калькуляторы · Финансы';
+  }else if(sec==='world'){
+    clearInterval(timer);
+    if(p[1]==='sectors'){var sc=SEC.filter(function(x){return x.id===p[2]})[0];
+      if(sc){renderChapter(sc);document.title=sc.title+' · Сектора · Финансы'}else{renderSectors();document.title='Сектора мировой экономики · Финансы'}}
+    else{renderWorld();document.title='Карта мира · Финансы'}
   }else{
     clearInterval(timer);
     var c=CH.filter(function(x){return x.id===p[1]})[0];

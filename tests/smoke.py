@@ -23,7 +23,8 @@ PAGES = ['index.html', 'artem.html', 'nastya.html', 'nastya-ucheba.html',
          'finance.html#learn', 'finance.html#calc/npv', 'finance.html#calc/dcf', 'finance.html#calc/lbo',
          'finance.html#markets', 'finance.html#markets/news', 'finance.html#markets/ru', 'finance.html#markets/us',
          'finance.html#markets/crypto', 'finance.html#markets/bonds', 'finance.html#markets/fx', 'finance.html#markets/cal',
-         'finance.html#markets/ru/SBER', 'finance.html#markets/us/NVDA', 'finance.html#markets/crypto/BTC', 'finance.html#markets/idx/IMOEX']
+         'finance.html#markets/ru/SBER', 'finance.html#markets/us/NVDA', 'finance.html#markets/crypto/BTC', 'finance.html#markets/idx/IMOEX',
+         'finance.html#world', 'finance.html#world/sectors', 'finance.html#world/sectors/neft-gaz', 'finance.html#learn/marshrut', 'finance.html#learn/model-3-otchetov']
 IGNORE = re.compile(r'Failed to fetch|NetworkError|Load failed|ResizeObserver')
 
 problems = []

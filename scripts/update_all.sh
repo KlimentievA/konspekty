@@ -11,9 +11,10 @@ t0=$(date +%s)
 
 python3 update_markets.py || echo "::warning::update_markets.py завершился с ошибкой"
 python3 update_news.py    || echo "::warning::update_news.py завершился с ошибкой"
+python3 update_world.py   || echo "::warning::update_world.py завершился с ошибкой"   # карта мира, раз в сутки
 if [ "${SCHED:-0}" = 1 ] && [ -f update_schedule.py ]; then python3 update_schedule.py || echo "::warning::расписание не обновилось"; fi
 
-FILES="markets.json news.json news_text.json news_text_arch.json schedule.json schedule_debug.txt"
+FILES="markets.json news.json news_text.json news_text_arch.json schedule.json schedule_debug.txt world.json"
 CH=$(git status --porcelain -- $FILES 2>/dev/null)
 if [ -n "$CH" ]; then
   git add -- $FILES 2>/dev/null

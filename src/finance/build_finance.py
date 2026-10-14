@@ -23,16 +23,47 @@ def qa(md):
         out.append(lines[i]); i += 1
     return '\n'.join(out)
 
-chs = []
-for f in sorted(glob.glob(os.path.join(cdir, '*.md'))):
-    b = os.path.basename(f)[:2]
+def check(md):
+    # раздел «## Проверь себя» (до следующего «## » или конца) → вопросы-раскрывашки в любой главе и секторе
+    m = re.search(r'^## Проверь себя[^\n]*\n', md, re.M)
+    if not m: return md
+    rest = md[m.end():]
+    n = re.search(r'^## ', rest, re.M)
+    part, tail = (rest[:n.start()], rest[n.start():]) if n else (rest, '')
+    if '<details class="qa">' not in part: part = qa(part)
+    return md[:m.end()] + '\n<p class="qahint">нажми на вопрос, чтобы увидеть ответ</p>\n\n' + part + tail
+
+
+def read_md(f, ids=None):
+    name = os.path.basename(f)
+    b = name[:2]
     t = open(f, encoding='utf-8').read().strip().split('\n')
     title = t[0].lstrip('# ').strip()
-    assert t[1].startswith('short:'), f
+    assert len(t) > 1 and t[1].startswith('short:'), f
     short = t[1][6:].strip()
     md = '\n'.join(t[2:]).strip() + '\n'
-    if b in ('13', '18', '20', '21'): md = qa(md)
-    chs.append({'id': IDS[b], 'title': title, 'short': short, 'md': md})
+    if ids is not None and b in ('13', '18', '20', '21'): md = qa(md)
+    md = check(md)
+    # id: из словаря IDS (старые главы), иначе — из имени файла после «NN_»: 23_model-3-otchetov.md → model-3-otchetov
+    fid = (ids or {}).get(b) or re.sub(r'^\d+_', '', os.path.splitext(name)[0])
+    return {'id': fid, 'title': title, 'short': short, 'md': md}
+
+
+# ссылки на карточки компаний, которых нет в справочнике сайта, превращаем в обычный текст (иначе «Компания не найдена»)
+KNOWN = {'ru': {x[0] for x in S.RU}, 'us': {x[0] for x in S.US}}
+def fix_links(md):
+    def rep(m):
+        kind, tic = m.group(2), m.group(3).upper()
+        return m.group(0) if tic in KNOWN[kind] else m.group(1)
+    return re.sub(r'\[([^\]]+)\]\(#markets/(ru|us)/([A-Za-z0-9.\-]+)\)', rep, md)
+_read = read_md
+def read_md(f, ids=None):
+    c = _read(f, ids); c['md'] = fix_links(c['md']); return c
+
+chs = [read_md(f, IDS) for f in sorted(glob.glob(os.path.join(cdir, '*.md')))]
+# сектора мировой экономики (finance.html#world/sectors): src/finance/sectors/NN_<id>.md, формат как у глав
+sdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sectors')
+secs = [read_md(f) for f in sorted(glob.glob(os.path.join(sdir, '[0-9]*.md')))]
 
 import terms as TM
 gl = open(os.path.join(cdir, '98_glossary.md'), encoding='utf-8').read()
@@ -42,7 +73,7 @@ for x in TERMS:
 static = {'ru': S.RU, 'ru_asof': S.RU_ASOF, 'ru_sect': S.RU_SECT, 'ru_sect_asof': S.RU_SECT_ASOF,
           'us': S.US, 'us_asof': S.US_ASOF, 'us_sect': S.US_SECT, 'us_sect_asof': S.US_SECT_ASOF,
           'macro': S.MACRO, 'kbd': S.KBD, 'keyrate': S.KEYRATE, 'cal': S.CAL, 'events': json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'events.json'), encoding='utf-8'))}
-data = json.dumps({'chapters': chs, 'static': static, 'terms': TERMS}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+data = json.dumps({'chapters': chs, 'sectors': secs, 'static': static, 'terms': TERMS}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 tpl = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'finance_template.html'), encoding='utf-8').read()
 assert '<!--DATA-->' in tpl and '<!--MARKED-->' in tpl
 tpl = tpl.replace('<!--ZOOM-->', '<script>' + open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'zoom.js'), encoding='utf-8').read() + '</script>')
@@ -52,4 +83,4 @@ _g = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gate_artem.html')
 if os.path.exists(_g):   # замок профиля «Артем»
     html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">' + open(_g, encoding='utf-8').read(), 1)
 open(out, 'w', encoding='utf-8').write(html)
-print('ok', len(chs), 'chapters', len(TERMS), 'terms', len(html.encode()), 'bytes')
+print('ok', len(chs), 'chapters', len(secs), 'sectors', len(TERMS), 'terms', len(html.encode()), 'bytes')
