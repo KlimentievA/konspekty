@@ -8,6 +8,10 @@
 import json, os, sys, time, datetime, urllib.request, urllib.parse, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+_LOG = []
+_print = print
+def print(*a):
+    t = ' '.join(str(x) for x in a); _LOG.append(t); _print(t)
 sys.path.insert(0, os.path.join(HERE, 'src', 'finance'))
 UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36', 'Accept': 'application/json,*/*'}
 try:
@@ -129,3 +133,6 @@ def digest():
 for f in (corp_cal, fin, digest):
     try: f()
     except Exception as e: print(f.__name__, 'упал:', e)
+try:   # журнал для диагностики: логи Actions отсюда не видны
+    open(os.path.join(HERE, 'extra_debug.txt'), 'w', encoding='utf-8').write(NOW.strftime('%Y-%m-%dT%H:%MZ') + '\n' + '\n'.join(_LOG[:60]) + '\n')
+except Exception: pass
