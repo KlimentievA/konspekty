@@ -111,13 +111,15 @@ if len(imf) < len(IND) // 2:
     DBN = 'https://api.db.nomics.world/v22/'
     try:
         import re, urllib.parse
-        ds = get(DBN + 'datasets/IMF?q=WEO&limit=100', 40)
-        docs = (ds.get('datasets') or {}).get('docs') or []
-        eds = sorted(d['code'] for d in docs if re.match(r'^WEO:\d{4}-\d{2}$', d.get('code', '')))
-        log('DBnomics выпуски WEO:', eds[-4:])
-        if not eds: raise ValueError('нет выпусков WEO')
-        ed = eds[-1]
-        probe = get(DBN + 'series/IMF/%s?limit=1&observations=0' % ed, 40)
+        ed, probe = None, None
+        for y_ in range(now.year, now.year - 2, -1):
+            for m_ in ('10', '04'):
+                try:
+                    pr = get(DBN + 'series/IMF/WEO:%d-%s?limit=1&observations=0' % (y_, m_), 40)
+                    if (pr.get('series') or {}).get('docs'): ed, probe = 'WEO:%d-%s' % (y_, m_), pr; break
+                except Exception as e: log('DBnomics WEO:%d-%s' % (y_, m_), e)
+            if ed: break
+        if not ed: raise ValueError('нет выпусков WEO')
         order = (probe.get('dataset') or {}).get('dimensions_codes_order') or []
         sk = next((k for k in order if 'subject' in k.lower()), None)
         ck = next((k for k in order if 'country' in k.lower()), None)
