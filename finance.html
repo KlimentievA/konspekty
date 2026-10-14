@@ -128,6 +128,18 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 main{max-width:1180px;margin:0 auto;padding:0 var(--gut) 96px;min-width:0}
 .sub{display:flex;gap:8px;overflow-x:auto;margin:16px calc(var(--gut)*-1) 0;padding:0 var(--gut) 4px;scrollbar-width:none}
 .sub::-webkit-scrollbar{display:none}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:14px 0 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.seg a{display:flex;flex-direction:column;gap:2px;padding:10px 8px;text-align:center;text-decoration:none;color:var(--muted);border-left:1px solid var(--line)}
+.seg a:first-child{border-left:0}.seg a b{font:600 15px/1.2 var(--sans)}.seg a small{font:400 11.5px/1.25 var(--sans);color:var(--faint)}
+.seg a.on{background:var(--fg);color:var(--bg)}.seg a.on small{color:var(--bg);opacity:.75}
+.sub2{margin-top:10px}
+.cglabel{margin:14px 0 0;font:600 12px/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.fold{border-top:1px solid var(--line)}.fold:last-child{border-bottom:1px solid var(--line)}
+.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.fold>summary::-webkit-details-marker{display:none}.fold>summary h2{margin:0;font:600 17px/1.3 var(--serif)}
+.fold>summary::after{content:"+";font:400 22px/1 var(--sans);color:var(--faint)}.fold[open]>summary::after{content:"–"}
+.fold[open]>summary{padding-bottom:6px}.fold>.tiles{margin-bottom:14px}
+@media (max-width:420px){.seg a small{display:none}.seg a{padding:12px 6px}}
 .chip{flex:none;padding:8px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--muted);font:500 14px/1.2 var(--sans);white-space:nowrap;background:none;min-height:40px;display:inline-flex;align-items:center}
 .chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
 .chip:hover:not(.on){color:var(--fg);border-color:var(--faint)}
@@ -816,8 +828,13 @@ function loadCR(){
 function usdRub(){try{return M.fx.Valute.USD.Value}catch(e){return 83.9153}}
 
 /* ---------------- рынки: виды ---------------- */
-var SUBS=[['summary','Сводка'],['week','Неделя'],['news','Новости'],['ru','Россия'],['us','США'],['crypto','Крипта'],['bonds','Облигации'],['fx','Валюты'],['macro','Макро РФ'],['divs','Дивиденды'],['events','События'],['cal','Календарь']],cur='summary';
-function subnav(){return '<nav class="sub">'+SUBS.map(function(s){return '<a class="chip'+(s[0]===cur?' on':'')+'" href="#markets/'+s[0]+'">'+s[1]+'</a>'}).join('')+'</nav>'}
+var SUBS=[['summary','Сводка'],['week','Итоги недели'],['news','Новости'],['ru','Россия'],['us','США'],['crypto','Крипта'],['bonds','Облигации'],['fx','Валюты'],['macro','Макро России'],['divs','Дивиденды'],['events','События'],['cal','Календарь']],cur='summary';
+var SGRP=[['Обзор','Что происходит',['summary','week','news']],['Рынки','Акции, крипта, облигации',['ru','us','crypto','bonds','fx']],['Экономика','Макро, дивиденды, календарь',['macro','divs','events','cal']]];
+var SLBL={};SUBS.forEach(function(s){SLBL[s[0]]=s[1]});
+function sgrp(k){for(var i=0;i<SGRP.length;i++)if(SGRP[i][2].indexOf(k)>=0)return i;return 0}
+function subnav(){var gi=sgrp(cur),g=SGRP[gi];
+  return '<nav class="seg" aria-label="Разделы рынков">'+SGRP.map(function(x,i){return '<a class="'+(i===gi?'on':'')+'" href="#markets/'+(i===gi?cur:x[2][0])+'"><b>'+x[0]+'</b><small>'+x[1]+'</small></a>'}).join('')+'</nav>'+
+  '<nav class="sub sub2">'+g[2].map(function(k){return '<a class="chip'+(k===cur?' on':'')+'" href="#markets/'+k+'">'+SLBL[k]+'</a>'}).join('')+'</nav>'}
 function status(key,label){
   var t=M.t[key],e=M.err[key],cls,txt;
   if(t instanceof Date){cls='live';txt=label+': обновлено <span data-ago="'+t.getTime()+'">'+ago(t.getTime())+'</span>'}
@@ -830,6 +847,9 @@ function tile(k,v,s){return '<div class="tile"><div class="k">'+k+'</div><div cl
 function tileL(href,k,v,s){return '<a class="tile lk" href="'+href+'"><div class="k">'+k+'</div><div class="v" data-fk="t|'+String(k).replace(/"/g,'')+'">'+v+'</div><div class="s">'+s+'</div></a>'}
 function stTiles(a){return a.filter(function(r){return r[0]!=='IMOEX'&&r[0]!=='S&P 500'}).map(function(r){return tile(esc(r[0]),esc(r[1]),esc(r[2]))}).join('')}
 
+var OPENF={};
+function fold(k,title,body){return '<details class="fold" data-fold="'+k+'"'+(OPENF[k]?' open':'')+'><summary><h2>'+title+'</h2></summary>'+body+'</details>'}
+view.addEventListener('toggle',function(e){var d=e.target;if(d&&d.getAttribute&&d.getAttribute('data-fold'))OPENF[d.getAttribute('data-fold')]=d.open},true);
 function vSummary(){
   var ix=M.idx||{},h='<div class="sect"><h2>Сейчас на рынках</h2><div class="tiles">';
   var im=ix.IMOEX,rg=ix.RGBI,rt=ix.RTSI;
@@ -847,12 +867,11 @@ function vSummary(){
   [['^GSPC','S&P 500'],['^IXIC','Nasdaq'],['^DJI','Dow Jones']].forEach(function(x){var v=su[x[0]];if(v&&v.p)h+=tileL('#markets/idx/'+x[0],x[1],nf(v.p,2),pct(v.ch)+' · снимок '+esc(M.snap.updated||''))});
   h+='</div><p class="note">«Биржа 21:14» — время значения на Мосбирже (бесплатные данные идут с задержкой около 15 минут), «N с назад» — когда сайт последний раз их проверял; проверка идёт сама каждые 15 секунд. Курсы ЦБ обновляются раз в день. Крипта — в реальном времени (CoinGecko, запасной источник Binance).</p></div>';
   var ni=(M.news&&M.news.items)||[];h+='<div class="sect"><h2>Главные новости <a class="all" href="#markets/news">вся лента →</a></h2>'+(ni.length?(function(){var t=topNews(ni,36,8);return topBlock(t.slice(0,3))+t.slice(3).map(function(x){return newsItem(x)}).join('')})():evFor('IMOEX').slice(0,4).map(function(e){return evItem(e)}).join('')+'<p class="note">Живая лента появится после первого автоматического обновления; пока — последние события, которые двигали рынок.</p>')+'</div>';
-  h+='<div class="sect"><h2>Россия: ставки и макро</h2><div class="tiles">'+stTiles(S.macro.ru)+'</div></div>';
-  h+='<div class="sect"><h2>США</h2><div class="tiles">'+stTiles(S.macro.us)+'</div><p class="note">Ставки и мультипликаторы зафиксированы на дату в подписи; источники в «Обучение → Что читать».</p></div>';
+  h+='<div class="sect">'+fold('sr','Россия: ставки и макро','<div class="tiles">'+stTiles(S.macro.ru)+'</div>')+fold('su','США: ставки и мультипликаторы','<div class="tiles">'+stTiles(S.macro.us)+'</div><p class="note">Ставки и мультипликаторы зафиксированы на дату в подписи; источники в «Обучение → Что читать».</p>')+'</div>';
   if(M.idx&&(ix.MOEXOG||ix.MOEXFN)){
-    h+='<div class="sect"><h2>Отраслевые индексы Мосбиржи</h2><div class="tiles">';
-    [['MOEXOG','Нефть и газ'],['MOEXFN','Финансы'],['MOEXMM','Металлы и добыча'],['MOEXIT','IT']].forEach(function(x){var v=ix[x[0]];if(v)h+=tileL('#markets/idx/'+x[0],x[1],nf(v.v,2),pct(v.ch))});
-    h+='</div></div>';
+    var sx='<div class="tiles">';
+    [['MOEXOG','Нефть и газ'],['MOEXFN','Финансы'],['MOEXMM','Металлы и добыча'],['MOEXIT','IT']].forEach(function(x){var v=ix[x[0]];if(v)sx+=tileL('#markets/idx/'+x[0],x[1],nf(v.v,2),pct(v.ch))});
+    h+='<div class="sect">'+fold('sx','Отраслевые индексы Мосбиржи',sx+'</div>')+'</div>';
   }
   var up=upcoming(3);if(up.length)h='<div class="sect"><h2>Ближайшие события <a class="all" href="#markets/cal">весь календарь →</a></h2>'+up.map(evRow).join('')+'</div>'+h;
   return status('ru','Котировки Мосбиржи')+h;
@@ -1630,7 +1649,8 @@ function calcVals(c){if(!CV[c.id]){var s=null;try{s=JSON.parse(localStorage.getI
 var calcCur='npv';
 function renderCalc(id){
   var c=CALCS.filter(function(x){return x.id===id})[0]||CALCS[0];calcCur=c.id;var v=calcVals(c);
-  var h='<nav class="sub">'+CALCS.map(function(x){return '<a class="chip'+(x.id===c.id?' on':'')+'" href="#calc/'+x.id+'">'+esc(x.t)+'</a>'}).join('')+'</nav>'+
+  function cg(t,ids){return '<p class="cglabel">'+t+'</p><nav class="sub" style="margin-top:6px">'+ids.map(function(i){var x=CALCS.filter(function(q){return q.id===i})[0];return x?'<a class="chip'+(x.id===c.id?' on':'')+'" href="#calc/'+x.id+'">'+esc(x.t)+'</a>':''}).join('')+'</nav>'}
+  var h=cg('Для себя',['yield'])+cg('Оценка и инвестиции',['npv','wacc','dcf'])+cg('Сделки (M&A, LBO)',['lbo','acc'])+
     '<div class="sect"><h2>'+esc(c.t)+'</h2><p class="note" style="margin-top:0">'+esc(c.s)+'</p><div class="box calc"><div class="bf cf">'+
     c.f.map(function(f){return '<label class="'+(f[3]?'wide':'')+'">'+esc(f[1])+'<input data-cv="'+f[0]+'" inputmode="'+(f[3]?'text':'decimal')+'" value="'+esc(v[f[0]])+'"></label>'}).join('')+
     '</div><button type="button" class="chip" data-creset style="margin-top:8px">Сбросить</button><div id="c-out" style="margin-top:14px">'+c.c(v)+'</div></div></div>';
