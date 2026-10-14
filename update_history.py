@@ -11,6 +11,7 @@ US = ['NVDA', 'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'META', 'AVGO', 'TSLA', 'BRK-B', 
       'COST', 'CVX', 'ORCL', 'KO', 'BAC', 'PG', 'UNH', 'NFLX', '^GSPC', '^IXIC', '^DJI']
 CR = {'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 'XRP': 'ripple', 'BNB': 'binancecoin', 'DOGE': 'dogecoin',
       'TON': 'the-open-network', 'ADA': 'cardano', 'TRX': 'tron', 'USDT': 'tether'}
+YCR = {'TON': 'TON11419-USD'}
 
 def get(url, t=25):
     return json.loads(urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=t).read().decode('utf-8'))
@@ -24,21 +25,24 @@ def fresh(key):
 def day(ts): return int(ts // 86400)
 def stamp(): return datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%MZ')
 
+def yahoo(t):
+    res = {}
+    for rng, iv, k in (('1y', '1d', 'd'), ('5y', '1wk', 'w')):
+        j = get('https://query1.finance.yahoo.com/v8/finance/chart/' + urllib.parse.quote(t) + '?range=' + rng + '&interval=' + iv)
+        r = j['chart']['result'][0]
+        ts, cl = r['timestamp'], r['indicators']['quote'][0]['close']
+        res[k] = [[day(a), round(b, 6 if b < 1 else 2)] for a, b in zip(ts, cl) if b is not None]
+        res['name'] = r['meta'].get('longName') or r['meta'].get('shortName') or t
+        time.sleep(0.4)
+    res['updated'] = stamp()
+    return res
+
 changed = 0
 for t in US:
     key = 'us-' + t
     if fresh(key): continue
     try:
-        res = {}
-        for rng, iv, k in (('1y', '1d', 'd'), ('5y', '1wk', 'w')):
-            j = get('https://query1.finance.yahoo.com/v8/finance/chart/' + urllib.parse.quote(t) + '?range=' + rng + '&interval=' + iv)
-            r = j['chart']['result'][0]
-            ts, cl = r['timestamp'], r['indicators']['quote'][0]['close']
-            res[k] = [[day(a), round(b, 2)] for a, b in zip(ts, cl) if b is not None]
-            res['name'] = r['meta'].get('longName') or r['meta'].get('shortName') or t
-            time.sleep(0.4)
-        res['updated'] = stamp()
-        json.dump(res, open(fname(key), 'w'), separators=(',', ':')); changed += 1
+        json.dump(yahoo(t), open(fname(key), 'w'), separators=(',', ':')); changed += 1
     except Exception as e:
         print('yahoo', t, e, file=sys.stderr)
 
@@ -53,6 +57,11 @@ for sym, cid in CR.items():
         time.sleep(3)
     except Exception as e:
         print('coingecko', sym, e, file=sys.stderr)
+        try:  # запасной источник — Yahoo (BTC-USD и т.п.)
+            res = yahoo(YCR.get(sym, sym + '-USD')); res['name'] = sym
+            json.dump(res, open(fname(key), 'w'), separators=(',', ':')); changed += 1
+        except Exception as e2:
+            print('yahoo crypto', sym, e2, file=sys.stderr)
 
 print('history updated', changed)
 open(os.path.join(OUT, '.changed'), 'w').write(str(changed))
