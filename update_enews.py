@@ -13,7 +13,7 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else 'hist_out'
 H = os.path.join(OUT, 'hist'); os.makedirs(H, exist_ok=True)
 NOW = datetime.datetime.now(datetime.timezone.utc)
 TODAY = NOW.date()
-GN_BUDGET, DEC_BUDGET, TR_BUDGET = 330, 70, 60   # запросов поиска / расшифровок+сутей / пакетов перевода за запуск
+GN_BUDGET, DEC_BUDGET, TR_BUDGET = 330, 180, 60   # запросов поиска / расшифровок+сутей / пакетов перевода за запуск
 
 RU = {'SBER': 'Сбербанк', 'LKOH': 'ЛУКОЙЛ', 'ROSN': 'Роснефть', 'NVTK': 'НОВАТЭК', 'SIBN': '"Газпром нефть"', 'GAZP': 'Газпром',
       'GMKN': 'Норникель', 'TATN': 'Татнефть', 'PLZL': '"Полюс" золото', 'YDEX': 'Яндекс', 'TRNFP': 'Транснефть', 'SNGS': 'Сургутнефтегаз',
@@ -175,31 +175,37 @@ for f, db in dbs.items():
             print('translate', e, file=sys.stderr); nb = TR_BUDGET
 print('translate batches', nb)
 
-# 4) суть статьи для лучшей новости каждого дня (сначала свежие)
+# 4) пересказ главной новости каждого дня (сначала свежие); если у главной не вышло — берём следующую по важности
+LOWSRC = {'The Motley Fool', 'Motley Fool', 'Zacks', 'Zacks Investment Research', 'InvestorPlace', 'Simply Wall St', 'Simply Wall Street', 'MarketBeat', 'Benzinga', 'Stocktwits'}
+def rank(x): return score(x.get('to') or x['t']) - (3 if x.get('s') in LOWSRC else 0)
 cand = []
 for f, db in dbs.items():
-    best = {}
-    for x in db['items']:
-        day = x['d'][:10]
-        if day not in best or score(x.get('to') or x['t']) > score(best[day].get('to') or best[day]['t']): best[day] = x
-    for day, x in best.items():
-        if not x.get('sum') and x.get('sf', 0) < 2: cand.append((day, f, x))
+    byday = {}
+    for x in db['items']: byday.setdefault(x['d'][:10], []).append(x)
+    for day, a in byday.items():
+        if any(x.get('sum') for x in a): continue
+        a = [x for x in a if x.get('sf', 0) < 2]
+        if a: cand.append((day, f, max(a, key=rank)))
 cand.sort(key=lambda c: c[0], reverse=True)
-nd = 0
-for day, f, x in cand:
-    if nd >= DEC_BUDGET: break
-    nd += 1; changed.add(f)
+cand = cand[:DEC_BUDGET]
+from concurrent.futures import ThreadPoolExecutor
+def work(c):
+    day, f, x = c
     try:
-        if 'u' not in x: x['u'] = gn_decode(x['g']); time.sleep(0.5)
+        if 'u' not in x: x['u'] = gn_decode(x['g'])
         s_ = summarize(x['u'], x.get('to') or x['t'], '')
-        if s_ and not CYR.search(' '.join(s_)):
+        if s_ and not CYR.search(' '.join(s_)[:400]):
             try: s_ = tr_list(s_)
             except Exception: pass
         if s_: x['sum'] = s_[:7]
         else: x['sf'] = x.get('sf', 0) + 1
     except Exception as e:
         x['sf'] = x.get('sf', 0) + 1
-        print('decode', f, e, file=sys.stderr)
+        print('decode', f, str(e)[:80], file=sys.stderr)
+    return f
+with ThreadPoolExecutor(6) as ex:
+    for f in ex.map(work, cand): changed.add(f)
+nd = len(cand)
 print('summaries', nd)
 
 for f in changed:

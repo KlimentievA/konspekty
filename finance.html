@@ -218,6 +218,9 @@ details.qa+h3{margin-top:2em}
 .pcinfo .chip{min-height:30px;padding:4px 12px;margin-left:6px;font-size:12.5px}
 .pcs .mk{fill:var(--accent2);stroke:var(--surface);stroke-width:2;cursor:pointer}
 .pcs .mk2.u{stroke:var(--up)}.pcs .mk2.d{stroke:var(--down)}.pcs .mk2.u.hn{fill:var(--up)}.pcs .mk2.d.hn{fill:var(--down)}
+.pcst{margin:8px 0 10px}.pcst-t{display:block;margin-bottom:6px;font:600 17px/1.35 var(--serif);color:var(--fg);text-decoration:none}.pcst-t:hover{text-decoration:underline;text-underline-offset:3px}
+.pcst p{margin:6px 0;font:400 15px/1.6 var(--sans);color:var(--fg)}.pcst .pcst-s{font-size:13px;color:var(--faint)}.pcst .pcst-s a{color:var(--accent)}
+.pcmore{margin:4px 0 10px}.pcmore summary{cursor:pointer;color:var(--muted);font:500 13.5px var(--sans);list-style:none}.pcmore summary::-webkit-details-marker{display:none}.pcmore summary:before{content:'▸ '}.pcmore[open] summary:before{content:'▾ '}
 .pcn{margin:6px 0;font:400 14.5px/1.45 var(--sans)}.pcn a{font-weight:600;color:var(--fg);text-decoration:none}.pcn a:hover{text-decoration:underline}.pcn p{margin:3px 0 0;color:var(--muted);font-size:13.5px}
 .pcs .mk2{fill:var(--surface);stroke:var(--accent2);stroke-width:2;cursor:pointer}
 .pcs .mk.on,.pcs .mk2.on{stroke:var(--fg)}
@@ -975,7 +978,8 @@ var ENEWS={};
 function enFile(kind,key){return (kind==='idx'?'ix':kind==='cr'?'cr':kind==='us'?'us':'ru')+'-'+String(key).replace('^','_')}
 function loadEN(f){if(ENEWS[f])return Promise.resolve();return getJSON(DATA_BASE+'hist/news-'+f+'.json',15000).then(function(j){ENEWS[f]=(j.items||[]).map(function(x){x.u=x.u||x.g;return x})}).catch(function(){ENEWS[f]=[]})}
 var NKW=/акци|дивиденд|прибыл|выручк|отч[её]т|МСФО|санкц|упал|рост|вырос|подешев|подорож|рекоменд|снизил|повысил|обвал|котировк|shares|stock|fell|rose|drop|jump|earnings|revenue|guidance|рухн|взлет|взлёт|прогноз/i;
-function nscore(x){return (x.sum&&x.sum.length?2:0)+(NKW.test(x.t)?1:0)}
+var NLOW=/Motley Fool|Zacks|InvestorPlace|Simply Wall|MarketBeat|Benzinga|Stocktwits/i,NBAIT=/should you|prediction:|could (?:triple|double|soar)|here.s why|is it time|stocks? to buy|cheaper than|millionaire|\bbest\b.*stocks?|не упустите|стоит ли покупать|\?$/i;
+function nscore(x){return (TEXTS&&TEXTS[x.id]?3:0)+(x.sum&&x.sum.length?2:0)+(NKW.test(x.t)?1:0)-(NLOW.test(x.s||'')?3:0)-(NBAIT.test(x.to||x.t)?2:0)}
 var NSTOP=/^(это|этот|того|также|будет|было|были|может|после|более|через|около|однако|заявил|сообщил|россии|россия|года|году|that|this|with|from|have|will|after|says|said|into|over|about|shares|stock)/;
 function ntoks(t){var o={};(t.toLowerCase().replace(/цод\S*/g,'дата центр').replace(/бпла|дрон\S*/g,'беспилотник').match(/[a-zа-яё0-9]{4,}/g)||[]).forEach(function(w){if(!NSTOP.test(w))o[/[а-яё]/.test(w)?w.slice(0,4):w.slice(0,5)]=1});return o}
 function nsame(a,b){var n=0,ka=Object.keys(a),kb=Object.keys(b);ka.forEach(function(k){if(b[k])n++});return n>=3&&n/Math.max(1,Math.min(ka.length,kb.length))>=0.5}
@@ -1004,6 +1008,21 @@ function pcMarks(tic,d,daily){
   return out;
 }
 function dayMark(i){if(i==null||!PC.d||!PC.NI)return null;if(PC.dm&&PC.dm.i===i)return PC.dm;var d=PC.d,nn=newsOnDay(PC.NI,d[i][0]);if(!nn.length)return null;PC.dm={i:i,mv:i?d[i][1]/d[i-1][1]-1:0,n:nn[0],nn:nn,day:1};return PC.dm}
+/* под графиком — сама новость дня: заголовок и подробный пересказ; остальные новости дня — свёрнутым списком */
+function storyText(x){return (TEXTS&&TEXTS[x.id])||(x.sum&&x.sum.length?x.sum:null)}
+function pcStory(m){
+  var nn=m.nn||[],main=nn.filter(function(x){return TEXTS&&TEXTS[x.id]})[0]||nn.filter(function(x){return x.sum&&x.sum.join(' ').length>200})[0]||nn.filter(function(x){return x.sum&&x.sum.length})[0]||nn[0];
+  var paras=storyText(main)||(main.x?[main.x]:[]),out=[],len=0;
+  paras.forEach(function(q){if(len<1100){out.push(len+q.length>1300?q.slice(0,1300-len).replace(/\s+\S*$/,'')+'…':q);len+=q.length}});
+  var waiting=false;
+  if(!TEXTS){waiting=true;loadTexts().then(function(){if(PC.mk===m)drawPC()})}
+  else if(!TEXTA&&!out.length&&main.d<hoursAgo(40)){waiting=true;loadTextsArch().then(function(){if(PC.mk===m)drawPC()})}
+  var rest=nn.filter(function(x){return x!==main}).slice(0,6);
+  return '<div class="pcst"><a class="pcst-t" href="#markets/news/'+main.id+'">'+esc(main.t)+'</a>'+
+    (out.length?out.map(function(q){return '<p>'+esc(q)+'</p>'}).join(''):'<p class="mut">'+(waiting?'Подгружаю подробности…':'Пересказа этой новости нет — подробности по ссылке ниже.')+'</p>')+
+    '<p class="pcst-s">'+esc(main.s)+' · '+fmtDT(main.d)+' · <a href="#markets/news/'+main.id+'">читать целиком →</a></p></div>'+
+    (rest.length?'<details class="pcmore"><summary>Ещё новости этого дня ('+rest.length+')</summary>'+rest.map(function(x){return '<div class="pcn"><a href="#markets/news/'+x.id+'">'+esc(x.t)+'</a><span class="mut"> · '+esc(x.s)+'</span></div>'}).join('')+'</details>':'');
+}
 function markHref(m){if(m.e)return '#markets/news/ev-'+EV.indexOf(m.e);if(m.n&&m.n.id)return '#markets/news/'+m.n.id;return null}
 function markAt(i){if(i==null)return null;var best=null;PC.marks.forEach(function(m){if(Math.abs(m.i-i)<=1&&(!best||Math.abs(m.i-i)<Math.abs(best.i-i)))best=m});return best}
 function fmtD(t,long){return new Date(t).toLocaleDateString('ru-RU',long?{day:'numeric',month:'short',year:'numeric'}:{day:'numeric',month:'short'})}
@@ -1034,21 +1053,22 @@ function drawPC(){
   h+='</svg>';
   var tip='';if(PC.hov!=null&&!PC.drag){var p2=d[PC.hov],x2=g.X(p2[0]),hm=markAt(PC.hov)||dayMark(PC.hov),tw=hm?230:140;tip='<div class="pctip'+(hm?' wide':'')+'" style="left:'+Math.max(4,Math.min(x2-tw/2,g.W-g.R-tw-4))+'px">'+fmtD(p2[0],1)+'<b>'+nf(p2[1],2)+PC.unit+'</b>'+(hm?(hm.e?'<em>'+esc(hm.e.title)+(hm.e.move?' ('+esc(hm.e.move)+')':'')+'</em>':'<em>'+(hm.mv>0?'+':'')+nf(hm.mv*100,1)+'% за день'+(hm.n?': '+esc(hm.n.t)+(hm.nn&&hm.nn.length>1?' <span class="mut">и ещё '+(hm.nn.length-1)+'</span>':''):' — новостей нет')+'</em>')+((hm.e||hm.n)?'<i class="more">нажми — новости этого дня</i>':''):'')+'</div>'}
   g.el.innerHTML=h+tip;
-  var info=document.getElementById('pc-info');if(!info)return;
+  var info=document.getElementById('pc-info');if(!info)return;var IH='';
   if(PC.sel){var a2=Math.min(PC.sel[0],PC.sel[1]),b2=Math.max(PC.sel[0],PC.sel[1]),pa=d[a2],pb=d[b2],ch=(pb[1]/pa[1]-1)*100,days=Math.round((pb[0]-pa[0])/864e5);
     var seg=d.slice(a2,b2+1).map(function(x){return x[1]}),smx=Math.max.apply(0,seg),smn=Math.min.apply(0,seg);
-    info.innerHTML='<b>'+fmtD(pa[0],1)+' → '+fmtD(pb[0],1)+'</b> · '+plural(days,['день','дня','дней'])+'<br>'+nf(pa[1],2)+' → '+nf(pb[1],2)+PC.unit+' · '+pct(ch,2)+' · '+(pb[1]-pa[1]>=0?'+':'')+nf(pb[1]-pa[1],2)+PC.unit+'<br><span class="mut">внутри периода: макс '+nf(smx,2)+' · мин '+nf(smn,2)+'</span> <button type="button" class="chip" data-pcclear>Сбросить</button>';
+    IH='<b>'+fmtD(pa[0],1)+' → '+fmtD(pb[0],1)+'</b> · '+plural(days,['день','дня','дней'])+'<br>'+nf(pa[1],2)+' → '+nf(pb[1],2)+PC.unit+' · '+pct(ch,2)+' · '+(pb[1]-pa[1]>=0?'+':'')+nf(pb[1]-pa[1],2)+PC.unit+'<br><span class="mut">внутри периода: макс '+nf(smx,2)+' · мин '+nf(smn,2)+'</span> <button type="button" class="chip" data-pcclear>Сбросить</button>';
   }else if(PC.mk){var m=PC.mk;
-    if(m.e)info.innerHTML='<div class="pcev"><b>'+fmtD(new Date(m.e.date+"T12:00:00").getTime(),1)+' — '+esc(m.e.title)+'</b>'+(m.e.move?' <span class="'+(/^[−-]/.test(m.e.move)?'down':'up')+'">'+esc(m.e.move)+'</span>':'')+'<p>'+esc(m.e.text)+'</p><a class="chip on" href="'+markHref(m)+'">Подробнее →</a> <a href="'+esc(m.e.url)+'" target="_blank" rel="noopener">Источник: '+esc(m.e.src)+' ↗</a> <button type="button" class="chip" data-pcclear>Закрыть</button></div>';
-    else{var dd=new Date(d[m.i][0]);info.innerHTML='<div class="pcev"><b>'+fmtD(d[m.i][0],1)+' — '+(m.day?'изменение ':'движение ')+'<span class="'+(m.mv>=0?'up':'down')+'">'+(m.mv>0?'+':'')+nf(m.mv*100,1)+'%</span> за день</b>'+(m.n?'<p class="mut" style="margin:6px 0 2px">Новости этого и предыдущего дня — что двигало цену:</p>'+m.nn.slice(0,5).map(function(x,k){return '<div class="pcn"><a href="#markets/news/'+x.id+'">'+esc(x.t)+'</a><span class="mut"> · '+esc(x.s)+', '+fmtDT(x.d)+'</span>'+(k===0&&x.sum&&x.sum[0]?'<p>'+esc(x.sum.slice(0,2).join(' '))+'</p>':'')+'</div>'}).join('')+' ':'<p>Новостей об этом дне в базе пока нет — архив дополняется каждый час.</p><a href="https://www.google.com/search?tbm=nws&q='+encodeURIComponent((PC.q||tname(PC.tic)+' акции')+' '+dd.toLocaleDateString('ru-RU'))+'" target="_blank" rel="noopener">Найти причину в новостях ↗</a> ')+'<button type="button" class="chip" data-pcclear>Закрыть</button></div>'}
+    if(m.e)IH='<div class="pcev"><b>'+fmtD(new Date(m.e.date+"T12:00:00").getTime(),1)+' — '+esc(m.e.title)+'</b>'+(m.e.move?' <span class="'+(/^[−-]/.test(m.e.move)?'down':'up')+'">'+esc(m.e.move)+'</span>':'')+'<p>'+esc(m.e.text)+'</p><a class="chip on" href="'+markHref(m)+'">Подробнее →</a> <a href="'+esc(m.e.url)+'" target="_blank" rel="noopener">Источник: '+esc(m.e.src)+' ↗</a> <button type="button" class="chip" data-pcclear>Закрыть</button></div>';
+    else{var dd=new Date(d[m.i][0]);IH='<div class="pcev"><b>'+fmtD(d[m.i][0],1)+' — '+(m.day?'изменение ':'движение ')+'<span class="'+(m.mv>=0?'up':'down')+'">'+(m.mv>0?'+':'')+nf(m.mv*100,1)+'%</span> за день</b>'+(m.n?pcStory(m)+' ':'<p>Новостей об этом дне в базе пока нет — архив дополняется каждый час.</p><a href="https://www.google.com/search?tbm=nws&q='+encodeURIComponent((PC.q||tname(PC.tic)+' акции')+' '+dd.toLocaleDateString('ru-RU'))+'" target="_blank" rel="noopener">Найти причину в новостях ↗</a> ')+'<button type="button" class="chip" data-pcclear>Закрыть</button></div>'}
   }else{var f=d[0][1],l=d[d.length-1][1],ys2=d.map(function(x){return x[1]});
-    info.innerHTML='За период: '+pct((l/f-1)*100,1)+' · макс '+nf(Math.max.apply(0,ys2),2)+' · мин '+nf(Math.min.apply(0,ys2),2)+'<br><span class="mut">Наведи на любой день — покажу его новости; кружки — дни движения от '+nf(pcThr()*100,1)+'%, по которым нашлись новости (зелёный — рост, красный — падение), и ключевые события. Нажми — список новостей с источниками. Протяни по графику — посчитаю изменение за период. Двойной щелчок — сброс.</span>'}
+    IH='За период: '+pct((l/f-1)*100,1)+' · макс '+nf(Math.max.apply(0,ys2),2)+' · мин '+nf(Math.min.apply(0,ys2),2)+'<br><span class="mut">Наведи на любой день — покажу его новости; кружки — дни движения от '+nf(pcThr()*100,1)+'%, по которым нашлись новости (зелёный — рост, красный — падение), и ключевые события. Нажми — список новостей с источниками. Протяни по графику — посчитаю изменение за период. Двойной щелчок — сброс.</span>'}
+  if(info.__h!==IH){info.__h=IH;info.innerHTML=IH}
 }
 function pcPoint(e){var g=pcGeom();if(!g)return null;var r=g.el.getBoundingClientRect(),k=r.width?g.el.clientWidth/r.width:1,x=(e.clientX-r.left)*k;return {g:g,x:x,i:g.idx(x)}}
 document.addEventListener('pointerdown',function(e){var el=e.target.closest&&e.target.closest('#pchart');if(!el)return;var p=pcPoint(e);if(!p)return;PC.drag={x:p.x,i:p.i,moved:false,id:e.pointerId};try{el.setPointerCapture(e.pointerId)}catch(err){}});
 document.addEventListener('pointermove',function(e){var el=document.getElementById('pchart');if(!el)return;
   if(PC.drag){var p=pcPoint(e);if(!p)return;if(Math.abs(p.x-PC.drag.x)>6)PC.drag.moved=true;if(PC.drag.moved){PC.sel=[PC.drag.i,p.i];PC.hov=p.i}else PC.hov=p.i;drawPC();return}
-  if(e.target.closest&&e.target.closest('#pchart')){var q=pcPoint(e);if(q&&q.i!==PC.hov){PC.hov=q.i;var mm=markAt(q.i);if(mm)PC.mk=mm;drawPC()}}});
+  if(e.target.closest&&e.target.closest('#pchart')){var q=pcPoint(e);if(q&&q.i!==PC.hov){PC.hov=q.i;var mm=markAt(q.i)||dayMark(q.i);if(mm)PC.mk=mm;drawPC()}}});
 document.addEventListener('pointerup',function(e){if(!PC.drag)return;var p=pcPoint(e);if(PC.drag.moved&&p){PC.sel=PC.drag.i===p.i?null:[PC.drag.i,p.i]}else if(p){var mm=markAt(p.i)||dayMark(p.i);if(mm){PC.mk=mm;PC.sel=null;if(e.pointerType==='mouse'&&mm.e){var hr=markHref(mm);if(hr){PC.drag=null;location.hash=hr;return}}}}PC.drag=null;if(e.pointerType==='mouse'){}else{/* на телефоне подсказка остаётся до следующего касания */}drawPC()});
 document.addEventListener('pointercancel',function(){PC.drag=null;drawPC()});
 document.addEventListener('pointerleave',function(){},true);
