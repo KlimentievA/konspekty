@@ -1,0 +1,3 @@
+https://pleh.tech/timetable?group=15.24%D0%94-%D0%AD%D0%9101%2F25%D1%81&week=2026-10-05: 2366 байт, пар 0, «занятий нет» 0, начало: <!DOCTYPE html> <html lang="ru">   <head>     <meta charset="UTF-8" />     <meta name="apple-itunes-app" content="app-id=6759609772">     <meta name="viewport" content="width=device-width, initial-sca
+https://pleh.tech/timetable?group=15.24%D0%94-%D0%AD%D0%9101%2F25%D1%81&week=2026-10-12: 2366 байт, пар 0, «занятий нет» 0, начало: <!DOCTYPE html> <html lang="ru">   <head>     <meta charset="UTF-8" />     <meta name="apple-itunes-app" content="app-id=6759609772">     <meta name="viewport" content="width=device-width, initial-sca
+пар всего: 0
