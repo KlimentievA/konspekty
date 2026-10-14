@@ -78,7 +78,7 @@ except Exception as e:
 
 try:
     a = get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=25&page=1&price_change_percentage=24h,7d')
-    out['crypto'] = [{'s': x['symbol'].upper(), 'n': x['name'], 'p': x['current_price'], 'c24': x.get('price_change_percentage_24h_in_currency'),
+    out['crypto'] = [{'s': x['symbol'].upper(), 'id': x['id'], 'n': x['name'], 'p': x['current_price'], 'c24': x.get('price_change_percentage_24h_in_currency'),
                       'c7': x.get('price_change_percentage_7d_in_currency'), 'cap': x.get('market_cap'), 'vol': x.get('total_volume')} for x in a]
 except Exception as e:
     print('coingecko', e, file=sys.stderr); out['crypto'] = old.get('crypto')
@@ -118,6 +118,18 @@ NAMES = {'SBER': ['Сбербанк', 'Сбер'], 'GAZP': ['Газпром'], '
          'NLMK': ['НЛМК'], 'VTBR': ['ВТБ'], 'T': ['Т-Технологи', 'Т-Банк'], 'OZON': ['Ozon', 'Озон'], 'ALRS': ['АЛРОСА', 'Алроса'],
          'PHOR': ['ФосАгро'], 'AFLT': ['Аэрофлот'], 'MOEX': ['Мосбирж', 'Московская биржа', 'Московской бирж'], 'IRAO': ['Интер РАО'],
          'RUAL': ['Русал', 'РУСАЛ'], 'TRNFP': ['Транснефт'], 'POSI': ['Positive Technologies', 'Позитив'], 'HEAD': ['HeadHunter', 'Хэдхантер', 'hh.ru']}
+# американские компании и крипта: ищем по словам целиком (латиница и русские названия)
+NAMES_RX = {'AAPL': r'Apple|Эппл', 'MSFT': r'Microsoft|Майкрософт', 'NVDA': r'Nvidia|NVIDIA|Nvidia\'s|Нвидиа|Nvidia’s', 'AMZN': r'Amazon|Амазон',
+    'GOOGL': r'Alphabet|Google|Гугл', 'META': r'Meta Platforms|Meta(?=\s|’|\'|,)|Facebook', 'TSLA': r'Tesla|Тесла', 'BRK-B': r'Berkshire|Баффет|Buffett',
+    'AVGO': r'Broadcom', 'JPM': r'JPMorgan|JP Morgan|Dimon', 'LLY': r'Eli Lilly|Lilly', 'V': r'Visa(?! Waiver)', 'XOM': r'Exxon',
+    'WMT': r'Walmart', 'MA': r'Mastercard', 'UNH': r'UnitedHealth', 'JNJ': r'Johnson & Johnson|J&J', 'PG': r'Procter', 'COST': r'Costco',
+    'NFLX': r'Netflix', 'KO': r'Coca-Cola|Coca Cola', 'CVX': r'Chevron', 'BAC': r'Bank of America', 'AMD': r'AMD|Advanced Micro', 'ORCL': r'Oracle',
+    'BTC': r'Bitcoin|биткоин|Биткоин|BTC', 'ETH': r'Ethereum|эфириум|Эфириум|ether(?:eum)?\b', 'SOL': r'Solana', 'XRP': r'XRP|Ripple', 'TON': r'Toncoin|TON\b',
+    'DOGE': r'Dogecoin|DOGE', 'BNB': r'BNB|Binance Coin', 'USDT': r'Tether|USDT',
+    '^GSPC': r'S&P 500|S&P|Wall Street|Уолл-стрит|американск[а-я]+ (?:рын|бирж|акци)', '^IXIC': r'Nasdaq|Насдак', '^DJI': r'Dow Jones|Dow(?= )|Доу-Джонс'}
+NAMES_RX = {k: re.compile(r'(?<![A-Za-zА-Яа-яЁё])(?:' + v + r')(?![a-zа-яё])') for k, v in NAMES_RX.items()}
+def tags_of(title):
+    return [k for k, v in NAMES.items() if any(n in title for n in v)] + [k for k, r in NAMES_RX.items() if r.search(title)]
 FIN = re.compile(r'(?<![А-Яа-яЁёA-Za-z])(акци[йияюе](?! протест)(?! памяти)(?! в поддержку)|бирж|рубл[ья]|ставк|ЦБ|Банк[а-я]* России|нефт|газа?(?![а-я])|дивиденд|облигац|ОФЗ|инфляц|бюджет|IPO|SPO|санкц|прибыль|чист[а-я]+ прибыл|выручк|МСФО|сделк|ВВП|курс[аеу]? (?:доллар|рубл|юан|евро)|доллар|юан|индекс[а-я]* Мосбирж|Мосбирж|экспорт|налог|Минфин|ФРС|Brent|Urals|золот[оа](?![а-я])|инвест|капитализац|госдолг|ипотек|котировк|размещени|эмисси|банкротств|M&A|слияни|поглощени)', re.I)
 def keep(x):
     if x['cat'] == 'world':
@@ -140,8 +152,7 @@ for src, cat, url in FEEDS:
             d = when(txt(it, 'pubDate'))
             if not title or not link or not d: continue
             blob = title + ' ' + desc
-            tags = [k for k, v in NAMES.items() if any(n in blob for n in v)]
-            tags = [k for k, v in NAMES.items() if any(n in title for n in v)]
+            tags = tags_of(title)
             x = {'t': title, 'u': link, 's': src, 'cat': cat, 'd': d, 'x': desc[:220], 'tags': tags}
             if keep(x): items.append(x)
     except Exception as e:
@@ -157,6 +168,7 @@ for x in sorted(items + oldn, key=lambda x: x['d'], reverse=True):
     k = x['u'].split('?')[0]
     if k in seen or not keep(x) or x['d'] < (cut_tag if x.get('tags') else cut): continue
     seen.add(k)
+    x['tags'] = tags_of(x['t'])
     if 'sum' not in x and k in oldby and 'sum' in oldby[k]: x['sum'] = oldby[k]['sum']
     merged.append(x)
 merged = merged[:1500]
