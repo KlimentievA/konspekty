@@ -10,7 +10,8 @@ OUT = 'world.json'
 IMF = os.environ.get('WORLD_IMF_URL') or 'https://www.imf.org/external/datamapper/api/v1/'   # переменные — только для проверки на копии API
 WB = (os.environ.get('WORLD_WB_URL') or 'https://api.worldbank.org/v2/') + 'country/all/indicator/%s?format=json&date=2000:%d&per_page=20000'
 UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0 Safari/537.36',
-      'Accept': 'application/json,text/plain,*/*', 'Accept-Language': 'en-US,en;q=0.9'}
+      'Accept': 'application/json,text/plain,*/*', 'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': 'https://www.imf.org/external/datamapper/NGDPD@WEO/OEMDC/ADVEC/WEOWORLD', 'Origin': 'https://www.imf.org'}
 FIRST = 2000
 
 # код МВФ: (название, единица, код Всемирного банка, множитель WB → единица МВФ)
@@ -36,7 +37,12 @@ FIX = {'WBG': 'PSE'}   # у МВФ «Западный берег и Газа» =
 now = datetime.datetime.now(datetime.timezone.utc)
 
 
-def log(*a): print(*a, file=sys.stderr, flush=True)
+LOGL = []
+def log(*a):
+    print(*a, file=sys.stderr, flush=True)
+    LOGL.append(' '.join(str(x) for x in a)[:300])
+    try: open('world_debug.txt', 'w', encoding='utf-8').write('\n'.join(LOGL[-60:]) + '\n')
+    except Exception: pass
 
 
 def get(url, t=40, tries=3):
@@ -71,7 +77,7 @@ old = load_old()
 if old and os.environ.get('WORLD_FORCE') != '1':
     try:
         age = (now - datetime.datetime.fromisoformat(old['updated'].replace('Z', '+00:00'))).total_seconds() / 3600
-        if age < 20:
+        if age < 20 and old.get('weo'):
             print('world.json свежий (%.1f ч) — пропускаю; WORLD_FORCE=1 — обновить принудительно' % age); sys.exit(0)
     except Exception: pass
 
