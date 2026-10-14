@@ -88,7 +88,9 @@ for t in US:
     try:
         j = get('https://query1.finance.yahoo.com/v8/finance/chart/' + urllib.parse.quote(t) + '?range=5d&interval=1d')
         meta = j['chart']['result'][0]['meta']
-        p, pc = meta.get('regularMarketPrice'), meta.get('chartPreviousClose') or meta.get('previousClose')
+        cl = [c for c in (j['chart']['result'][0]['indicators']['quote'][0].get('close') or []) if c]
+        p = meta.get('regularMarketPrice')
+        pc = cl[-2] if len(cl) >= 2 else (meta.get('previousClose') or meta.get('chartPreviousClose'))   # вчерашнее закрытие (раньше бралось закрытие 5 дней назад)
         us[t] = {'p': p, 'ch': (p / pc - 1) * 100 if p and pc else None}
     except Exception as e:
         print('yahoo', t, e, file=sys.stderr)
