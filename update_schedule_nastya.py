@@ -72,6 +72,14 @@ def discover(page):
         urls = [x for x in urls if not re.search(r'w3\.org|reactjs|schema\.org|mozilla|github|google|vk\.com|yandex', x)]
         paths = sorted(set(re.findall(r'["\'`](/?(?:api|functions|rest|v1)/[A-Za-z0-9_/\-?=&.${}]{2,80})["\'`]', js)))
         words = sorted(set(re.findall(r'["\'`]([^"\'`\s]{0,60}(?:timetable|schedule|lessons?)[^"\'`\s]{0,60})["\'`]', js, re.I)))
+        if 'lessons_current' in js:
+            red = lambda t: re.sub(r'eyJ[A-Za-z0-9_\-.]{20,}', 'JWT…', t)
+            for m in list(re.finditer(r'lessons_current', js))[:3]:
+                DIAG.append('CTX lessons_current: ' + red(js[max(0, m.start() - 900):m.end() + 500]).replace('\n', ' '))
+            for name in re.findall(r'\$\{(\w+)\}/rest/v1/lessons_current', js):
+                for m in list(re.finditer(r'[,;\s]' + re.escape(name) + r'=', js))[:2]:
+                    DIAG.append(f'DEF {name}: ' + red(js[m.start():m.start() + 200]))
+            DIAG.append('supabase-хосты: ' + str(sorted(set(re.findall(r'[a-z0-9]+\.supabase\.co', js)))[:5]) + '; jwt-ключей в коде: ' + str(len(re.findall(r'eyJ[A-Za-z0-9_\-.]{20,}', js))))
         DIAG.append(f'JS {u} ({len(js)} байт): url={urls[:25]} paths={paths[:30]} слова={words[:30]}')
 
 
