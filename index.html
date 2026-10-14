@@ -117,7 +117,7 @@ h1,.lead{animation:up .45s cubic-bezier(.2,.8,.25,1) both}.lead{animation-delay:
 .lock.open{color:var(--a2)}
 .empty{margin-top:30px;padding:38px 24px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted)}
 .empty .ic{font:600 34px/1 'Literata',Georgia,serif;color:var(--faint);margin-bottom:10px}
-h1.brand{display:flex;align-items:center;gap:16px}h1.brand img{width:clamp(44px,9vw,60px);height:auto;border-radius:22%;box-shadow:0 8px 22px rgba(4,69,47,.28)}
+h1.brand{font-size:clamp(46px,10vw,72px);font-weight:700;letter-spacing:-.01em}h1.brand img{width:.78em;height:.78em;vertical-align:baseline;margin-right:.06em;border-radius:22%;box-shadow:0 .1em .26em rgba(4,69,47,.25)}
 /* переключатель темы */
 .top .tr{display:flex;gap:8px;align-items:center}
 .thm{flex:none;width:36px;height:36px;padding:0!important;justify-content:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--muted);display:grid;place-items:center;cursor:pointer}
@@ -160,7 +160,7 @@ h1.brand{display:flex;align-items:center;gap:16px}h1.brand img{width:clamp(44px,
 </style></head><body>
 <div class="w">
   <div class="top"><span></span><div class="tr"><button type="button" class="thm" id="thm" aria-label="Светлая или тёмная тема" title="Тема"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button></div></div>
-  <h1 class="brand"><img src="favicon.svg" alt="" width="56" height="56">Hub</h1>
+  <h1 class="brand" aria-label="Hub"><img src="favicon.svg" alt="H" width="56" height="56"><span aria-hidden="true">ub</span></h1>
   <p class="lead">Выбери профиль.</p>
   <div class="cards prof"><button type="button" class="card pf" data-p="artem"><span class="lock" data-lock="artem"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><em>пароль</em></span><div class="av a">А</div><b>Артем</b><span>Учёба и финансы</span></button><button type="button" class="card pf" data-p="nastya"><span class="lock" data-lock="nastya"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><em>пароль</em></span><div class="av n">Н</div><b>Настя</b><span>Учёба</span></button></div>
   <div class="zmr">Масштаб: <button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div>
