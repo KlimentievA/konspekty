@@ -42,6 +42,18 @@ document.addEventListener('DOMContentLoaded',function(){var v=g();document.query
     ['index.html','finance.html','ucheba.html'].forEach(function(p){if(page(location.href)!==p)fetch(p).catch(function(){})});
   },5000)});
 })();
+/* Приложение Hub (Android): цвет системных полос берём из фона сайта, но зовём приложение только когда цвет реально изменился
+   (раньше приложение реагировало на любое изменение стилей страницы, в т.ч. при прокрутке, и телефон перерисовывал экран — отсюда рывки и тормоза) */
+(function(){
+  if(!window.HubApp||!HubApp.bar)return;
+  window.__hubObs=1;                     // не даём приложению ставить своего «наблюдателя» за стилями
+  var last='',t=null;
+  function send(){t=null;try{var c=getComputedStyle(document.body||document.documentElement).backgroundColor;if(c&&c!==last){last=c;HubApp.bar(c)}}catch(e){}}
+  function later(){if(!t)t=setTimeout(send,120)}
+  try{new MutationObserver(later).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-skin']})}catch(e){}
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',later)}catch(e){}
+  document.addEventListener('DOMContentLoaded',later);
+})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://iss.moex.com" crossorigin><link rel="preconnect" href="https://api.coingecko.com" crossorigin><link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400..700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400..700&family=JetBrains+Mono:wght@400;500&display=swap"></noscript>

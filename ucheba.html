@@ -36,6 +36,18 @@ document.addEventListener('DOMContentLoaded',function(){var v=g();document.query
     ['index.html','finance.html','ucheba.html'].forEach(function(p){if(page(location.href)!==p)fetch(p).catch(function(){})});
   },5000)});
 })();
+/* Приложение Hub (Android): цвет системных полос берём из фона сайта, но зовём приложение только когда цвет реально изменился
+   (раньше приложение реагировало на любое изменение стилей страницы, в т.ч. при прокрутке, и телефон перерисовывал экран — отсюда рывки и тормоза) */
+(function(){
+  if(!window.HubApp||!HubApp.bar)return;
+  window.__hubObs=1;                     // не даём приложению ставить своего «наблюдателя» за стилями
+  var last='',t=null;
+  function send(){t=null;try{var c=getComputedStyle(document.body||document.documentElement).backgroundColor;if(c&&c!==last){last=c;HubApp.bar(c)}}catch(e){}}
+  function later(){if(!t)t=setTimeout(send,120)}
+  try{new MutationObserver(later).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-skin']})}catch(e){}
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',later)}catch(e){}
+  document.addEventListener('DOMContentLoaded',later);
+})();
 </script><style>#hubfix{flex:none;display:grid;place-items:center;text-decoration:none;color:var(--fg,#25221C);width:34px;height:34px;margin:0 8px 0 -4px;background:color-mix(in srgb,var(--bg,#F4F1E8) 86%,transparent);border:1px solid var(--line,#D9D3C2);border-radius:999px;transition:background .15s,color .15s}#hubfix svg{width:16px;height:16px;transition:transform .15s}#hubfix:hover,#hubfix:active{background:var(--fg,#25221C);color:var(--bg,#F4F1E8);border-color:var(--fg,#25221C)}#hubfix:hover svg{transform:translateX(-2px)}html:root[data-skin=c] #hubfix,html:root[data-skin=f] #hubfix{position:absolute;left:4px;top:50%;margin:-18px 0 0;width:36px;height:36px}@media (min-width:900px){html:root[data-skin=c] #hubfix,html:root[data-skin=f] #hubfix{position:fixed;z-index:70;top:12px;left:18px;margin:0;width:42px;height:42px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,0,0,.08)}html:root[data-skin=c] #hubfix svg,html:root[data-skin=f] #hubfix svg{width:19px;height:19px}}@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

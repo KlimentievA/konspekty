@@ -113,7 +113,7 @@ public class MainActivity extends Activity {
                 if (firstPaint) { firstPaint = false; web.animate().alpha(1f).setDuration(260).start(); }
                 // цвет полосы статуса = фон сайта (с учётом выбранной на сайте темы)
                 v.evaluateJavascript("(function(){function f(){try{HubApp.bar(getComputedStyle(document.body).backgroundColor)}catch(e){}}"
-                    + "f();if(!window.__hubObs){window.__hubObs=1;new MutationObserver(function(){setTimeout(f,50)}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class','style']});"
+                    + "f();if(!window.__hubObs){window.__hubObs=1;new MutationObserver(function(){setTimeout(f,50)}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-skin']});"
                     + "try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){setTimeout(f,50)})}catch(e){}window.addEventListener('hashchange',function(){setTimeout(f,100)})}})()", null);
             }
         });
@@ -450,6 +450,8 @@ public class MainActivity extends Activity {
     }
 
     // ---------------------------------------------------------------- мост для сайта
+    String lastBar = null;
+
     class Bridge {
         @JavascriptInterface
         public String version() { return "1." + versionCode(); }
@@ -459,6 +461,8 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void bar(String css) {
+            if (css == null || css.equals(lastBar)) return;   // тот же цвет — ничего не трогаем (иначе телефон перерисовывает экран)
+            lastBar = css;
             runOnUiThread(() -> {
                 try {
                     String[] p = css.replaceAll("[^0-9,.]", "").split(",");
@@ -467,14 +471,13 @@ public class MainActivity extends Activity {
                     Window w = getWindow();
                     w.setStatusBarColor(c);
                     w.setNavigationBarColor(c);
-                    web.setBackgroundColor(c);
                     boolean light = (0.299 * r + 0.587 * g + 0.114 * b) > 150;
                     View dv = w.getDecorView();
                     int f = dv.getSystemUiVisibility();
                     f = light ? (f | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) : (f & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
                     if (Build.VERSION.SDK_INT >= 26)
                         f = light ? (f | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) : (f & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                    dv.setSystemUiVisibility(f);
+                    if (f != dv.getSystemUiVisibility()) dv.setSystemUiVisibility(f);
                 } catch (Exception ignored) { }
             });
         }
