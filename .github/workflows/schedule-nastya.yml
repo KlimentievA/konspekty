@@ -13,9 +13,9 @@ jobs:
       - run: python3 update_schedule_nastya.py
       - name: Сохранить, если изменилось
         run: |
-          if [ -n "$(git status --porcelain schedule_nastya.json schedule_nastya_debug.txt)" ]; then
+          if [ -n "$(git status --porcelain -- "schedule_nastya*")" ]; then
             git config user.name "schedule-bot"; git config user.email "schedule-bot@users.noreply.github.com"
-            git add schedule_nastya.json schedule_nastya_debug.txt
+            git add -A -- "schedule_nastya*"
             git commit -m "Расписание Насти обновлено"
             for i in 1 2 3 4; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep $((i*5)); done
           fi
