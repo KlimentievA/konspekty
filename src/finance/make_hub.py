@@ -245,7 +245,7 @@ fetch('schedule_nastya.json?t='+Date.now(),{cache:'no-store'}).then(function(r){
   .catch(function(){el.innerHTML='<p class="nopairs">Расписание скоро появится.</p>'});
 })();
 </script>"""
-nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h1>Расписание</h1>\n  <p class="lead">Группа 15.24Д-ЭМ01/25с · ближайшие пары.</p>\n'
+nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h1>Расписание</h1>\n  <p class="lead">Группа 15.24Д-ЭБ01/25с · ближайшие пары.</p>\n'
            '  <div class="sch" id="sch"><p class="nopairs">Загружаю…</p></div>\n</div>\n' + NU_JS)
 nu_html = page('Учёба · Настя', nu_body, 'nastya').replace('</head>', NU_CSS + '</head>', 1)
 
