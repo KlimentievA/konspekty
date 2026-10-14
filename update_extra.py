@@ -32,6 +32,7 @@ def load(p, d=None):
 def save(p, o):
     json.dump(o, open(os.path.join(HERE, p), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
+_DBG = []
 # ---------- дивиденды ----------
 def corp_cal():
     if not S: return
@@ -40,6 +41,9 @@ def corp_cal():
         t = r[0]
         try:
             j = get('https://iss.moex.com/iss/securities/%s/dividends.json?iss.meta=off' % t, 15)
+            if 'dividends' not in j:
+                if ok == 0 and not _DBG: _DBG.append(1); print('ответ без dividends:', list(j)[:6], str(j)[:300])
+                j = get('https://iss.moex.com/iss/securities/%s/dividends.json' % t, 15)
             cols = j['dividends']['columns']; ix = {c: i for i, c in enumerate(cols)}
             for row in j['dividends']['data']:
                 d = row[ix['registryclosedate']]; v = row[ix['value']]
