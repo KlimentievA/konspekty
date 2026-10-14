@@ -123,7 +123,7 @@ def pull(feed):
     except Exception as e:
         print('rss', src or url[:70], str(e)[:80], file=sys.stderr); return []
     res = []
-    for it in list(root.iter('item'))[:100]:
+    for it in list(root.iter('item'))[:(30 if src is None else 100)]:
         title, link = txt(it, 'title'), txt(it, 'link')
         d = when(txt(it, 'pubDate'))
         if not title or not link or not d or d < ago(days=5): continue
@@ -131,13 +131,14 @@ def pull(feed):
         if s_ is None:   # Google Новости: издание — в <source>, оно же в конце заголовка
             s_ = (it.findtext('source') or 'Google Новости').strip()
             if title.endswith(' - ' + s_): title = title[:-len(s_) - 3].strip()
+            s_ = re.sub(r'^https?://(?:www\.)?|/$', '', s_)
         desc = txt(it, 'description')
         if src is None: desc = ''
         ft = [cat[3:]] if cat.startswith('us:') else []
         x = {'t': title, 'u': link, 's': s_, 'cat': 'us' if ft else cat, 'd': min(d, NOW.strftime('%Y-%m-%dT%H:%M:%SZ')), 'x': desc[:300],
              'tags': sorted(set(tags_of(title)) | set(ft))}
         if ft: x['ft'] = ft
-        if 'news.google.com' in link: x['g'] = link
+        if 'news.google.com' in link: x['g'] = 1
         if keep(x): res.append(x)
     return res
 
@@ -150,7 +151,7 @@ try: oldn = json.load(open('news.json')).get('items', [])
 except Exception: oldn = []
 try: TEXT = json.load(open('news_text.json'))
 except Exception: TEXT = {}
-def key(x): return (x.get('g') or x['u']).split('?')[0]
+def key(x): return (x['g'] if isinstance(x.get('g'), str) else x['u']).split('?')[0]
 for x in oldn:   # старый формат: подробный текст лежал в sum
     x.setdefault('id', hashlib.md5(key(x).encode()).hexdigest()[:10])
     if x.get('sum') and x['id'] not in TEXT and (len(x['sum']) > 1 or len(x['sum'][0]) > 400):
@@ -221,6 +222,7 @@ for x in recent:
         if inter >= 3 and sc >= 0.5 and sc > bs: best, bs = c, sc
     if best: best['m'].append(x)
     else: clusters.append({'d': x['d'], 'tk': set(x['_tk']), 'm': [x]})
+PAYWALL = {'WSJ', 'The Wall Street Journal', 'Bloomberg.com', 'Bloomberg', 'Financial Times', 'The Economist', 'New York Times', "Barron's", 'Reuters'}
 def base_imp(x):
     t = (x['t'] + ' ' + x.get('to', ''))
     s_ = min(6, 2 * len(HI.findall(t))) + SRCW.get(x['s'], 0)
@@ -233,14 +235,15 @@ def base_imp(x):
 for c in clusters:
     m = c['m']
     srcs = {y['s'] for y in m}
-    rep = max(m, key=lambda y: (bool(TEXT.get(y['id'])), SRCW.get(y['s'], 0) + (1 if CYR.search(y['t']) else 0), bool(y.get('tags')), -len(y['t'])))
+    rep = max(m, key=lambda y: (sum(len(q) for q in TEXT.get(y['id'], [])) > 900, y['s'] not in PAYWALL, SRCW.get(y['s'], 0) + (1 if CYR.search(y['t']) else 0), bool(y.get('tags')), -len(y['t'])))
     tags = sorted({t for y in m for t in y.get('tags', [])})
     imp = max(base_imp(y) for y in m) + 3 * min(len(srcs) - 1, 5)
     for y in m:
         y['imp'] = imp
         if y is not rep: y['dup'] = rep['id']
     rep['cl'] = len(srcs); rep['tags'] = tags
-    if len(m) > 1: rep['also'] = [[y['s'], y.get('u'), y['id']] for y in m if y is not rep][:8]
+    rep['_m'] = [y for y in m if y is not rep]
+    if len(m) > 1: rep['also'] = [[y['s'], None if 'news.google.com' in y['u'] else y['u'], y['id']] for y in m if y is not rep][:8]
     else: rep.pop('also', None)
 for x in merged:
     if 'imp' not in x: x['imp'] = base_imp(x)
@@ -251,23 +254,34 @@ print('clusters', len(clusters), 'multi-source', sum(1 for c in clusters if len(
 cand = [x for x in merged if not x.get('dup') and x['d'] > ago(days=3) and not TEXT.get(x['id']) and x.get('sf', 0) < 2]
 cand += [x for x in merged if not x.get('dup') and x['d'] > ago(days=2) and TEXT.get(x['id']) and x.get('sv', 0) < 3
          and sum(len(q) for q in TEXT[x['id']]) < 900 and x.get('sf', 0) < 2]
+cand += [x for x in merged if not x.get('dup') and x['d'] > ago(days=2) and x.get('_m') and not x.get('mt') and TEXT.get(x['id'])
+         and sum(len(q) for q in TEXT[x['id']]) < 900 and x not in cand]
 cand.sort(key=lambda x: (x['imp'] >= 6, x['d'][:13], x['imp']), reverse=True)
-def work(x):
+def one(y):
     try:
-        url = x['u']
-        if x.get('g') and 'news.google.com' in url:
-            url = gn_decode(x['g']); x['u'] = url
-        paras = article(url, x.get('to') or x['t'], x.get('x', ''))
-        if paras and not CYR.search(' '.join(paras)[:400]):
-            try: paras = tr_list(paras)
-            except Exception as e: print('translate text', e, file=sys.stderr)
-        return x, paras
+        url = y['u']
+        if 'news.google.com' in url:
+            url = gn_decode(url); y['u'] = url
+        return article(url, y.get('to') or y['t'], y.get('x', '')) or []
     except Exception as e:
-        print('article', x['s'], str(e)[:80], file=sys.stderr); return x, None
+        print('article', y['s'], str(e)[:80], file=sys.stderr); return []
+def work(x):
+    """Пересказ сюжета: берём самый подробный текст среди изданий, которые о нём написали (до 3 попыток)."""
+    best = one(x)
+    others = sorted(x.get('_m', []), key=lambda y: (y['s'] in PAYWALL, -SRCW.get(y['s'], 0)))
+    for y in others[:3]:
+        if sum(len(q) for q in best) >= 1500: break
+        alt = one(y)
+        if sum(len(q) for q in alt) > sum(len(q) for q in best): best = alt
+    if best and not CYR.search(' '.join(best)[:400]):
+        try: best = tr_list(best)
+        except Exception as e: print('translate text', e, file=sys.stderr)
+    return x, best
 done = 0
 with ThreadPoolExecutor(6) as ex:
-    for x, paras in ex.map(work, cand[:240]):
+    for x, paras in ex.map(work, cand[:300]):
         done += 1
+        if x.get('_m'): x['mt'] = 1
         old = TEXT.get(x['id']) or []
         if paras and sum(len(q) for q in paras) > sum(len(q) for q in old):
             TEXT[x['id']] = paras; x['sum'] = [lead(paras)]; x['sv'] = 3
@@ -276,9 +290,26 @@ with ThreadPoolExecutor(6) as ex:
             if not x.get('sum') and x.get('x') and len(x['x']) > 40: x['sum'] = [x['x'][:300]]
 print('articles', done, 'of', len(cand))
 for x in merged:
+    x.pop('_m', None)
     if not x.get('sum') and TEXT.get(x['id']): x['sum'] = [lead(TEXT[x['id']])]
     x.pop('x', None) if x.get('sum') else None
 
+# ---------- чистка: проходные заметки живут недолго, служебные поля убираем ----------
+def alive(x):
+    if x.get('tags') or x['cat'] == 'cbr': return True
+    imp = x.get('imp', 0)
+    return x['d'] > (ago(days=5) if imp >= 8 else ago(days=2) if imp >= 4 else ago(hours=14))
+merged = [x for x in merged if alive(x) and not x.get('dup')]   # повторы сюжета не храним — они в also у главной
+keepids = {x['id'] for x in merged}
+for x in merged:
+    for k_ in ('st', 'st2', 'trt'): x.pop(k_, None)
+    if x.get('g') and 'news.google.com' not in x['u']: x.pop('g', None)
+    elif isinstance(x.get('g'), str): x['g'] = 1
+    if x['d'] < ago(days=3): x.pop('sf', None); x.pop('sv', None)
+    if x.get('sum') or x['d'] < ago(days=2): x.pop('x', None)
+    elif x.get('x'): x['x'] = x['x'][:200]
+    if x.get('to') and x.get('imp', 0) < 8 and not x.get('tags') and x['d'] < ago(days=1): x.pop('to', None)
+    if x.get('also'): x['also'] = [a[:2] for a in x['also']]
 # ---------- запись ----------
 ids = {x['id'] for x in merged}
 cut10, cut30 = ago(days=10), ago(days=30)

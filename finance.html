@@ -811,7 +811,7 @@ function tagHref(t){return S.ru.some(function(x){return x[0]===t})?'#markets/ru/
 var RX_BOND=/ОФЗ|облигац|бонд|купон|аукцион[а-я]* Минфин|Treasur|bond yield|bonds/i,RX_FX=/курс[а-я]* (?:доллар|рубл|юан|евро)|доллар|(?:^|[^а-яё])евро(?![а-яё])|юан|рубл[ьяеюи](?![а-яё])|валют|dollar|yuan|currenc|forex/i,RX_RATE=/ставк|ЦБ|Банк[а-я]* России|ФРС|(?:^|\W)Fed(?:\W|$)|инфляц|Набиуллин|Пауэлл|Powell/i;
 var NFF={all:function(){return true},ru:function(x){return x.cat==='ru'||x.cat==='cbr'||(x.tags||[]).some(function(t){return S.ru.some(function(r){return r[0]===t})})},comp:function(x){return x.tags&&x.tags.length},cbr:function(x){return x.cat==='cbr'||RX_RATE.test(x.t)},
   us:function(x){return x.cat==='us'||x.cat==='world'||(x.tags||[]).some(isUS)},crypto:function(x){return x.cat==='crypto'||(x.tags||[]).some(isCR)},bonds:function(x){return RX_BOND.test(x.t)||RX_BOND.test((x.sum||[]).join(' '))&&RX_RATE.test(x.t)},fx:function(x){return RX_FX.test(x.t)}};
-var IMP_MAIN=8,TEXTS=null;
+var IMP_MAIN=10,TEXTS=null;
 function hoursAgo(h){return new Date(Date.now()-h*36e5).toISOString()}
 function topNews(a,hrs,n){var lim=hoursAgo(hrs),r=a.filter(function(x){return !x.dup&&x.d>=lim}).sort(function(x,y){return (y.imp||0)-(x.imp||0)||(x.d<y.d?1:-1)});
   if(r.length<n)r=r.concat(a.filter(function(x){return !x.dup&&x.d<lim}).slice(0,n-r.length));return r.slice(0,n)}
@@ -857,7 +857,7 @@ function vReader(id){
   var s=(TEXTS&&TEXTS[x.id])||((x.sum&&x.sum.length)?x.sum:(x.x?[x.x]:[]));
   h+='<div class="gist"><h3>Подробно</h3>'+(s.length?(s.length>4&&s.every(function(q){return q.length<330})?s.reduce(function(acc,q,i){if(i%2===0)acc.push([]);acc[acc.length-1].push(q);return acc},[]).map(function(g){return g.join(' ')}):s).map(function(g){return '<p class="gp">'+esc(g)+'</p>'}).join('')+(!TEXTS&&!x.g?'<p class="note">Загружаю полный пересказ…</p>':''):'<p class="note">'+(x.g?'Пересказа этой статьи пока нет — открой источник по кнопке ниже.':'Содержание появится после следующего автообновления (раз в час).')+'</p>')+'</div>';
   h+='<a class="readsrc" href="'+esc(x.u||x.g)+'" target="_blank" rel="noopener">Читать полностью: '+esc(x.s)+' ↗</a>';
-  if(x.also&&x.also.length)h+='<p class="note" style="margin-top:12px">Об этом же пишут: '+x.also.map(function(a){return '<a href="'+esc(a[1]||'#')+'" target="_blank" rel="noopener">'+esc(a[0])+' ↗</a>'}).join(' · ')+'</p>';
+  if(x.also&&x.also.length)h+='<p class="note" style="margin-top:12px">Об этом же пишут: '+x.also.map(function(a){var it=(n.items||[]).filter(function(y){return y.id===a[2]})[0],u=a[1]||(it&&(it.u||it.g));return u?'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(a[0])+' ↗</a>':esc(a[0])}).join(' · ')+'</p>';
   h+='<p class="note">Текст выше — ключевые абзацы статьи, собранные автоматически'+(x.tr?' и переведённые машинным переводом (возможны неточности)':'')+'. Полная версия и права — у источника.</p>';
   var rel=(n.items||[]).filter(function(y){return y!==x&&!y.dup&&y.tags&&x.tags&&y.tags.some(function(t){return x.tags.indexOf(t)>=0})}).slice(0,5);if(!rel.length)rel=(n.items||[]).filter(function(y){return y!==x&&!y.dup&&y.cat===x.cat}).slice(0,5);
   if(rel.length)h+='<h3 class="evm">Ещё по теме</h3>'+rel.map(newsItem).join('');
