@@ -964,7 +964,23 @@ function vCal(){
 /* ---------------- новости и события ---------------- */
 var EV=S.events||[];
 function evFor(tic){return EV.filter(function(e){return e.tic===tic}).sort(function(a,b){return a.date<b.date?1:-1})}
-function loadNews(){if(M.news)return Promise.resolve();return getJSON('news.json',15000).then(function(j){M.news=j;M.err.news=0}).catch(function(){M.news=null;M.err.news=1})}
+/* лента: полный снимок news.json (раз в час, +пересказы и важность) и «живой» файл news-live.json из ветки data (каждую минуту: только свежие заголовки; на странице подмешивается сверху) */
+function ntl(t){return String(t||'').toLowerCase().replace(/[^a-zа-яё0-9]+/g,' ').trim().slice(0,80)}
+function mergeNews(){
+  if(!M.base){M.news=null;return}
+  var items=M.base.items,lv=M.live||[],n=0;
+  if(lv.length){var ids={},tt={};items.forEach(function(x){ids[x.id]=1;tt[ntl(x.to||x.t)]=1;tt[ntl(x.t)]=1});
+    var add=lv.filter(function(x){return x&&x.id&&x.t&&x.d&&!ids[x.id]&&!tt[ntl(x.to||x.t)]&&!tt[ntl(x.t)]});n=add.length;
+    if(n)items=add.concat(items).sort(function(a,b){return a.d<b.d?1:a.d>b.d?-1:0})}
+  M.news={updated:M.base.updated,items:items,live:n,liveUp:M.liveUp||null};
+}
+function loadNews(){
+  var p=(!M.base||Date.now()-M.baseT>600000)?getJSON('news.json',15000).then(function(j){M.base=j;M.baseT=Date.now();M.err.news=0}).catch(function(){if(!M.base){M.err.news=1}}):Promise.resolve();
+  return p.then(function(){
+    if(M.liveT&&Date.now()-M.liveT<55000)return;
+    return getJSON(DATA_BASE+'news-live.json?t='+Math.floor(Date.now()/30000),8000).then(function(j){M.live=(j&&j.items)||[];M.liveUp=j&&j.updated}).catch(function(){}).then(function(){M.liveT=Date.now()})
+  }).then(mergeNews);
+}
 function fmtDT(iso){var d=new Date(iso),now=new Date(),same=d.toDateString()===now.toDateString();return same?d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
 function tname(t){var r=S.ru.filter(function(x){return x[0]===t})[0];if(r)return r[1];var u=S.us.filter(function(x){return x[0]===t})[0];if(u)return u[1];if(typeof IDX!=='undefined'&&IDX[t])return IDX[t].n;var c=(M.cr||[]).filter(function(x){return x.s===t})[0];return c?c.n:t}
 function isUS(t){return t.charAt(0)==='^'||S.us.some(function(x){return x[0]===t})}
@@ -1042,7 +1058,7 @@ function vNews(){
     h+='<nav class="sub" style="margin-top:0">'+cats.map(function(c){return '<button type="button" class="chip'+(NF===c[0]?' on':'')+'" data-nf="'+c[0]+'">'+c[1]+'</button>'}).join('')+'</nav>';
     var lim=new Date(Date.now()-10*864e5).toISOString(),pool=n.items.filter(function(x){return !x.dup&&(x.d>=lim||NF==='comp')&&(NFF[NF]||NFF.all)(x)});
     var top=topNews(pool,24,5),tid={};top.forEach(function(x){tid[x.id]=1});
-    h+='<h3 class="evm" style="margin-top:14px">Главное за сутки</h3>'+topBlock(top);
+    h+='<p class="note" style="margin:0 0 4px">Свежие заголовки подтягиваются каждую минуту'+(n.liveUp?' · проверка в '+new Date(n.liveUp).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):'')+(n.live?' · новых с последнего полного обновления: '+n.live:'')+'; пересказы и важность — раз в час.</p>'+'<h3 class="evm" style="margin-top:14px">Главное за сутки</h3>'+topBlock(top);
     var rest=pool.filter(function(x){return !tid[x.id]}),shown=rest.slice(0,NLIST),day='';
     h+='<h3 class="evm">Вся лента</h3><p class="note" style="margin:0 0 4px">Важные новости — крупно, проходные — одной строкой.</p>';
     shown.forEach(function(x){var d=new Date(x.d).toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});if(d!==day){day=d;h+='<div class="nday">'+d+'</div>'}h+=newsItem(x,(x.imp||0)>=IMP_MAIN?'':'mini')});

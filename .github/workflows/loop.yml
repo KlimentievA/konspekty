@@ -32,7 +32,8 @@ jobs:
             i=$((i+1))
             left=$(( 3600 - ($(date +%s) - t0) )); [ $left -gt 120 ] || left=120
             [ $(( $(date +%s) + left )) -lt $end ] || break
-            echo "следующее обновление через $((left/60)) мин"; sleep $left
+            echo "следующее полное обновление через $((left/60)) мин; пока — быстрая лента новостей раз в минуту"
+            bash scripts/live_news.sh $left || echo "::warning::быстрая лента упала"
           done
       - name: Запустить следующий цикл
         if: always()
