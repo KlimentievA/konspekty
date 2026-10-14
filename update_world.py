@@ -77,7 +77,9 @@ old = load_old()
 if old and os.environ.get('WORLD_FORCE') != '1':
     try:
         age = (now - datetime.datetime.fromisoformat(old['updated'].replace('Z', '+00:00'))).total_seconds() / 3600
-        if age < 20 and old.get('weo'):
+        _d = now.date()
+        _exp = ('октябрь %d' % _d.year) if (_d.month, _d.day) >= (10, 14) else ('апрель %d' % _d.year) if (_d.month, _d.day) >= (4, 14) else ('октябрь %d' % (_d.year - 1))
+        if age < 20 and old.get('weo') == _exp:   # свежий выпуск уже есть; если пришёл старый (запасной источник) — пробуем снова каждый запуск
             print('world.json свежий (%.1f ч) — пропускаю; WORLD_FORCE=1 — обновить принудительно' % age); sys.exit(0)
     except Exception: pass
 
