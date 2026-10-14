@@ -1,1 +1,48 @@
-{"layers": [{"id": "ru-regions", "label": "Россия", "host": "RUS", "companies": "ru"}, {"id": "us-states", "label": "США", "host": "USA"}, {"id": "es-communities", "label": "Испания", "host": "ESP"}, {"id": "de-lander", "label": "Германия", "host": "DEU"}, {"id": "ca-provinces", "label": "Канада", "host": "CAN"}, {"id": "cn-provinces", "label": "Китай", "host": "CHN", "companies": "cn", "sectors": "cn-provinces-sectors"}, {"id": "in-states", "label": "Индия", "host": "IND"}]}
+{
+ "layers": [
+  {
+   "id": "ru-regions",
+   "label": "Россия",
+   "host": "RUS",
+   "companies": "ru"
+  },
+  {
+   "id": "us-states",
+   "label": "США",
+   "host": "USA",
+   "fit": [
+    -125.5,
+    24,
+    -66,
+    49.8
+   ]
+  },
+  {
+   "id": "es-communities",
+   "label": "Испания",
+   "host": "ESP"
+  },
+  {
+   "id": "de-lander",
+   "label": "Германия",
+   "host": "DEU"
+  },
+  {
+   "id": "ca-provinces",
+   "label": "Канада",
+   "host": "CAN"
+  },
+  {
+   "id": "cn-provinces",
+   "label": "Китай",
+   "host": "CHN",
+   "companies": "cn",
+   "sectors": "cn-provinces-sectors"
+  },
+  {
+   "id": "in-states",
+   "label": "Индия",
+   "host": "IND"
+  }
+ ]
+}
