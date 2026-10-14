@@ -110,7 +110,13 @@ FEEDS = [
     ('Банк России', 'cbr', 'https://www.cbr.ru/rss/RssPress'),
     ('CNBC', 'world', 'https://www.cnbc.com/id/10000664/device/rss/rss.html'),
     ('MarketWatch', 'world', 'https://feeds.content.dowjones.io/public/rss/mw_topstories'),
+    ('ПРАЙМ', 'ru', 'https://1prime.ru/export/rss2/index.xml'),
+    ('ForkLog', 'crypto', 'https://forklog.com/feed'),
+    ('Cointelegraph', 'crypto', 'https://cointelegraph.com/rss'),
+    ('CoinDesk', 'crypto', 'https://www.coindesk.com/arc/outboundfeeds/rss/'),
 ]
+# новости по каждой американской компании (лента Yahoo Finance по тикеру) — помечаются этим тикером
+FEEDS += [('Yahoo Finance', 'us:' + t, 'https://feeds.finance.yahoo.com/rss/2.0/headline?s=' + t + '&region=US&lang=en-US') for t in US if not t.startswith('^')]
 NAMES = {'SBER': ['Сбербанк', 'Сбер'], 'GAZP': ['Газпром'], 'LKOH': ['ЛУКОЙЛ', 'Лукойл'], 'ROSN': ['Роснефть', 'Роснефти'],
          'NVTK': ['НОВАТЭК', 'Новатэк'], 'GMKN': ['Норникел', '«Норильский никель»'], 'PLZL': ['«Полюс»', 'Полюса', 'Полюс '],
          'TATN': ['Татнефть', 'Татнефти'], 'SNGS': ['Сургутнефтегаз'], 'SIBN': ['Газпром нефть', 'Газпром нефти'],
@@ -152,8 +158,10 @@ for src, cat, url in FEEDS:
             d = when(txt(it, 'pubDate'))
             if not title or not link or not d: continue
             blob = title + ' ' + desc
-            tags = tags_of(title)
-            x = {'t': title, 'u': link, 's': src, 'cat': cat, 'd': d, 'x': desc[:220], 'tags': tags}
+            ft = [cat[3:]] if cat.startswith('us:') else []
+            tags = sorted(set(tags_of(title)) | set(ft))
+            x = {'t': title, 'u': link, 's': src, 'cat': cat[:2] if ft else cat, 'd': d, 'x': desc[:220], 'tags': tags}
+            if ft: x['ft'] = ft
             if keep(x): items.append(x)
     except Exception as e:
         print('rss', src, e, file=sys.stderr)
@@ -168,10 +176,10 @@ for x in sorted(items + oldn, key=lambda x: x['d'], reverse=True):
     k = x['u'].split('?')[0]
     if k in seen or not keep(x) or x['d'] < (cut_tag if x.get('tags') else cut): continue
     seen.add(k)
-    x['tags'] = tags_of(x['t'])
+    x['tags'] = sorted(set(tags_of(x['t'])) | set(tags_of(x.get('to', ''))) | set(x.get('ft', [])))
     if 'sum' not in x and k in oldby and 'sum' in oldby[k]: x['sum'] = oldby[k]['sum']
     merged.append(x)
-merged = merged[:1500]
+merged = merged[:2000]
 
 # ---- суть статьи: 2–3 первых содержательных предложения (не полный текст), со ссылкой на источник ----
 import hashlib
@@ -214,17 +222,52 @@ def summarize(url, title, desc):
             if len(snt) < 40 or len(snt) > 320 or same(snt): continue
             if any(snt[:50] == q[:50] for q in sents): continue
             sents.append(snt)
-            if len(sents) >= 3 or sum(len(q) for q in sents) > 520: return sents
+            if len(sents) >= 7 or sum(len(q) for q in sents) > 1100: return sents
     return sents
+CYR = re.compile('[А-Яа-яЁё]')
+def tr(text):
+    """Автоперевод англоязычных новостей на русский (публичный эндпоинт Google Translate)."""
+    j = json.loads(urllib.request.urlopen(urllib.request.Request('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=' + urllib.parse.quote(text[:4500]), headers=UA), timeout=15).read().decode('utf-8'))
+    out = ''.join(seg[0] for seg in j[0] if seg and seg[0])
+    if not out.strip(): raise ValueError('empty')
+    return out
+def tr_list(a):
+    if not a: return a
+    t_ = tr('\n'.join(a)).split('\n')
+    return [q.strip() for q in t_ if q.strip()] if len(t_) >= 1 else a
+cut30 = (now_ - datetime.timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
 done = 0
 for x in merged:
     x['id'] = hashlib.md5(x['u'].split('?')[0].encode()).hexdigest()[:10]
-    if x.get('sum') or x.get('st', 0) >= 3 or done >= 120: continue
-    s_ = summarize(x['u'], x['t'], x.get('x', ''))
+    if done >= 160: continue
+    if x.get('sv', 1) >= 2 and (x.get('sum') or x.get('st', 0) >= 3): continue
+    if x.get('sum') and x.get('sv', 1) < 2 and (x['d'] < cut30 or x.get('st2', 0) >= 2): continue   # старые короткие не трогаем
+    s_ = summarize(x['u'], x.get('to') or x['t'], x.get('x', ''))
     if not s_ and x.get('x') and len(x['x']) > 40:   # сайт не отдал статью — берём анонс из RSS
-        s_ = [q for q in SPLIT.split(x['x']) if len(q) > 30][:2]
-    x['sum'] = s_; x['st'] = x.get('st', 0) + 1; done += 1
+        s_ = [q for q in SPLIT.split(x['x']) if len(q) > 30][:3]
+    if x.get('sum') and len(' '.join(s_)) <= len(' '.join(x['sum'])):   # новая версия не подробнее — оставляем старую
+        x['st2'] = x.get('st2', 0) + 1; done += 1; continue
+    if s_ and x.get('tr'):
+        try: s_ = tr_list(s_)
+        except Exception: pass
+    x['sum'] = s_; x['st'] = x.get('st', 0) + 1; x['sv'] = 2; done += 1
     time.sleep(0.3)
 print('summaries', done)
+# перевод англоязычных заголовков и сути
+nt = 0
+for x in merged:
+    if nt >= 220: break
+    if x.get('tr') or x.get('trt', 0) >= 3 or CYR.search(x['t']): continue
+    try:
+        t_ = tr(x['t'])
+        s_ = tr_list(x['sum']) if x.get('sum') else x.get('sum')
+        x['to'] = x['t']; x['t'] = t_; x['sum'] = s_; x['tr'] = 1; nt += 1
+        time.sleep(0.15)
+    except Exception as e:
+        x['trt'] = x.get('trt', 0) + 1
+        print('translate', e, file=sys.stderr)
+print('translated', nt)
+for x in merged:   # старые новости (нужны только для причин на графиках) — суть покороче, чтобы файл не разрастался
+    if x['d'] < cut30 and x.get('sum') and len(x['sum']) > 2: x['sum'] = x['sum'][:2]
 json.dump({'updated': out['updated'], 'items': merged}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 print('news', len(items), 'new,', len(merged), 'kept')
