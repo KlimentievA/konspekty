@@ -185,7 +185,7 @@ function draw(j){
   el.innerHTML=h+'<p class="upd">Группа '+esc(j.group||'')+' · обновлено '+esc((j.updated||'').replace('T',' ').replace('Z',' UTC'))+'</p>';
 }
 fetch('schedule_nastya.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(draw)
-  .catch(function(){el.innerHTML='<p class="nopairs">Расписание появится после первого обновления (раз в 3 часа).</p>'});
+  .catch(function(){el.innerHTML='<p class="nopairs">Расписание скоро появится.</p>'});
 })();
 </script>
 <script>document.getElementById('thm').onclick=function(){var r=document.documentElement,d=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'),n=d==='dark'?'light':'dark';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}}</script><script>

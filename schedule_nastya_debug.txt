@@ -1,4 +1,0 @@
-https://ruz.hse.ru/api/search?term=15.24%D0%94-%D0%AD%D0%9C01%2F25%D1%81&type=group -> 200: <!DOCTYPE html> <html lang="ru" itemscope itemtype="http://schema.org/WebPage"> <head> 	 	<title>Расписание учебных занятий – Национальный исследовательский университет «Высшая школа экономики»</title>  	 	<meta charset="utf-8"> 	<meta http-equiv="X-UA-Compatible" content="IE=Edge" /> 	 		<meta name
-https://ruz.hse.ru/api/search?term=15.24%D0%94-%D0%AD%D0%9C01%2F25%D1%81&type=group -> ОШИБКА JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
-https://www.hse.ru/api/search?term=15.24%D0%94-%D0%AD%D0%9C01%2F25%D1%81&type=group -> ОШИБКА <HTTPError 404: 'Not Found'>
-группа не найдена

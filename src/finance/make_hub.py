@@ -242,7 +242,7 @@ function draw(j){
   el.innerHTML=h+'<p class="upd">Группа '+esc(j.group||'')+' · обновлено '+esc((j.updated||'').replace('T',' ').replace('Z',' UTC'))+'</p>';
 }
 fetch('schedule_nastya.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(draw)
-  .catch(function(){el.innerHTML='<p class="nopairs">Расписание появится после первого обновления (раз в 3 часа).</p>'});
+  .catch(function(){el.innerHTML='<p class="nopairs">Расписание скоро появится.</p>'});
 })();
 </script>"""
 nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h1>Расписание</h1>\n  <p class="lead">Группа 15.24Д-ЭМ01/25с · ближайшие пары.</p>\n'
