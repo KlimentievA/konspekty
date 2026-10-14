@@ -2,7 +2,7 @@
    Страницы и картинки — сразу из кэша (мгновенно), а в фоне проверяется новая версия; если она вышла — странице приходит сигнал «обновлено».
    Данные (*.json) — сначала сеть (свежие котировки и новости), если сеть не ответила за 4 с — из кэша.
    Шрифты Google и история цен с GitHub — из кэша с фоновым обновлением. */
-const V = 'hub-v30', STATIC = V + '-static', DATA = 'hub-data', EXT = 'hub-ext';
+const V = 'hub-v32', STATIC = V + '-static', DATA = 'hub-data', EXT = 'hub-ext';
 const CORE = ['./', 'index.html', 'artem.html', 'nastya.html', 'ucheba.html', 'finance.html', 'manifest.webmanifest', 'icon-192.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -13,7 +13,11 @@ self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => ![STATIC, DATA, EXT].includes(x)).map(x => caches.delete(x)))).then(() => self.clients.claim()));
 });
 
-function tag(res) { return res && (res.headers.get('etag') || res.headers.get('last-modified') || res.headers.get('content-length')) || ''; }
+// GitHub Pages пересобирает сайт каждый час (обновление новостей) и меняет ETag у всех файлов,
+// поэтому «новая версия» определяется по содержимому, а не по заголовкам.
+async function changed(oldRes, newRes) {
+  try { const [a, b] = await Promise.all([oldRes.clone().text(), newRes.clone().text()]); return a !== b; } catch (e) { return false; }
+}
 
 // страница могла ещё не успеть открыться, когда пришла новая версия, — запоминаем и отвечаем на её вопрос «я свежая?»
 const UPDATED = new Map();   // путь → когда пришла новая версия
@@ -33,9 +37,10 @@ self.addEventListener('message', e => {
 async function swr(ev, req, cacheName, watch) {
   const cache = await caches.open(cacheName);
   const hit = await cache.match(req, { ignoreSearch: false });
+  const old = hit && watch ? hit.clone() : null;   // копия до того, как страница прочитает ответ
   const net = fetch(req, { cache: 'no-cache' }).then(async res => {
     if (res && (res.ok || res.type === 'opaque')) {
-      if (watch && hit && tag(hit) && tag(res) && tag(hit) !== tag(res)) notify(req.url);
+      if (old && await changed(old, res)) notify(req.url);
       await cache.put(req, res.clone());
     }
     return res;
@@ -47,22 +52,24 @@ async function swr(ev, req, cacheName, watch) {
   return Response.error();
 }
 
-// сеть с таймаутом, потом кэш
-async function nf(req, cacheName, ms) {
+// данные (*.json): если в кэше свежая копия (моложе 10 минут) — отдаём сразу и обновляем фоном;
+// иначе сеть, но ждём не дольше 1,5 с, потом кэш
+async function stamp(res) {
+  const h = new Headers(res.headers); h.set('x-sw-time', String(Date.now()));
+  return new Response(await res.clone().blob(), { status: res.status, statusText: res.statusText, headers: h });
+}
+async function nf(ev, req, cacheName, ms) {
   const cache = await caches.open(cacheName);
   const u = new URL(req.url), key = u.origin + u.pathname;   // ?t=… не плодит копии в кэше
-  const net = fetch(req, { cache: 'no-cache' }).then(res => { if (res && res.ok) cache.put(key, res.clone()); return res; });
+  const hit = await cache.match(key);
+  const net = fetch(req, { cache: 'no-cache' }).then(async res => { if (res && res.ok) await cache.put(key, await stamp(res)); return res; });
   net.catch(() => {});
+  if (hit && Date.now() - (+hit.headers.get('x-sw-time') || 0) < 10 * 60 * 1000) { ev.waitUntil(net.catch(() => {})); return hit; }
   const timeout = new Promise(r => setTimeout(() => r(null), ms));
-  try {
-    const first = await Promise.race([net.catch(() => null), timeout]);
-    if (first) return first;
-    const hit = await cache.match(key);
-    if (hit) return hit;
-    return await net;
-  } catch (e) {
-    return (await cache.match(key)) || Response.error();
-  }
+  const first = await Promise.race([net.catch(() => null), timeout]);
+  if (first) return first;
+  if (hit) { ev.waitUntil(net.catch(() => {})); return hit; }
+  try { return await net; } catch (e) { return Response.error(); }
 }
 
 self.addEventListener('fetch', e => {
@@ -70,7 +77,7 @@ self.addEventListener('fetch', e => {
   if (r.method !== 'GET') return;
   const u = new URL(r.url);
   if (u.origin === location.origin) {
-    if (/\.json$/.test(u.pathname)) { e.respondWith(nf(r, DATA, 4000)); return; }
+    if (/\.json$/.test(u.pathname)) { e.respondWith(nf(e, r, DATA, 1500)); return; }
     e.respondWith(swr(e, r, STATIC, r.mode === 'navigate' || /\.html$|\/$/.test(u.pathname)));
     return;
   }

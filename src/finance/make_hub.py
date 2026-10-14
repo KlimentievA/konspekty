@@ -25,7 +25,7 @@ def gate(p):
             "return document.cookie.indexOf('hub_'+P+'='+T)>=0}"
             "if(!ok()){document.documentElement.style.visibility='hidden';var f=location.pathname.slice(location.pathname.lastIndexOf('/')+1)||'index.html';"
             "location.replace('index.html?login='+P+'&next='+encodeURIComponent(f+location.search+location.hash))}"
-            "else{try{localStorage.setItem('hub:auth:'+P,T)}catch(e){}}})();</script>") % (p, TOK[p])
+            "else{try{localStorage.setItem('hub:auth:'+P,T);localStorage.setItem('hub:last',P)}catch(e){}}})();</script>") % (p, TOK[p])
 
 
 EXTRA_CSS = """<style>
@@ -103,7 +103,11 @@ index_body = ('<div class="w">\n  <h1>Hub</h1>\n  <p class="lead">Выбери �
               "<script>\n(function(){\n"
               "var PROF={" + ','.join("%s:{n:'%s',t:'%s',home:'%s',c:'%s'}" % (p, v[0], TOK[p], v[2], 'a' if p == 'artem' else 'n') for p, v in PROF.items()) + "};\n"
               "var OPEN='" + LOCK_OPEN.replace("'", "\\'") + "';\n"
-              r"""function authed(p){try{if(localStorage.getItem('hub:auth:'+p)===PROF[p].t)return true}catch(e){}return document.cookie.indexOf('hub_'+p+'='+PROF[p].t)>=0}
+              r"""/* в приложении и в установленном Hub сразу открываем последний профиль (один раз за запуск; «← Профили» ведёт сюда без перехода) */
+(function(){try{var app=window.HubApp||navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+  if(!app||location.search||sessionStorage.getItem('hub:launched'))return;sessionStorage.setItem('hub:launched','1');
+  var l=localStorage.getItem('hub:last');if(l&&PROF[l]&&localStorage.getItem('hub:auth:'+l)===PROF[l].t)location.replace(PROF[l].home)}catch(e){}})();
+function authed(p){try{if(localStorage.getItem('hub:auth:'+p)===PROF[p].t)return true}catch(e){}return document.cookie.indexOf('hub_'+p+'='+PROF[p].t)>=0}
 function remember(p){try{localStorage.setItem('hub:auth:'+p,PROF[p].t)}catch(e){}document.cookie='hub_'+p+'='+PROF[p].t+'; max-age=31536000; path=/; SameSite=Lax'}
 function sha(s){if(!(window.crypto&&crypto.subtle))return Promise.resolve('');return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ('0'+x.toString(16)).slice(-2)}).join('').slice(0,24)})}
 Object.keys(PROF).forEach(function(p){if(authed(p)){var l=document.querySelector('[data-lock="'+p+'"]');l.className='lock open';l.innerHTML=OPEN+'<em>открыто</em>'}});

@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded',function(){var v=g();document.query
     shown=true;
     var rk='hubReload:'+page(location.href),last=0;try{last=+sessionStorage.getItem(rk)||0}catch(er){}
     if(Date.now()-last<30000)return;                                  // эта страница только что перезагрузилась на свежую версию
-    if(!touched&&Date.now()-t0<3000){try{sessionStorage.setItem(rk,String(Date.now()))}catch(er){}location.reload();return}      // ещё ничего не трогали — просто подменяем на свежую версию
     var d=document.createElement('div');
     d.setAttribute('role','status');
     d.style.cssText='position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translate(-50%,140%);z-index:9999;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;border:1px solid var(--line,#D9D3C2);background:var(--surface,#FBF9F3);color:var(--fg,#25221C);box-shadow:0 10px 30px rgba(0,0,0,.18);font:500 14px/1.2 system-ui,sans-serif;white-space:nowrap;transition:transform .4s cubic-bezier(.2,.9,.25,1)';
