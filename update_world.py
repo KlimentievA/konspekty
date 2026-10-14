@@ -106,6 +106,47 @@ for code in IND:
         log('IMF', code, e); fails += 1
         if fails >= 3: imf_dead = True; log('МВФ не отвечает — дальше только Всемирный банк')
 
+# ---- запасной путь: зеркало WEO на DBnomics (МВФ режет запросы с серверов GitHub — 403) ----
+if len(imf) < len(IND) // 2:
+    DBN = 'https://api.db.nomics.world/v22/'
+    try:
+        import re, urllib.parse
+        ds = get(DBN + 'datasets/IMF?q=WEO&limit=100', 40)
+        docs = (ds.get('datasets') or {}).get('docs') or []
+        eds = sorted(d['code'] for d in docs if re.match(r'^WEO:\d{4}-\d{2}$', d.get('code', '')))
+        log('DBnomics выпуски WEO:', eds[-4:])
+        if not eds: raise ValueError('нет выпусков WEO')
+        ed = eds[-1]
+        probe = get(DBN + 'series/IMF/%s?limit=1&observations=0' % ed, 40)
+        order = (probe.get('dataset') or {}).get('dimensions_codes_order') or []
+        sk = next((k for k in order if 'subject' in k.lower()), None)
+        ck = next((k for k in order if 'country' in k.lower()), None)
+        log('DBnomics', ed, 'измерения', order)
+        if not sk or not ck: raise ValueError('не нашёл измерения')
+        for code in IND:
+            res = {}
+            off = 0
+            while True:
+                q = urllib.parse.urlencode({'dimensions': json.dumps({sk: [code]}), 'observations': 1, 'limit': 1000, 'offset': off})
+                j = get(DBN + 'series/IMF/%s?%s' % (ed, q), 60)
+                ser = j.get('series') or {}
+                dd = ser.get('docs') or []
+                for d in dd:
+                    c = FIX.get((d.get('dimensions') or {}).get(ck) or '', (d.get('dimensions') or {}).get(ck) or '')
+                    per, val = d.get('period') or [], d.get('value') or []
+                    m = {str(a): b for a, b in zip(per, val) if isinstance(b, (int, float))}
+                    if c and m: res[c] = m
+                off += len(dd)
+                if not dd or off >= (ser.get('num_found') or 0): break
+            if res:
+                imf[code] = res
+                log('DBnomics', code, len(res), 'стран')
+        if imf:
+            m_, y_ = ed.split(':')[1].split('-')
+            os.environ.setdefault('WEO_EDITION', ('апрель' if m_ == '04' else 'октябрь') + ' ' + y_)
+    except Exception as e:
+        log('DBnomics:', e)
+
 last_year = max([int(y) for s in imf.values() for c in s.values() for y in c] or [now.year])
 LAST = min(max(last_year, now.year), now.year + 6)
 YEARS = list(range(FIRST, LAST + 1))
