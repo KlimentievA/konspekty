@@ -13,7 +13,7 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else 'hist_out'
 H = os.path.join(OUT, 'hist'); os.makedirs(H, exist_ok=True)
 NOW = datetime.datetime.now(datetime.timezone.utc)
 TODAY = NOW.date()
-GN_BUDGET, DEC_BUDGET, TR_BUDGET = 150, 45, 40   # запросов поиска / расшифровок+сутей / пакетов перевода за запуск
+GN_BUDGET, DEC_BUDGET, TR_BUDGET = 330, 70, 60   # запросов поиска / расшифровок+сутей / пакетов перевода за запуск
 
 RU = {'SBER': 'Сбербанк', 'LKOH': 'ЛУКОЙЛ', 'ROSN': 'Роснефть', 'NVTK': 'НОВАТЭК', 'SIBN': '"Газпром нефть"', 'GAZP': 'Газпром',
       'GMKN': 'Норникель', 'TATN': 'Татнефть', 'PLZL': '"Полюс" золото', 'YDEX': 'Яндекс', 'TRNFP': 'Транснефть', 'SNGS': 'Сургутнефтегаз',
