@@ -17,5 +17,5 @@ jobs:
             git config user.name "schedule-bot"; git config user.email "schedule-bot@users.noreply.github.com"
             git add schedule_nastya.json schedule_nastya_debug.txt
             git commit -m "Расписание Насти обновлено"
-            git pull -q --rebase origin main; git push
+            for i in 1 2 3 4; do git pull -q --rebase -X theirs origin main && git push -q origin HEAD:main && break; sleep $((i*5)); done
           fi
