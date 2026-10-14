@@ -218,35 +218,61 @@ nastya_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'n
 nastya_html = page('Hub · Настя', nastya_body, 'nastya')
 
 NU_CSS = """<style>
-.sch{margin-top:18px}.sch h2{font:600 15px/1.3 'IBM Plex Sans',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:26px 0 10px}
-.sch h2.today{color:var(--a2)}.pair{display:grid;grid-template-columns:62px 1fr;gap:4px 14px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
-.pair.now{border-color:var(--a2);box-shadow:0 0 0 1px var(--a2) inset}.pair b{font-weight:600;font-variant-numeric:tabular-nums}.pair b small{display:block;font-weight:400;color:var(--muted)}
-.pair .n{font-weight:600}.pair .m{color:var(--muted);font-size:14px;margin-top:2px}.sch .nopairs{color:var(--muted);padding:22px 0}.upd{color:var(--faint);font-size:13px;margin-top:22px}
+.wk{display:flex;align-items:center;gap:8px;margin:18px 0 4px}
+.wk button{min-width:44px;height:42px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--fg);font:500 15px/1 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;cursor:pointer}
+.wk button:hover{border-color:var(--a2);color:var(--a2)}.wk .cur{flex:1;text-align:center;font:600 16px/1.2 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-variant-numeric:tabular-nums}
+.wk .now{font-size:13px}
+.sd{margin-top:22px}.sd h2{margin:0 0 4px;font:600 12px/1.2 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.sd h2 em{margin-left:6px;font-style:normal;color:var(--a2)}.sd.today h2{color:var(--a2)}
+.sd .none{margin:0;padding:10px 0;border-top:1px solid var(--line);color:var(--faint);font-size:14.5px}.sd .lst{border-bottom:1px solid var(--line)}
+details.nx{border-top:1px solid var(--line)}details.nx>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:76px 1fr auto 14px;gap:0 12px;align-items:center;padding:13px 0}
+details.nx>summary::-webkit-details-marker{display:none}.nd{font:600 14px/1.25 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-variant-numeric:tabular-nums;color:var(--fg)}.nd small{display:block;font-weight:400;color:var(--muted)}
+.nt b{display:block;font-weight:600;line-height:1.3}.nt i{display:block;font-style:normal;color:var(--muted);font-size:13.5px;margin-top:2px}
+.rm{font-size:13.5px;color:var(--muted);white-space:nowrap;text-align:right}.cv{width:8px;height:8px;border-right:2px solid var(--faint);border-bottom:2px solid var(--faint);transform:rotate(45deg);transition:transform .2s;margin-top:-4px}
+details.nx[open] .cv{transform:rotate(225deg);margin-top:2px}
+details.nx.now{box-shadow:inset 3px 0 0 var(--a2);padding-left:10px;margin-left:-10px;background:linear-gradient(90deg,color-mix(in srgb,var(--a2) 9%,transparent),transparent)}
+details.nx.past>summary{opacity:.5}
+.mo{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 20px;padding:0 0 16px 88px;font-size:14.5px;line-height:1.45}.mo .k{display:block;font:600 11px/1.3 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:1px}
+.next{margin-top:22px;padding:16px 18px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}.next h2{margin:0 0 6px;font:600 12px/1.2 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.next .row{display:grid;grid-template-columns:112px 1fr;gap:12px;padding:8px 0;border-top:1px solid var(--line)}.next .row:first-of-type{border-top:0}.next .row b{font-variant-numeric:tabular-nums}.next .row small{display:block;color:var(--muted)}
+.src{margin:22px 0 0;color:var(--faint);font-size:13px}
+@media(max-width:560px){details.nx>summary{grid-template-columns:64px 1fr 14px}.rm{display:none}.mo{padding-left:76px}}
 </style>"""
 NU_JS = r"""<script>
 (function(){
-var el=document.getElementById('sch');
+var el=document.getElementById('sch'),LIST=[],UPD='',GRP='',wk=0,MON=['янв.','февр.','марта','апр.','мая','июня','июля','авг.','сент.','окт.','нояб.','дек.'],WD=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
-function draw(j){
-  var L=j.list||[],now=new Date(),today=ymd(now),hm=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2),by={},days=[];
-  L.forEach(function(x){if(x.d<today)return;if(!by[x.d]){by[x.d]=[];days.push(x.d)}by[x.d].push(x)});
-  days.sort();
-  if(!days.length){el.innerHTML='<p class="nopairs">Ближайших пар нет.</p>';return}
-  var h='',shown=0;
-  days.forEach(function(d){if(shown>=40)return;var dt=new Date(d+'T12:00:00'),diff=Math.round((new Date(d+'T00:00:00')-new Date(today+'T00:00:00'))/864e5);
-    var t=diff===0?'Сегодня':diff===1?'Завтра':dt.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
-    h+='<h2'+(diff===0?' class="today"':'')+'>'+esc(t)+(diff<2?' · '+esc(dt.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})):'')+'</h2>';
-    by[d].forEach(function(x){shown++;var on=d===today&&x.b<=hm&&x.e>hm;
-      h+='<div class="pair'+(on?' now':'')+'"><b>'+esc(x.b)+'<small>'+esc(x.e)+'</small></b><div><div class="n">'+esc(x.n)+'</div><div class="m">'+esc([x.k,x.r?'ауд. '+x.r:'',x.bd].filter(Boolean).join(' · '))+(on?' · идёт сейчас':'')+'</div>'+(x.t?'<div class="m">'+esc(x.t)+'</div>':'')+'</div></div>'})});
-  el.innerHTML=h+'<p class="upd">Группа '+esc(j.group||'')+' · обновлено '+esc((j.updated||'').replace('T',' ').replace('Z',' UTC'))+'</p>';
+function ts(x,t){return Date.parse(x.d+'T'+t+':00+03:00')}
+function pair(x,now,nd){var s=ts(x,x.b),e=ts(x,x.e),cls='nx'+(s<=now&&e>now?' now':'')+(e<=now?' past':'');
+  var more=(x.t?'<div><span class="k">Преподаватель</span><b>'+esc(x.t)+'</b></div>':'')+'<div><span class="k">Где</span>'+(x.r?'ауд. '+esc(x.r):'—')+(x.bd?', '+esc(x.bd):'')+'</div><div><span class="k">Время</span>'+esc(x.b)+'–'+esc(x.e)+(x.k?' · '+esc(x.k):'')+'</div>';
+  return '<details class="'+cls+'"><summary><span class="nd">'+esc(x.b)+'<small>'+esc(x.e)+'</small></span><span class="nt"><b>'+esc(x.n)+'</b><i>'+esc([x.k,x.t].filter(Boolean).join(' · '))+((s<=now&&e>now)?' · идёт сейчас':'')+'</i></span><span class="rm">'+(x.r?'ауд. '+esc(x.r):'—')+'</span><span class="cv"></span></summary><div class="mo">'+more+'</div></details>'}
+function draw(){
+  var now=Date.now(),mon=new Date();mon.setHours(12,0,0,0);mon.setDate(mon.getDate()-((mon.getDay()+6)%7)+7*wk);
+  var days=[];for(var i=0;i<7;i++){var d=new Date(mon.getTime());d.setDate(mon.getDate()+i);days.push(d)}
+  var a=days[0],z=days[6],today=ymd(new Date()),h='';
+  var up=LIST.filter(function(x){return ts(x,x.e)>now}).slice(0,4);
+  if(wk===0&&up.length){h+='<section class="next"><h2>Ближайшие пары</h2>'+up.map(function(x){var dd=new Date(x.d+'T12:00:00'),diff=Math.round((new Date(x.d+'T00:00:00')-new Date(today+'T00:00:00'))/864e5);
+    return '<div class="row"><b>'+esc(x.b)+'–'+esc(x.e)+'<small>'+(diff===0?'сегодня':diff===1?'завтра':WD[dd.getDay()]+', '+dd.getDate()+' '+MON[dd.getMonth()])+'</small></b><span>'+esc(x.n)+'<small>'+esc([x.k,x.r?'ауд. '+x.r:''].filter(Boolean).join(' · '))+'</small></span></div>'}).join('')+'</section>'}
+  h+='<div class="wk"><button type="button" data-wk="-1" aria-label="Прошлая неделя">←</button><span class="cur">'+a.getDate()+' '+MON[a.getMonth()]+' – '+z.getDate()+' '+MON[z.getMonth()]+'</span><button type="button" data-wk="1" aria-label="Следующая неделя">→</button>'+(wk?'<button type="button" class="now" data-wk="0">Сегодня</button>':'')+'</div>';
+  var any=false;
+  days.forEach(function(d,k){var s=ymd(d),l=LIST.filter(function(x){return x.d===s});if(!l.length&&k>=5)return;any=any||l.length>0;
+    h+='<div class="sd'+(s===today?' today':'')+'"><h2>'+WD[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()]+(s===today?'<em>сегодня</em>':'')+'</h2>'+(l.length?'<div class="lst">'+l.map(function(x){return pair(x,now)}).join('')+'</div>':'<p class="none">Нет пар</p>')+'</div>'});
+  var last=LIST.length?LIST[LIST.length-1].d:'';
+  if(!any&&last&&ymd(mon)>last)h+='<p class="src">Дальше расписания пока нет — оно загружено до '+last.split('-').reverse().join('.')+' и обновляется само.</p>';
+  h+='<p class="src">Расписание обновляется автоматически с pleh.tech · группа '+esc(GRP)+(UPD?' · обновлено '+esc(UPD.replace('T',' ').replace('Z',' UTC')):'')+'</p>';
+  el.innerHTML=h;
 }
-fetch('schedule_nastya.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(draw)
-  .catch(function(){el.innerHTML='<p class="nopairs">Расписание скоро появится.</p>'});
+el.addEventListener('click',function(e){var b=e.target.closest('[data-wk]');if(!b)return;var v=+b.getAttribute('data-wk');wk=v===0?0:wk+v;draw()});
+var sx=null;el.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});
+el.addEventListener('touchend',function(e){if(sx==null)return;var dx=e.changedTouches[0].clientX-sx;sx=null;if(Math.abs(dx)>70&&!e.target.closest('details[open]')){wk+=dx<0?1:-1;draw()}},{passive:true});
+fetch('schedule_nastya.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+  LIST=(j.list||[]).slice().sort(function(a,b){return (a.d+a.b)<(b.d+b.b)?-1:1});UPD=j.updated||'';GRP=j.group||'';draw()})
+  .catch(function(){el.innerHTML='<p class="src">Расписание скоро появится.</p>'});
 })();
 </script>"""
-nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h1>Расписание</h1>\n  <p class="lead">Группа 15.24Д-ЭБ01/25с · ближайшие пары.</p>\n'
-           '  <div class="sch" id="sch"><p class="nopairs">Загружаю…</p></div>\n</div>\n' + NU_JS)
+nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h1>Расписание</h1>\n  <p class="lead">Группа 15.24Д-ЭБ01/25с.</p>\n'
+           '  <div id="sch"><p class="src">Загружаю…</p></div>\n</div>\n' + NU_JS)
 nu_html = page('Учёба · Настя', nu_body, 'nastya').replace('</head>', NU_CSS + '</head>', 1)
 
 # замок для страниц Артема (ucheba.html, finance.html) — его вставляют make_ucheba.py и build_finance.py
