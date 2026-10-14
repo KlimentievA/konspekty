@@ -16,9 +16,10 @@ python3 update_extra.py   || echo "::warning::update_extra.py завершилс
 if [ "${SCHED:-0}" = 1 ] && [ -f update_schedule.py ]; then python3 update_schedule.py || echo "::warning::расписание не обновилось"; fi
 
 FILES="markets.json news.json news_text.json news_text_arch.json schedule.json schedule_debug.txt world.json world_debug.txt corp_cal.json fin.json digest.json digest_hist.json"
-CH=$(git status --porcelain -- $FILES 2>/dev/null)
+EXIST=""; for f in $FILES; do [ -e "$f" ] && EXIST="$EXIST $f"; done   # git add падает целиком, если указан несуществующий файл
+CH=$(git status --porcelain -- $EXIST 2>/dev/null)
 if [ -n "$CH" ]; then
-  git add -- $FILES 2>/dev/null
+  git add -- $EXIST
   git commit -qm "Данные обновлены"
   for i in 1 2 3 4; do
     git pull -q --rebase -X theirs origin main && git push -q "$REPO_URL" HEAD:main && break
