@@ -58,6 +58,23 @@ def parse(page, year):
     return out
 
 
+def discover(page):
+    """Страница — пустая оболочка React: ищем в её скриптах адреса API (для диагностики)."""
+    for src in re.findall(r'<script[^>]+src="([^"]+)"', page)[:6]:
+        u = urllib.parse.urljoin('https://pleh.tech/', src)
+        if 'pleh.tech' not in u: continue
+        try:
+            req = urllib.request.Request(u, headers={'User-Agent': 'Mozilla/5.0 (hub schedule bot)'})
+            js = urllib.request.urlopen(req, timeout=40).read().decode('utf-8', 'replace')
+        except Exception as e:
+            DIAG.append(f'JS {u}: ОШИБКА {e!r}'); continue
+        urls = sorted(set(re.findall(r'https?://[A-Za-z0-9_.\-]+(?:/[A-Za-z0-9_./\-]*)?', js)))
+        urls = [x for x in urls if not re.search(r'w3\.org|reactjs|schema\.org|mozilla|github|google|vk\.com|yandex', x)]
+        paths = sorted(set(re.findall(r'["\'`](/?(?:api|functions|rest|v1)/[A-Za-z0-9_/\-?=&.${}]{2,80})["\'`]', js)))
+        words = sorted(set(re.findall(r'["\'`]([^"\'`\s]{0,60}(?:timetable|schedule|lessons?)[^"\'`\s]{0,60})["\'`]', js, re.I)))
+        DIAG.append(f'JS {u} ({len(js)} байт): url={urls[:25]} paths={paths[:30]} слова={words[:30]}')
+
+
 def main():
     today = datetime.date.today(); mon = today - datetime.timedelta(days=today.weekday())
     out, empty = [], 0
@@ -66,6 +83,7 @@ def main():
         try:
             url, page = fetch(a.isoformat())
             got = parse(page, a.year)
+            if w == 0 and not got: discover(page)
             if w <= 0: DIAG.append(f'{url}: {len(page)} байт, пар {len(got)}, «занятий нет» {page.count("занятий нет")}, начало: {re.sub(chr(10)," ",page[:200])}')
             out += got; empty += 0 if got else 1
         except Exception as e:
