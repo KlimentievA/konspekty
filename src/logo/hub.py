@@ -1,4 +1,4 @@
-"""Hub — логотип 3.0. Знак — строчная «h», нарисованная одной толщиной линии (стойка + арка), без шрифтов.
+"""Hub — логотип 3.1. Знак — строчная «h» в тонком мятном кольце; сама h, нарисованная одной толщиной линии (стойка + арка), без шрифтов.
 Те же правила строят «u» и «b», так что значок + «ub» читаются как hub."""
 W = 58          # толщина линии
 R = 68          # радиус арки (по средней линии)
@@ -24,10 +24,13 @@ def word(c, letters='hub'):
     for ch in letters:
         f, w = {'h': h, 'u': u, 'b': b}[ch](c, x); out += f; x += w + GAP
     return out, x - GAP
-def mark(c='#FFFFFF'):
-    """знак для значка: h по центру 512×512 (оптически чуть правее — у h тяжёлая левая стойка)"""
+RING = '#BDF7DF'   # мятное кольцо вокруг h: hub — точка, где всё сходится
+def mark(c='#FFFFFF', ring=None):
+    """знак для значка: h в тонком кольце, по центру 512×512 (h чуть правее — у неё тяжёлая левая стойка)"""
     f, w = h(c)
-    return scaled(f'<g transform="translate({256 - w/2 + 4} {256 - (ASC + BASE)/2})">{f}</g>', 0.9)
+    k = 0.62
+    glyph = f'<g transform="translate({256 + 5} 256) scale({k}) translate({-w/2} {-(ASC + BASE)/2})">{f}</g>'
+    return f'<circle cx="256" cy="256" r="148" fill="none" stroke="{ring or RING}" stroke-width="20"/>' + glyph
 GRAD = ('#22D39A', '#05704C')
 def defs(u):
     a, b_ = GRAD
@@ -39,11 +42,11 @@ def scaled(inner, k): return f'<g transform="translate(256 256) scale({k}) trans
 U = 'h'
 ROUNDED = svg(defs(U) + bg(U, 113) + mark())
 FULL = svg(defs(U) + bg(U, 0) + mark())
-MASKABLE = svg(defs(U) + bg(U, 0) + scaled(mark(), 0.84))
+MASKABLE = svg(defs(U) + bg(U, 0) + scaled(mark(), 0.86))
 ANDROID_BG = svg(defs(U) + bg(U, 0))
-ANDROID_FG = svg(scaled(mark(), 0.62))          # видимая часть адаптивной иконки — 72 из 108 dp
-ANDROID_MONO = svg(scaled(mark('#FFFFFF'), 0.62))
-CIRCLE = svg(defs(U) + '<circle cx="256" cy="256" r="256" fill="url(#gh)"/><circle cx="256" cy="256" r="256" fill="url(#lh)"/>' + scaled(mark(), 0.94))
+ANDROID_FG = svg(scaled(mark(), 0.66))          # видимая часть адаптивной иконки — 72 из 108 dp
+ANDROID_MONO = svg(scaled(mark('#FFFFFF', '#FFFFFF'), 0.66))
+CIRCLE = svg(defs(U) + '<circle cx="256" cy="256" r="256" fill="url(#gh)"/><circle cx="256" cy="256" r="256" fill="url(#lh)"/>' + scaled(mark(), 0.96))
 def wordmark(c='#25221C', letters='ub', first=None):
     """first — цвет первой буквы (h в фирменном изумруде)"""
     f, w = word(c, letters); H = BASE - ASC
