@@ -29,6 +29,10 @@ IX = {'IMOEX': ('индекс Мосбиржи', 'ru'), 'RGBI': ('ОФЗ дох�
 CR = {'BTC': 'Bitcoin price', 'ETH': 'Ethereum price', 'SOL': 'Solana price', 'XRP': 'XRP price', 'BNB': 'BNB price', 'DOGE': 'Dogecoin price',
       'TON': 'Toncoin', 'ADA': 'Cardano price', 'TRX': 'TRON TRX price'}
 
+RU_EN = {'SBER': 'Sberbank', 'LKOH': 'Lukoil', 'ROSN': 'Rosneft', 'NVTK': 'Novatek', 'SIBN': 'Gazprom Neft', 'GAZP': 'Gazprom', 'GMKN': 'Nornickel OR "Norilsk Nickel"',
+         'TATN': 'Tatneft', 'PLZL': 'Polyus gold', 'YDEX': 'Yandex', 'TRNFP': 'Transneft', 'SNGS': 'Surgutneftegas', 'T': '"T-Bank" OR "T-Technologies"', 'VTBR': 'VTB bank',
+         'OZON': 'Ozon', 'PHOR': 'PhosAgro', 'CHMF': 'Severstal', 'X5': '"X5 Group"', 'NLMK': 'NLMK', 'RUAL': 'Rusal', 'MOEX': '"Moscow Exchange"', 'MTSS': 'MTS Russia',
+         'IRAO': '"Inter RAO"', 'MGNT': 'Magnit retailer', 'ALRS': 'Alrosa', 'HEAD': 'HeadHunter Russia', 'AFLT': 'Aeroflot', 'POSI': '"Positive Technologies"', 'IMOEX': 'Russian stocks MOEX'}
 ENT = []   # (файл, запрос, язык, порог, источник цен)
 for k, q in RU.items(): ENT.append(('ru-' + k, q, 'ru', 0.01, ('iss', 'shares', k)))
 for k, (q, l) in IX.items(): ENT.append(('ix-' + k.replace('^', '_'), q, l, 0.008, ('iss', 'index', k) if l == 'ru' else ('hist', 'us-' + k.replace('^', '_'))))
@@ -137,6 +141,10 @@ for day, ar, f, q, lang in moves:
     if STOP['gn']: break
     nxt = iso(d + datetime.timedelta(days=1))
     found = [x for x in found if iso(d - datetime.timedelta(days=1)) <= x['d'][:10] <= day or (x['d'][:10] == nxt and x['d'][11:13] < '06')]
+    kk = f.split('-', 1)[1]
+    if not found and kk in RU_EN and used < GN_BUDGET:   # по-русски ничего — пробуем международную прессу
+        alt = gsearch('%s after:%s before:%s' % (RU_EN[kk], iso(d - datetime.timedelta(days=2)), iso(d + datetime.timedelta(days=2))), 'en'); used += 1
+        found = [x for x in alt if iso(d - datetime.timedelta(days=1)) <= x['d'][:10] <= day or (x['d'][:10] == nxt and x['d'][11:13] < '06')]
     merge(dbs[f], found); dbs[f]['qd'][day] = len(found); changed.add(f)
 print('google news queries', used, 'moves left', max(0, len(moves) - used), 'stopped' if STOP['gn'] else '')
 

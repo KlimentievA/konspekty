@@ -20,41 +20,100 @@ class P(HTMLParser):
         if s.cur is not None and not s.skip: s.cur.append(d)
 JUNK = re.compile(r'Фото|Читайте также|Подписывайтесь|подписаться|Реклама|cookie|Telegram|Читать далее|Все права|©|Нашли ошибку|Sign up|Subscribe|newsletter|Advertisement', re.I)
 SPLIT = re.compile(r'(?<=[.!?…])\s+(?=[«"А-ЯЁA-Z0-9])')
-def summarize(url, title, desc):
-    sents = []
+def fetch(url, t=12):
+    r = urllib.request.urlopen(urllib.request.Request(url, headers=dict(UA, **{'Accept-Language': 'ru,en;q=0.8', 'Accept': 'text/html,application/xhtml+xml'})), timeout=t)
+    raw = r.read(3_000_000)
+    cs = r.headers.get_content_charset() or ('windows-1251' if b'windows-1251' in raw[:3000].lower() else 'utf-8')
+    return raw.decode(cs, 'ignore'), r.geturl()
+
+def _paras_from_html(raw):
+    """Абзацы основного текста: trafilatura → articleBody из JSON-LD → теги <p>."""
     try:
-        raw = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=12).read().decode('utf-8', 'ignore')
-        pp = P(); pp.feed(raw)
-        cands = ([html.unescape(pp.meta.get('d', ''))] if pp.meta.get('d') else []) + [html.unescape(x) for x in pp.ps]
+        import trafilatura
+        t = trafilatura.extract(raw, include_comments=False, include_tables=False, favor_precision=True, deduplicate=True)
+        if t and len(t) > 300: return [q.strip() for q in t.split('\n') if q.strip()]
     except Exception:
-        cands = [desc] if desc else []
-    tw = set(re.findall(r'\w+', title.lower()))
+        pass
+    for m in re.finditer(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', raw, re.S | re.I):
+        try:
+            j = json.loads(m.group(1).strip())
+            for o in (j if isinstance(j, list) else j.get('@graph', [j]) if isinstance(j, dict) else []):
+                if isinstance(o, dict) and len(o.get('articleBody') or '') > 300:
+                    return [q.strip() for q in re.split(r'\n+', html.unescape(o['articleBody'])) if q.strip()]
+        except Exception:
+            pass
+    pp = P(); pp.feed(raw)
+    return ([html.unescape(pp.meta['d'])] if pp.meta.get('d') else []) + [html.unescape(x) for x in pp.ps]
+
+def clean_desc(d):
+    d = re.sub(r'\s*\|\s*\d{1,2}\.\d{1,2}\.\d{2,4},?.*$', '', d or '')
+    return re.sub(r'\s*(?:Читать далее|Read more|Continue reading)\W*$', '', d).strip()
+
+def article(url, title, desc='', limit=2300):
+    """Пересказ статьи: первые содержательные абзацы (до ~limit знаков, обычно 1500–2300), без мусора и повтора заголовка."""
+    try:
+        raw, _ = fetch(url)
+        cands = _paras_from_html(raw)
+    except Exception:
+        cands = []
+    if not cands and desc: cands = [clean_desc(desc)]
+    tw = set(re.findall(r'\w+', (title or '').lower()))
     def same(s_):
         w = set(re.findall(r'\w+', s_.lower()))
-        return w and len(w & tw) / len(w) > 0.6
+        return w and len(w & tw) / len(w) > 0.7 and len(s_) < 200
+    out, total = [], 0
     for para in cands:
         para = re.sub(r'^[A-ZА-ЯЁ.\-]{3,}\.(?:RU|COM)\s*[-–—]\s*', '', para.strip())
         para = re.sub(r'\s+[A-ZА-ЯЁ]{3,}\.RU\s*[-–—]\s*', '. ', para)
-        if len(para) < 50 or JUNK.search(para): continue
-        for snt in SPLIT.split(para):
-            snt = snt.strip()
-            if len(snt) < 40 or len(snt) > 320 or same(snt): continue
-            have = ' '.join(sents)
-            if any(snt[:50] == q[:50] for q in sents) or snt[:60] in have or (len(snt) > 60 and any(q[:60] in snt for q in sents)): continue
-            sents.append(snt)
-            if len(sents) >= 7 or sum(len(q) for q in sents) > 1100: return sents
-    return sents
+        para = re.sub(r'\s+', ' ', para)
+        if len(para) < 60 or JUNK.search(para[:200]) or same(para): continue
+        have = ' '.join(out)
+        if para[:60] in have or any(q[:60] in para for q in out if len(q) >= 60): continue
+        if total + len(para) > limit:
+            rest = limit - total
+            if rest > 150:
+                cut = ''
+                for snt in SPLIT.split(para):
+                    if len(cut) + len(snt) > rest: break
+                    cut += (' ' if cut else '') + snt
+                if cut: out.append(cut)
+            break
+        out.append(para); total += len(para)
+    return out
+
+def lead(paras, n=260):
+    """Короткий анонс: 1–2 первых предложения."""
+    if not paras: return ''
+    s_ = ''
+    for snt in SPLIT.split(' '.join(paras)):
+        if s_ and len(s_) + len(snt) > n: break
+        s_ += (' ' if s_ else '') + snt
+        if len(s_) > n * 0.6: break
+    return s_[:n + 120]
+
+def summarize(url, title, desc):
+    return article(url, title, desc)
+
 CYR = re.compile('[А-Яа-яЁё]')
 def tr(text):
     """Автоперевод англоязычных новостей на русский (публичный эндпоинт Google Translate)."""
-    j = json.loads(urllib.request.urlopen(urllib.request.Request('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&q=' + urllib.parse.quote(text[:4500]), headers=UA), timeout=15).read().decode('utf-8'))
+    j = json.loads(urllib.request.urlopen(urllib.request.Request('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t',
+        data=urllib.parse.urlencode({'q': text[:4800]}).encode(), headers=dict(UA, **{'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'})), timeout=20).read().decode('utf-8'))
     out = ''.join(seg[0] for seg in j[0] if seg and seg[0])
     if not out.strip(): raise ValueError('empty')
     return out
 def tr_list(a):
+    """Перевод списка абзацев (кусками до ~4500 знаков)."""
     if not a: return a
-    t_ = tr('\n'.join(a)).split('\n')
-    return [q.strip() for q in t_ if q.strip()] if len(t_) >= 1 else a
+    out, chunk = [], []
+    for q in a + [None]:
+        if q is None or (chunk and sum(len(c) + 1 for c in chunk) + len(q) > 4500):
+            if chunk:
+                t_ = [w.strip() for w in tr('\n'.join(chunk)).split('\n') if w.strip()]
+                out += t_ if t_ else chunk
+            chunk = []
+        if q is not None: chunk.append(q.replace('\n', ' '))
+    return out
 
 # ---- Google Новости: ссылка news.google.com/rss/articles/<id> → настоящий адрес статьи ----
 _GCTX = [["X", "X", ["X", "X"], None, None, 1, 1, "US:en", None, 1, None, None, None, None, None, 0, 1], "X", "X", 1, [1, 1, 1], 1, 1, None, 0, 0, None, 0]
