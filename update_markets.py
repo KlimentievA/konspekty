@@ -130,7 +130,7 @@ NAMES_RX = {'AAPL': r'Apple|Эппл', 'MSFT': r'Microsoft|Майкрософт'
     'AVGO': r'Broadcom', 'JPM': r'JPMorgan|JP Morgan|Dimon', 'LLY': r'Eli Lilly|Lilly', 'V': r'Visa(?! Waiver)', 'XOM': r'Exxon',
     'WMT': r'Walmart', 'MA': r'Mastercard', 'UNH': r'UnitedHealth', 'JNJ': r'Johnson & Johnson|J&J', 'PG': r'Procter', 'COST': r'Costco',
     'NFLX': r'Netflix', 'KO': r'Coca-Cola|Coca Cola', 'CVX': r'Chevron', 'BAC': r'Bank of America', 'AMD': r'AMD|Advanced Micro', 'ORCL': r'Oracle',
-    'BTC': r'Bitcoin|биткоин|Биткоин|BTC', 'ETH': r'Ethereum|эфириум|Эфириум|ether(?:eum)?\b', 'SOL': r'Solana', 'XRP': r'XRP|Ripple', 'TON': r'Toncoin|TON\b',
+    'BTC': r'Bitcoin|[Бб]иткоин[а-яё]*|BTC', 'ETH': r'Ethereum|[Ээ]фириум[а-яё]*|Эфир[а-яё]*|Ether\b|ETH\b', 'SOL': r'Solana|[Сс]олан[аеыу]', 'XRP': r'XRP|Ripple', 'TON': r'Toncoin|TON\b|[Тт]онкоин[а-яё]*',
     'DOGE': r'Dogecoin|DOGE', 'BNB': r'BNB|Binance Coin', 'USDT': r'Tether|USDT',
     '^GSPC': r'S&P 500|S&P|Wall Street|Уолл-стрит|американск[а-я]+ (?:рын|бирж|акци)', '^IXIC': r'Nasdaq|Насдак', '^DJI': r'Dow Jones|Dow(?= )|Доу-Джонс'}
 NAMES_RX = {k: re.compile(r'(?<![A-Za-zА-Яа-яЁё])(?:' + v + r')(?![a-zа-яё])') for k, v in NAMES_RX.items()}
@@ -215,12 +215,14 @@ def summarize(url, title, desc):
         w = set(re.findall(r'\w+', s_.lower()))
         return w and len(w & tw) / len(w) > 0.6
     for para in cands:
-        para = para.strip()
+        para = re.sub(r'^[A-ZА-ЯЁ.\-]{3,}\.(?:RU|COM)\s*[-–—]\s*', '', para.strip())
+        para = re.sub(r'\s+[A-ZА-ЯЁ]{3,}\.RU\s*[-–—]\s*', '. ', para)
         if len(para) < 50 or JUNK.search(para): continue
         for snt in SPLIT.split(para):
             snt = snt.strip()
             if len(snt) < 40 or len(snt) > 320 or same(snt): continue
-            if any(snt[:50] == q[:50] for q in sents): continue
+            have = ' '.join(sents)
+            if any(snt[:50] == q[:50] for q in sents) or snt[:60] in have or (len(snt) > 60 and any(q[:60] in snt for q in sents)): continue
             sents.append(snt)
             if len(sents) >= 7 or sum(len(q) for q in sents) > 1100: return sents
     return sents
@@ -267,6 +269,17 @@ for x in merged:
         x['trt'] = x.get('trt', 0) + 1
         print('translate', e, file=sys.stderr)
 print('translated', nt)
+for x in merged:   # чистка: «INTERFAX.RU - » и повторы анонса в сути
+    if not x.get('sum'): continue
+    parts = []
+    for q in x['sum']:
+        parts += [w.strip() for w in re.split(r'\s*[A-ZА-ЯЁ]{3,}\.RU\s*[-–—]\s*', q) if w.strip()]
+    clean = []
+    for q in parts:
+        h_ = ' '.join(clean)
+        if q[:60] in h_ or any(c[:60] in q for c in clean if len(c) >= 60): continue
+        clean.append(q)
+    x['sum'] = clean
 for x in merged:   # старые новости (нужны только для причин на графиках) — суть покороче, чтобы файл не разрастался
     if x['d'] < cut30 and x.get('sum') and len(x['sum']) > 2: x['sum'] = x['sum'][:2]
 json.dump({'updated': out['updated'], 'items': merged}, open('news.json', 'w'), ensure_ascii=False, separators=(',', ':'))
