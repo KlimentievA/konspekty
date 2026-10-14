@@ -211,15 +211,43 @@ artem_html = page('Hub · Артем', artem_body, 'artem')   # просто: А
 
 # ---------------- nastya.html ----------------
 nastya_cards = ('<div class="cards">\n    <div class="card u"><a class="cover" href="nastya-ucheba.html" aria-label="Учёба"></a>\n'
-                '      <div class="ic">§</div><b>Учёба</b><span>Конспекты и материалы — скоро</span>\n'
+                '      <div class="ic">§</div><b>Учёба</b><span>Расписание группы</span>\n'
                 '      <div class="links"><a href="nastya-ucheba.html">Открыть</a></div>\n    </div>\n  </div>')
 nastya_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'nastya') + '\n  <h1>Настя</h1>\n  <p class="lead">Выбери раздел.</p>\n  '
                + nastya_cards + '\n  ' + foot + '\n</div>\n' + LOGOUT_JS)
 nastya_html = page('Hub · Настя', nastya_body, 'nastya')
 
-nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h1>Учёба</h1>\n  <p class="lead">Раздел Насти.</p>\n'
-           '  <div class="empty"><div class="ic">§</div>Здесь пока ничего нет.<br>Скоро появятся конспекты и материалы.</div>\n</div>\n')
-nu_html = page('Учёба · Настя', nu_body, 'nastya')
+NU_CSS = """<style>
+.sch{margin-top:18px}.sch h2{font:600 15px/1.3 'IBM Plex Sans',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:26px 0 10px}
+.sch h2.today{color:var(--a2)}.pair{display:grid;grid-template-columns:62px 1fr;gap:4px 14px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.pair.now{border-color:var(--a2);box-shadow:0 0 0 1px var(--a2) inset}.pair b{font-weight:600;font-variant-numeric:tabular-nums}.pair b small{display:block;font-weight:400;color:var(--muted)}
+.pair .n{font-weight:600}.pair .m{color:var(--muted);font-size:14px;margin-top:2px}.sch .nopairs{color:var(--muted);padding:22px 0}.upd{color:var(--faint);font-size:13px;margin-top:22px}
+</style>"""
+NU_JS = r"""<script>
+(function(){
+var el=document.getElementById('sch');
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function ymd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+function draw(j){
+  var L=j.list||[],now=new Date(),today=ymd(now),hm=('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2),by={},days=[];
+  L.forEach(function(x){if(x.d<today)return;if(!by[x.d]){by[x.d]=[];days.push(x.d)}by[x.d].push(x)});
+  days.sort();
+  if(!days.length){el.innerHTML='<p class="nopairs">Ближайших пар нет.</p>';return}
+  var h='',shown=0;
+  days.forEach(function(d){if(shown>=40)return;var dt=new Date(d+'T12:00:00'),diff=Math.round((new Date(d+'T00:00:00')-new Date(today+'T00:00:00'))/864e5);
+    var t=diff===0?'Сегодня':diff===1?'Завтра':dt.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+    h+='<h2'+(diff===0?' class="today"':'')+'>'+esc(t)+(diff<2?' · '+esc(dt.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})):'')+'</h2>';
+    by[d].forEach(function(x){shown++;var on=d===today&&x.b<=hm&&x.e>hm;
+      h+='<div class="pair'+(on?' now':'')+'"><b>'+esc(x.b)+'<small>'+esc(x.e)+'</small></b><div><div class="n">'+esc(x.n)+'</div><div class="m">'+esc([x.k,x.r?'ауд. '+x.r:'',x.bd].filter(Boolean).join(' · '))+(on?' · идёт сейчас':'')+'</div>'+(x.t?'<div class="m">'+esc(x.t)+'</div>':'')+'</div></div>'})});
+  el.innerHTML=h+'<p class="upd">Группа '+esc(j.group||'')+' · обновлено '+esc((j.updated||'').replace('T',' ').replace('Z',' UTC'))+'</p>';
+}
+fetch('schedule_nastya.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(draw)
+  .catch(function(){el.innerHTML='<p class="nopairs">Расписание появится после первого обновления (раз в 3 часа).</p>'});
+})();
+</script>"""
+nu_body = ('<div class="w">\n  ' + topbar('nastya.html', 'Настя') + '\n  <h1>Расписание</h1>\n  <p class="lead">Группа 15.24Д-ЭМ01/25с · ближайшие пары.</p>\n'
+           '  <div class="sch" id="sch"><p class="nopairs">Загружаю…</p></div>\n</div>\n' + NU_JS)
+nu_html = page('Учёба · Настя', nu_body, 'nastya').replace('</head>', NU_CSS + '</head>', 1)
 
 # замок для страниц Артема (ucheba.html, finance.html) — его вставляют make_ucheba.py и build_finance.py
 open(os.path.join(ROOT, 'src', 'finance', 'gate_artem.html'), 'w', encoding='utf-8').write(gate('artem'))
