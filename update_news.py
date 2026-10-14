@@ -194,7 +194,8 @@ SYN = [(r'\bЦОД\w*', 'дата-центр'), (r'\bБПЛА\b', 'беспил�
        (r'«|»|"', ''), (r'\bСбер\b', 'Сбербанк')]
 STOP3 = set('для что как при его она они там нет все уже еще ещё под над без the and for are was has not but its new вот это'.split())
 def stem(w):
-    return w if len(w) <= 4 else w[:4] if len(w) == 5 else w[:5]
+    if len(w) <= 4: return w
+    return w[:4] if CYR.match(w) else w[:5]
 def toks(t):
     for a_, b_ in SYN: t = re.sub(a_, b_, t, flags=re.I)
     return {stem(w) for w in re.findall(r'[a-zа-яё0-9]{3,}', t.lower()) if w not in STOP and w not in STOP3}
@@ -212,16 +213,40 @@ for x in merged:
     x['_tk'] = toks(x.get('to') or x['t']) | toks(x['t'])
     x.pop('dup', None); x['cl'] = 1
 recent = sorted([x for x in merged if x['d'] > ago(days=4)], key=lambda x: x['d'])
+import math
+DF = {}
+for x in recent:
+    for t_ in x['_tk']: DF[t_] = DF.get(t_, 0) + 1
+NR = max(1, len(recent))
+def W(ts): return sum(math.log(NR / DF.get(t_, 1)) for t_ in ts)
+for x in recent: x['_w'] = W(x['_tk'])
+def sim(a_, b_):
+    it_ = a_['_tk'] & b_['_tk']
+    if len(it_) < 3: return 0
+    return W(it_) / max(1e-9, min(a_['_w'], b_['_w']))
 clusters = []
 for x in recent:
     best, bs = None, 0
     for c in clusters[-400:]:
         if (datetime.datetime.fromisoformat(x['d'][:19]) - datetime.datetime.fromisoformat(c['d'][:19])).total_seconds() > 36 * 3600: continue
-        inter = len(x['_tk'] & c['tk'])
-        sc = inter / max(1, min(len(x['_tk']), len(c['tk'])))
-        if inter >= 3 and sc >= 0.5 and sc > bs: best, bs = c, sc
+        for y in c['m'][:12]:
+            sc = sim(x, y)
+            if sc >= 0.55 and sc > bs: best, bs = c, sc
     if best: best['m'].append(x)
     else: clusters.append({'d': x['d'], 'tk': set(x['_tk']), 'm': [x]})
+# второй проход: склеиваем крупные сюжеты, которые разошлись по разным кластерам (ранние «соцсети сообщают» + поздние подтверждения)
+multi = [c for c in clusters if len(c['m']) >= 2]
+for c in multi:
+    c['u'] = set().union(*[y['_tk'] for y in c['m']])
+for i_, a_ in enumerate(multi):
+    if not a_['m']: continue
+    for b_ in multi[i_ + 1:]:
+        if not b_['m']: continue
+        if abs((datetime.datetime.fromisoformat(a_['d'][:19]) - datetime.datetime.fromisoformat(b_['d'][:19])).total_seconds()) > 36 * 3600: continue
+        if len(a_['u'] & b_['u']) < 3: continue
+        if any(sim(p_, q_) >= 0.6 for p_ in a_['m'][:12] for q_ in b_['m'][:12]):
+            a_['m'] += b_['m']; a_['u'] |= b_['u']; b_['m'] = []
+clusters = [c for c in clusters if c['m']]
 PAYWALL = {'WSJ', 'The Wall Street Journal', 'Bloomberg.com', 'Bloomberg', 'Financial Times', 'The Economist', 'New York Times', "Barron's", 'Reuters'}
 def base_imp(x):
     t = (x['t'] + ' ' + x.get('to', ''))
@@ -235,7 +260,7 @@ def base_imp(x):
 for c in clusters:
     m = c['m']
     srcs = {y['s'] for y in m}
-    rep = max(m, key=lambda y: (sum(len(q) for q in TEXT.get(y['id'], [])) > 900, y['s'] not in PAYWALL, SRCW.get(y['s'], 0) + (1 if CYR.search(y['t']) else 0), bool(y.get('tags')), -len(y['t'])))
+    rep = max(m, key=lambda y: (SRCW.get(y['s'], 0) >= 2 or CYR.search(y['t']) and SRCW.get(y['s'], 0) >= 1, y['s'] not in PAYWALL, sum(len(q) for q in TEXT.get(y['id'], [])) > 900, SRCW.get(y['s'], 0) + (1 if CYR.search(y['t']) else 0), bool(y.get('tags')), -len(y['t'])))
     tags = sorted({t for y in m for t in y.get('tags', [])})
     imp = max(base_imp(y) for y in m) + 3 * min(len(srcs) - 1, 5)
     for y in m:
@@ -247,7 +272,7 @@ for c in clusters:
     else: rep.pop('also', None)
 for x in merged:
     if 'imp' not in x: x['imp'] = base_imp(x)
-    x.pop('_tk', None)
+    x.pop('_tk', None); x.pop('_w', None)
 print('clusters', len(clusters), 'multi-source', sum(1 for c in clusters if len({y['s'] for y in c['m']}) > 1))
 
 # ---------- подробный пересказ: сначала важные и свежие ----------
