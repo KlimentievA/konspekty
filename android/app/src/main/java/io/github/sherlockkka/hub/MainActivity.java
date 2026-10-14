@@ -135,7 +135,7 @@ public class MainActivity extends Activity {
                     String bg = isNight() ? "#171611" : "#F4F1E8", fg = isNight() ? "#E8E4D8" : "#25221C";
                     v.loadDataWithBaseURL(HOME, "<html><head><meta name=viewport content='width=device-width,initial-scale=1'></head>"
                         + "<body style='margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:" + bg + ";color:" + fg + ";font-family:sans-serif;text-align:center'>"
-                        + "<div><div style='font:600 56px Georgia,serif;color:#A93D28'>§</div><h2 style='margin:10px 0 6px'>Нет соединения</h2>"
+                        + "<div><div style='display:inline-grid;place-items:center;width:84px;height:84px;border-radius:22px;background:linear-gradient(135deg,#13A06E,#04452F);color:#F4F1E8;font:700 50px Georgia,serif'>H</div><h2 style='margin:10px 0 6px'>Нет соединения</h2>"
                         + "<p style='opacity:.7;margin:0 0 18px'>Проверь интернет и попробуй ещё раз.</p>"
                         + "<a href='" + HOME + "' style='padding:12px 22px;border-radius:999px;background:#1F6B57;color:#fff;text-decoration:none'>Повторить</a></div></body></html>",
                         "text/html", "utf-8", null);
@@ -341,9 +341,9 @@ public class MainActivity extends Activity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         TextView ic = new TextView(this);
-        ic.setText("§"); ic.setGravity(Gravity.CENTER); ic.setTextColor(cRed());
+        ic.setText("H"); ic.setGravity(Gravity.CENTER); ic.setTextColor(0xFFF4F1E8);
         ic.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28); ic.setTypeface(Typeface.create(Typeface.SERIF, Typeface.BOLD));
-        GradientDrawable ov = new GradientDrawable(); ov.setShape(GradientDrawable.OVAL); ov.setColor((cRed() & 0x00FFFFFF) | 0x22000000);
+        GradientDrawable ov = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{0xFF13A06E, 0xFF04452F}); ov.setShape(GradientDrawable.OVAL);
         ic.setBackground(ov);
         row.addView(ic, new LinearLayout.LayoutParams(dp(56), dp(56)));
         LinearLayout tx = new LinearLayout(this); tx.setOrientation(LinearLayout.VERTICAL); tx.setPadding(dp(14), 0, 0, 0);
