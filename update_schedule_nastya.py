@@ -42,9 +42,13 @@ def convert(p):
     if not d or not b:
         return None
     summ = unesc(p.get('SUMMARY', '')).replace('[pleh.tech]', '').strip()
+    sub = ''
+    ms = re.search(r',\s*(подгруппа\s*\d+)\s*$', summ, re.I)
+    if ms: sub, summ = ms[1].lower(), summ[:ms.start()].strip()
     m = re.match(r'^(.*?)\s*\((.*)\)\s*$', summ)
     name, kind = (m[1], m[2]) if m else (summ, '')
     kind = KIND.get(kind.lower(), kind)
+    if sub: kind = (kind + ' · ' + sub) if kind else sub
     loc = unesc(p.get('LOCATION', ''))
     room, bd = '', ''
     mm = re.match(r'^(?:ауд\.\s*)?(.+?),\s*(\d+\s*корпус.*)$', loc)
