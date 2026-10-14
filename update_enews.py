@@ -90,6 +90,9 @@ def gsearch(q, lang):
     time.sleep(0.8)
     return out
 
+def toks(t):
+    t = re.sub(r'(?i)\bЦОД\w*', 'дата центр', t); t = re.sub(r'(?i)БПЛА|дрон\w*', 'беспилотник', t)
+    return {(w[:4] if re.match('[а-яё]', w) else w[:5]) for w in re.findall(r'[a-zа-яё0-9]{4,}', t.lower())}
 def norm(t): return re.sub(r'\W+', ' ', t.lower()).strip()[:70]
 def merge(db, found):
     have = {norm(x.get('to') or x['t']) for x in db['items']}
@@ -106,7 +109,13 @@ def merge(db, found):
     keep = []
     for day, a in byday.items():
         a.sort(key=lambda x: (bool(x.get('sum')), score(x.get('to') or x['t'])), reverse=True)
-        keep += a[:5]
+        pick = []   # до 5 разных сюжетов за день: почти одинаковые заголовки не дублируем
+        for x in a:
+            tk = toks(x.get('to') or x['t'])
+            if any(len(tk & p_) >= 3 and len(tk & p_) / max(1, min(len(tk), len(p_))) >= 0.6 for _, p_ in pick): continue
+            pick.append((x, tk))
+            if len(pick) >= 5: break
+        keep += [x for x, _ in pick]
     db['items'] = sorted(keep, key=lambda x: x['d'], reverse=True)
     return n
 

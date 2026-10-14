@@ -87,7 +87,7 @@ NAMES = {'SBER': ['Сбербанк', 'Сбер'], 'GAZP': ['Газпром'], '
          'TATN': ['Татнефть', 'Татнефти'], 'SNGS': ['Сургутнефтегаз'], 'SIBN': ['Газпром нефть', 'Газпром нефти'],
          'YDEX': ['Яндекс'], 'X5': ['X5', 'Пятёрочк', 'Пятерочк'], 'MGNT': ['Магнит'], 'MTSS': ['МТС'], 'CHMF': ['Северстал'],
          'NLMK': ['НЛМК'], 'VTBR': ['ВТБ'], 'T': ['Т-Технологи', 'Т-Банк'], 'OZON': ['Ozon', 'Озон'], 'ALRS': ['АЛРОСА', 'Алроса'],
-         'PHOR': ['ФосАгро'], 'AFLT': ['Аэрофлот'], 'MOEX': ['Мосбирж', 'Московская биржа', 'Московской бирж'], 'IRAO': ['Интер РАО'],
+         'PHOR': ['ФосАгро'], 'AFLT': ['Аэрофлот'], 'MOEX': ['Мосбирж', 'МосБирж', 'Московская биржа', 'Московской бирж'], 'IRAO': ['Интер РАО'],
          'RUAL': ['Русал', 'РУСАЛ'], 'TRNFP': ['Транснефт'], 'POSI': ['Positive Technologies', 'Позитив'], 'HEAD': ['HeadHunter', 'Хэдхантер', 'hh.ru']}
 # американские компании и крипта: ищем по словам целиком (латиница и русские названия)
 NAMES_RX = {'AAPL': r'Apple|Эппл', 'MSFT': r'Microsoft|Майкрософт', 'NVDA': r'Nvidia|NVIDIA|Nvidia\'s|Нвидиа|Nvidia’s', 'AMZN': r'Amazon|Амазон',
@@ -99,11 +99,14 @@ NAMES_RX = {'AAPL': r'Apple|Эппл', 'MSFT': r'Microsoft|Майкрософт'
     'DOGE': r'Dogecoin|DOGE', 'BNB': r'BNB|Binance Coin', 'USDT': r'Tether|USDT',
     '^GSPC': r'S&P 500|S&P|Wall Street|Уолл-стрит|американск[а-я]+ (?:рын|бирж|акци)', '^IXIC': r'Nasdaq|Насдак', '^DJI': r'Dow Jones|Dow(?= )|Доу-Джонс'}
 NAMES_RX = {k: re.compile(r'(?<![A-Za-zА-Яа-яЁё])(?:' + v + r')(?![a-zа-яё])') for k, v in NAMES_RX.items()}
+MOEX_CO = re.compile(r'(?i)акци[яиюй]\s+(?:«)?Мос[Бб]ирж|Мос[Бб]ирж[аеиу]\S*\s+(?:увелич|сократ|отчит|выплат|направ|рекоменд|получ|заработ|снизил|нарастил)|дивиденд|прибыл|выручк|МСФО|РСБУ|комисси[ия] биржи|Moscow Exchange (?:profit|revenue|dividend)')
 def tags_of(title):
-    return [k for k, v in NAMES.items() if any(n in title for n in v)] + [k for k, r in NAMES_RX.items() if r.search(title)]
+    t = [k for k, v in NAMES.items() if any(n in title for n in v)] + [k for k, r in NAMES_RX.items() if r.search(title)]
+    if 'MOEX' in t and not MOEX_CO.search(title):   # «индекс Мосбиржи», «торги на Мосбирже» — это рынок, а не акции самой биржи
+        t.remove('MOEX')
+        if re.search(r'индекс|рын[оке]|торг|акци[ийя] (?:РФ|России)', title, re.I): t.append('IMOEX')
+    return t
 FIN = re.compile(r'(?<![А-Яа-яЁёA-Za-z])(акци[йияюе](?! протест)(?! памяти)(?! в поддержку)|бирж|рубл[ья]|ставк|ЦБ|Банк[а-я]* России|нефт|газа?(?![а-я])|дивиденд|облигац|ОФЗ|инфляц|бюджет|IPO|SPO|санкц|прибыль|чист[а-я]+ прибыл|выручк|МСФО|сделк|ВВП|курс[аеу]? (?:доллар|рубл|юан|евро)|доллар|юан|индекс[а-я]* Мосбирж|Мосбирж|экспорт|налог|Минфин|ФРС|Brent|Urals|золот[оа](?![а-я])|инвест|капитализац|госдолг|ипотек|котировк|размещени|эмисси|банкротств|M&A|слияни|поглощени)', re.I)
-def tags_of(title):
-    return [k for k, v in NAMES.items() if any(n in title for n in v)] + [k for k, r in NAMES_RX.items() if r.search(title)]
 def keep(x):
     if x['cat'] == 'world':
         return not re.search(r"\bMy \b|^‘|\bI \b|\bwife\b|\bhusband\b|\bsister\b|\bbrother\b|\brecipe|\bhoroscope", x['t'], re.I)
@@ -132,6 +135,7 @@ def pull(feed):
             s_ = (it.findtext('source') or 'Google Новости').strip()
             if title.endswith(' - ' + s_): title = title[:-len(s_) - 3].strip()
             s_ = re.sub(r'^https?://(?:www\.)?|/$', '', s_)
+            if not re.search(r'[A-Za-zА-Яа-яЁё]', s_): continue   # издания на фарси, китайском и т.п. пропускаем
         desc = txt(it, 'description')
         if src is None: desc = ''
         ft = [cat[3:]] if cat.startswith('us:') else []
