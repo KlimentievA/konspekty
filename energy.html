@@ -209,6 +209,9 @@ section[hidden]{display:none}
 .modes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}.modes .chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
 .tl{position:relative;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}.tl .e{position:relative;padding:0 0 18px}.tl .e::before{content:"";position:absolute;left:-25px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--accent)}.tl .d{font:600 12.5px var(--sans);color:var(--muted)}.tl h4{margin:2px 0;font:600 15.5px/1.35 var(--sans)}.tl p{margin:2px 0;font:400 14.5px/1.5 var(--sans)}.tl a{color:var(--accent2);font-weight:600;font-size:13px}
 .cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 12px;align-items:center;margin-top:8px;font:400 15px var(--sans)}.cmp .l{color:var(--muted);text-align:center;font-size:12.5px}.cmp .v{font-weight:600;font-variant-numeric:tabular-nums}.cmp .v.w{color:var(--up)}.cmp .v:nth-child(3n+1){text-align:right}
+.flt{margin:0 0 10px}.flt summary{cursor:pointer;font:600 14px var(--sans);color:var(--muted);padding:6px 0;list-style:none}.flt summary::before{content:"▸ "}.flt[open] summary::before{content:"▾ "}
+select.srch{width:100%;height:44px;box-sizing:border-box;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:400 15px var(--sans);display:block;margin-top:4px}
+.calc label{display:block;font:500 13px var(--sans);color:var(--muted)}
 </style></head><body>
 <header class="top" id="top"><div class="bar">
  <a class="home" id="b-back" href="index.html" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
@@ -220,10 +223,10 @@ section[hidden]{display:none}
 <nav class="tabs" id="tabs" aria-label="Разделы"></nav>
 
 <section data-tab="map">
-<p class="lead">Нажми на значок или линию, чтобы узнать подробности. Карта двигается двумя пальцами или кнопками +/−.</p>
+<p class="lead">Нажми на значок или линию, чтобы узнать подробности. Двигать карту — двумя пальцами или кнопками +/−.</p>
 <div class="presets" id="presets"></div>
-<div class="tools" id="tools"></div>
-<div class="regs" id="regs"></div>
+<details class="flt" id="flt" open><summary>Слои и регионы</summary><div class="tools" id="tools"></div>
+<div class="regs" id="regs"></div></details>
 <div class="emap" id="emap"><svg id="esvg" role="img" aria-label="Карта нефтяной и газовой отрасли"></svg>
  <div class="zb"><button type="button" id="zin" aria-label="Приблизить">+</button><button type="button" id="zout" aria-label="Отдалить">−</button><button type="button" id="zrst" aria-label="Сбросить" style="font-size:14px">⟲</button></div>
  <div class="etip" id="etip"></div></div>
@@ -372,6 +375,7 @@ function tip(h){var t=$('#etip');if(!h){t.classList.remove('on');return}t.innerH
 function pickOb(id,z){F.ob=id;F.sel=null;var o=OB[id];if(o&&!F.lay[o.t])F.lay[o.t]=true;apply();if(z&&o&&svg){var d=[[o.x-4,o.y-3,o.x+4,o.y+3]][0];zoomTo([o.x-14,o.y-9,o.x+14,o.y+9])}$('#emap').scrollIntoView({behavior:'smooth',block:'center'})}
 document.addEventListener('click',function(e){
   var t=e.target,b;
+  if(b=t.closest('[data-lay],[data-flows],#tools [data-k],#tools [data-ck],[data-reg]'))PRS='';
   if(b=t.closest('[data-lay]')){var l=b.getAttribute('data-lay');F.lay[l]=!F.lay[l];if(F.ob!=null&&!F.lay[OB[F.ob].t])F.ob=null;apply();return}
   if(b=t.closest('[data-flows]')){F.flows=!F.flows;if(!F.flows)F.sel=null;apply();return}
   if(b=t.closest('#tools [data-k]')){F.kind=b.getAttribute('data-k');if(F.sel&&!visR(byId(F.sel)))F.sel=null;apply();return}
@@ -457,6 +461,7 @@ function showTab(id){
   if(!TABS.some(function(t){return t[0]===id}))id='map';
   document.querySelectorAll('section[data-tab]').forEach(function(s){s.hidden=s.getAttribute('data-tab')!==id});
   $('#tabs').innerHTML=TABS.map(function(t){return '<button type="button" data-tab="'+t[0]+'" class="'+(t[0]===id?'on':'')+'">'+t[1]+'</button>'}).join('');
+  var ab=$('#tabs .on');if(ab&&ab.scrollIntoView)try{ab.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}
   if(id==='market')loadNews();
   if(id==='companies')coDraw();
 }
@@ -508,6 +513,7 @@ function loadNews(){
   }).catch(function(){NEWS=null;$('#nws').innerHTML='<p style="color:var(--muted)">Не удалось загрузить новости.</p>'});
 }
 function objNews(o){
+  if(!NEWS)loadNews();
   if(!NEWS||!NEWS.length)return '';
   var core=o.n.replace(/\s*(НПЗ|порт|терминал|завод)\s*/gi,' ').trim().split(/[\s(]+/)[0];if(core.length<4)return '';
   var re=new RegExp(core.slice(0,Math.max(4,core.length-1)),'i');
@@ -558,7 +564,7 @@ function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math
 function genObj(){
   var pool=shuf(OB.filter(function(o){return o.fact&&o.fact.length>20})).slice(0,8);
   return pool.map(function(o){var same=shuf(OB.filter(function(x){return x.t===o.t&&x.id!==o.id})).slice(0,3),opts=shuf([o].concat(same));
-    return {q:'Что это за объект? '+o.fact.replace(new RegExp(o.n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…'),o:opts.map(function(x){return x.n+', '+x.c}),a:opts.indexOf(o),e:o.n+', '+o.c+'. '+o.cap+'. Владелец: '+o.o+'.'}})
+    return {q:'Что это за объект? '+o.fact.replace(new RegExp(o.n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…'),o:opts.map(function(x){return x.n+', '+x.c}),a:opts.indexOf(o),e:o.n+', '+o.c+'. '+o.cap.charAt(0).toUpperCase()+o.cap.slice(1)+'. Владелец: '+o.o+'.'}})
 }
 function genGas(){
   var out=[];for(var i=0;i<8;i++){var s=shuf(D.gas),a=s[0],b=s[1];if(Math.abs(a[1]-b[1])<0.15){i--;continue}
@@ -573,6 +579,7 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-qm]'
 function tlDraw(){$('#tl').innerHTML='<div class="tl">'+D.timeline.map(function(x){return '<div class="e"><div class="d">'+esc(x.d)+'</div><h4>'+esc(x.t)+'</h4><p>'+esc(x.x)+'</p>'+(x.u?'<a href="'+esc(x.u)+'" target="_blank" rel="noopener">Источник</a>':'')+'</div>'}).join('')+'</div>'}
 
 $('#foot').innerHTML='Мощности и объёмы — округлённые оценки по открытым данным (компании, EIA, Energy Institute, IEA, GIIGNL), у разных источников и в разные годы они отличаются. Положение значков и маршруты схематичные. Цены нефти и газа — с задержкой; остальное не в реальном времени. Не инвестиционная рекомендация.';
+if(window.innerWidth<700)$('#flt').removeAttribute('open');
 tools();rankings();stats();calc();deals();tlDraw();cmpInit();scen();setMode('quiz');showTab(curTab());
 fetch('markets.json').then(function(r){return r.json()}).then(function(m){market(m);if(curTab()==='companies')coDraw()}).catch(function(){market(null)});
 
