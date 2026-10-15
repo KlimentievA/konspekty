@@ -29,6 +29,7 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
 .emap g.rg.sel .rt.flow{animation-duration:.6s}
 @keyframes fl{to{stroke-dashoffset:-30}}
 @media(prefers-reduced-motion:reduce){.emap .rt.flow{animation:none;stroke-dasharray:none;opacity:.8}}
+.emap .shp{fill:var(--faint);stroke:var(--surface);stroke-width:.6;vector-effect:non-scaling-stroke;cursor:pointer}.emap .shp.mv{fill:var(--fg)}
 .emap .ck{fill:var(--bg);stroke:var(--fg);stroke-width:1.6;vector-effect:non-scaling-stroke;cursor:pointer}
 .emap .ckt{font:600 10.5px var(--sans);fill:var(--fg);paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
 .emap .ckt{display:var(--ckl,block)}
@@ -78,14 +79,15 @@ function store(k){try{return localStorage.getItem(k)}catch(e){return null}}
 var SK={swiss:'light',sepia:'light',ocean:'light',graphite:'dark',forest:'dark',terminal:'dark'};
 (function(){var id=store('fin:skin')||'auto';if(SK[id]){root.setAttribute('data-skin',id);root.setAttribute('data-theme',SK[id])}else if(id==='light'||id==='dark'){root.setAttribute('data-theme',id)}else{var t=store('theme');if(t==='dark'||t==='light')root.setAttribute('data-theme',t)}})();
 var D=JSON.parse($('#edata').textContent),R=D.routes,CK=D.chokes,UN={oil:'млн барр/сут',gas:'млрд м³/год',lng:'млн т/год'},KN={oil:'Нефть',gas:'Газ (труба)',lng:'СПГ'},COL={oil:'#E8A33D',gas:'#4EA8DE',lng:'#2FD3AE'};
-var F={kind:'all',ck:true,sel:null};
+var F={kind:'all',ck:true,sel:null,sh:true},SH=null;
 function wd(r){var v=r.v||0;return r.kind==='oil'?1.4+Math.sqrt(v)*1.5:r.kind==='gas'?1.4+Math.sqrt(v)*.6:1.4+Math.sqrt(v)*.85}
 function nf(v){return String(v).replace('.',',')}
+function loadShips(){return fetch('tankers.json?'+Math.floor(Date.now()/6e5)).then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.ships&&j.ships.length){SH=j;var d=new Date(j.updated*1000);$('#foot').innerHTML+=' Танкеры (AIS, aisstream.io): положение на '+d.toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+', обновляется примерно раз в 20 минут; видны только суда в зоне приёма станций AIS.';tools();ships()}}).catch(function(){})}
 function lib(src,ok){return window[ok]?Promise.resolve():new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
 var svg,g,proj,path,zoom,W=1000,H=450;
 function tools(){
   var h=[['all','Всё'],['oil','Нефть'],['gas','Газ (труба)'],['lng','СПГ']].map(function(x){return '<button type="button" class="chip'+(F.kind===x[0]?' on':'')+'" data-k="'+x[0]+'">'+x[1]+'</button>'}).join('');
-  h+='<button type="button" class="chip'+(F.ck?' on':'')+'" data-ck="1">Проливы</button><button type="button" class="chip" disabled title="Нужен ключ AIS — подключим следующим шагом">Живые танкеры · скоро</button>';
+  h+='<button type="button" class="chip'+(F.ck?' on':'')+'" data-ck="1">Проливы</button>'+(SH?'<button type="button" class="chip'+(F.sh?' on':'')+'" data-sh="1">Танкеры · '+SH.ships.length+'</button>':'<button type="button" class="chip" disabled title="Живые данные AIS появятся, когда подключат ключ aisstream.io">Живые танкеры · скоро</button>');
   $('#tools').innerHTML=h;
 }
 function vis(r){return F.kind==='all'||r.kind===F.kind}
@@ -108,15 +110,22 @@ function build(geo){
   CK.forEach(function(c,i){var p=proj([c.x,c.y]);if(!p)return;var q=cg.append('g').attr('class','ckg').attr('data-i',i).attr('transform','translate('+p+')');q.append('circle').attr('class','ck').attr('r',5);q.append('text').attr('class','ckt').attr('x',8).attr('y',3).text(c.n)});
   zoom=d3.zoom().scaleExtent([1,9]).translateExtent([[0,0],[W,H]]).filter(function(e){if(e.type==='wheel')return e.ctrlKey;if(e.touches)return e.touches.length>1;return !e.button}).on('zoom',function(e){g.attr('transform',e.transform);var k=e.transform.k;$('#emap').classList.toggle('z2',k>=2.2);g.selectAll('.ckt').style('font-size',(10.5/Math.sqrt(k))+'px');g.selectAll('.ck').attr('r',5/Math.sqrt(k))});
   svg.call(zoom);
-  apply();
+  apply();ships();
 }
 function apply(){
   if(!g)return;
   g.selectAll('g.rg').style('display',function(){var r=byId(this.getAttribute('data-id'));return vis(r)?null:'none'}).classed('sel',function(){return this.getAttribute('data-id')===F.sel});
   g.select('#rts').classed('dim',!!F.sel);
-  g.select('#cks').style('display',F.ck?null:'none');
+  g.select('#cks').style('display',F.ck?null:'none');g.select('#ships').style('display',F.sh?null:'none');
   g.selectAll('g.rg').each(function(){if(this.getAttribute('data-id')===F.sel)this.parentNode.appendChild(this)});
   tools();list();card();
+}
+function ago(ts){var m=Math.max(0,Math.round((Date.now()/1000-ts)/60));return m<60?m+' мин назад':Math.round(m/60)+' ч назад'}
+function ships(){
+  if(!g||!SH)return;g.select('#ships').remove();
+  var sg=g.insert('g','#cks').attr('id','ships');
+  sg.selectAll('path').data(SH.ships).enter().append('path').attr('class',function(s){return 'shp'+(s[4]>=.5?' mv':'')}).attr('data-i',function(s,i){return i}).attr('d','M0,-5L3.4,4L0,2.2L-3.4,4Z').attr('transform',function(s){var p=proj([s[3],s[2]]);return p?'translate('+p+') rotate('+(s[5]||0)+')':'translate(-99,-99)'});
+  apply();
 }
 function byId(id){for(var i=0;i<R.length;i++)if(R[i].id===id)return R[i]}
 function list(){
@@ -132,6 +141,8 @@ function tip(h,xy){var t=$('#etip');if(!h){t.classList.remove('on');return}t.inn
 document.addEventListener('click',function(e){
   var t=e.target,b;
   if(b=t.closest('#tools [data-k]')){F.kind=b.getAttribute('data-k');if(F.sel&&!vis(byId(F.sel)))F.sel=null;apply();return}
+  if(b=t.closest('#tools [data-sh]')){F.sh=!F.sh;apply();return}
+  if(b=t.closest('.shp')){var s=SH.ships[+b.getAttribute('data-i')];tip('<b>'+esc(s[1]||('MMSI '+s[0]))+'</b>'+(s[4]>=.5?'идёт, '+nf(s[4])+' уз':'стоит')+(s[6]?' · курс на «'+esc(s[6])+'»':'')+' · данные '+ago(s[8]));return}
   if(b=t.closest('#tools [data-ck]')){F.ck=!F.ck;apply();return}
   if(b=t.closest('#rl tr')){var id=b.getAttribute('data-id');F.sel=F.sel===id?null:id;apply();if(F.sel)$('#emap').scrollIntoView({behavior:'smooth',block:'center'});return}
   if(b=t.closest('g.rg')){var id2=b.getAttribute('data-id');F.sel=F.sel===id2?null:id2;apply();return}
@@ -148,7 +159,7 @@ document.addEventListener('pointermove',function(e){
 });
 $('#foot').innerHTML='Объёмы — округлённые оценки по открытым данным (EIA, Energy Institute, IEA, GIIGNL, 2023–2024), не данные в реальном времени. Маршруты схематичные.';
 tools();
-Promise.all([lib('vendor/d3.min.js','d3'),lib('vendor/topojson-client.min.js','topojson')]).then(function(){return fetch('world/countries.json').then(function(r){return r.json()})}).then(build).catch(function(){$('#emap').innerHTML='<p style="padding:16px">Не удалось загрузить карту. Проверь соединение.</p>'});
+Promise.all([lib('vendor/d3.min.js','d3'),lib('vendor/topojson-client.min.js','topojson')]).then(function(){return fetch('world/countries.json').then(function(r){return r.json()})}).then(build).then(loadShips).catch(function(){$('#emap').innerHTML='<p style="padding:16px">Не удалось загрузить карту. Проверь соединение.</p>'});
 })();
 </script>
 </body></html>
