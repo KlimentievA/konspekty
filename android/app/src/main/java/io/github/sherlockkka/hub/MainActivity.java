@@ -44,13 +44,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/** Hub: сайт sherlockkka.github.io/konspekty во весь экран, без адресной строки.
+/** Hub: сайт klimentiev.github.io/konspekty во весь экран, без адресной строки.
  *  Содержимое всегда свежее (грузится с сайта), после первого запуска работает и без сети (кэш сайта).
  *  Само приложение проверяет новые версии на GitHub Releases и обновляется изнутри. */
 public class MainActivity extends Activity {
-    static final String HOST = "sherlockkka.github.io";
-    static final String HOME = "https://sherlockkka.github.io/konspekty/";
-    static final String API = "https://api.github.com/repos/SHerlockkka/konspekty/releases/latest";
+    static final String HOST = "klimentiev.github.io";
+    static final String HOME = "https://klimentiev.github.io/konspekty/";
+    static final String API = "https://api.github.com/repos/Klimentiev/konspekty/releases/latest";
     static final String ACT_INSTALL = "io.github.sherlockkka.hub.INSTALL";
 
     // Три «экрана», каждый — свой WebView, живущий в памяти: главная/профили, Учёба, Финансы.

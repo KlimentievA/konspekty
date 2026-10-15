@@ -205,7 +205,7 @@ if(window.HubApp){try{var af=document.getElementById('appfoot');af.innerHTML='П
   var d=document.createElement('div');d.className='inst';d.setAttribute('role','dialog');
   d.innerHTML='<button class="x" aria-label="Закрыть">×</button><div class="hd"><img class="ic" src="icon-192.png?v=31" alt="" style="padding:0;border:0;background:none"><div><b>'+(ios?'Установи Hub на iPhone':'Приложение Hub для Android')+'</b><small>'+(ios?'Откроется во весь экран, как приложение':'Во весь экран, с обновлениями внутри')+'</small></div></div>'+
     (ios?'<ol><li>Нажми '+share+' «Поделиться» внизу Safari</li><li>Выбери '+plus+' «На экран Домой»</li><li>Нажми «Добавить» — готово</li></ol><span class="arr"></span>'
-        :'<a class="go" href="https://github.com/SHerlockkka/konspekty/releases/latest/download/Hub.apk">Скачать Hub.apk</a>');
+        :'<a class="go" href="https://github.com/Klimentiev/konspekty/releases/latest/download/Hub.apk">Скачать Hub.apk</a>');
   document.body.appendChild(d);
   function hide(){d.classList.remove('on');try{localStorage.setItem('hubInstallHide',String(Date.now()))}catch(e){}}
   d.querySelector('.x').onclick=hide;
