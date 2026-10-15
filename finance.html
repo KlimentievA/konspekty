@@ -411,6 +411,16 @@ tr[data-bond],table[data-t="ru"] tbody tr,table[data-t="us"] tbody tr,table[data
 .wcol{min-width:0}
 .wmap{position:relative;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--accent) 5%,var(--surface));overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 .wmap.zin{touch-action:none}
+
+html.wfs-lock,html.wfs-lock body{overflow:hidden}
+.wm.wfs .wmap{position:fixed;left:0;top:0;right:0;bottom:0;z-index:50;margin:0;border:0;border-radius:0;background:var(--bg);touch-action:none}
+.wm.wfs .wmap svg{width:100%;height:100%}
+.wm.wfs .wzm{top:calc(10px + env(safe-area-inset-top,0px));right:10px}.wm.wfs .wzm button{width:42px;height:40px;font-size:20px}
+.wm.wfs .wcrumb{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;right:66px;z-index:52;margin:0;padding:6px 8px;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.wm.wfs .wleg{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:51;margin:0;padding:8px 10px;border-radius:12px;background:var(--surface);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.wm.wfs .wsrc,.wm.wfs .wbar{display:none}
+@media (min-width:1000px){.wzm [data-wfs]{display:none}}
+@media (max-width:999px){.wm.wfs .wcard{max-height:44vh}.wm.wfs .wcard.full{max-height:calc(100dvh - 56px)}}
 .wmap svg{display:block;width:100%;height:auto;cursor:grab}
 .wmap svg:active{cursor:grabbing}
 .wc{stroke-width:.5;vector-effect:non-scaling-stroke;stroke-linejoin:round;transition:fill .35s ease,opacity .2s;cursor:pointer}
@@ -1809,7 +1819,7 @@ function renderWorld(){
     '<div class="wcrumb" id="w-crumb" hidden></div><div class="wctl"><nav class="sub" id="w-lay" hidden></nav><nav class="sub" id="w-ind" hidden></nav></div>'+
     '<div class="wgrid"><div class="wcol">'+
       '<div class="wmap" id="w-map"><svg id="w-svg" role="img" aria-label="Карта мира"></svg>'+
-        '<div class="wzm" role="group" aria-label="Масштаб карты"><button type="button" data-wz="1" aria-label="Приблизить">+</button><button type="button" data-wz="-1" aria-label="Отдалить">−</button><button type="button" data-wz="0" aria-label="Весь мир">⌂</button></div>'+
+        '<div class="wzm" role="group" aria-label="Масштаб карты"><button type="button" data-wz="1" aria-label="Приблизить">+</button><button type="button" data-wz="-1" aria-label="Отдалить">−</button><button type="button" data-wz="0" aria-label="Весь мир">⌂</button><button type="button" data-wfs aria-label="Карта на весь экран" title="На весь экран">⛶</button></div>'+
         '<div class="wtip" id="w-tip" hidden></div><div class="whint" id="w-hint" hidden>Ctrl + колесо — масштаб (или нажми на карту)</div><div class="wload" id="w-load"><span class="empty skel"></span></div></div>'+
       '<div class="wbar" id="w-bar" hidden><button type="button" class="wplay" id="w-play" aria-label="Проиграть по годам"></button>'+
         '<div class="wyr"><input type="range" id="w-year" aria-label="Год"><div class="wtk" id="w-tk"></div></div><div class="wyl" id="w-yl"></div></div>'+
@@ -1858,6 +1868,7 @@ function wMap(){
   var w=Math.max(280,Math.round(box.clientWidth||360)),fc={type:'FeatureCollection',features:WM.feat.filter(function(f){return f.geometry&&f.geometry.type!=='Point'})};
   var proj=d3.geoNaturalEarth1().rotate([-10,0]).fitWidth(w-8,fc),path=d3.geoPath(proj),b=path.bounds(fc);
   proj.translate([proj.translate()[0]+4,proj.translate()[1]-b[0][1]+4]);var h=Math.ceil(b[1][1]-b[0][1])+8;
+  if(WM.fs){var vh=Math.max(240,Math.round(box.clientHeight||innerHeight));proj.translate([proj.translate()[0],proj.translate()[1]+(vh-h)/2]);h=vh}   // во весь экран: карта по центру, высота = окно
   WM.w=w;WM.h=h;WM.proj=proj;WM.path=path;WM.k=1;
   var svg=d3.select('#w-svg');svg.selectAll('*').remove();svg.attr('viewBox','0 0 '+w+' '+h).attr('width',w).attr('height',h);
   var g=svg.append('g');WM.svg=svg;WM.g=g;
@@ -1867,18 +1878,23 @@ function wMap(){
     .attr('cx',function(d){return proj(d.geometry.coordinates)[0]}).attr('cy',function(d){return proj(d.geometry.coordinates)[1]}).attr('r',2.6);
   g.append('g').attr('class','wbs');
   var zoom=d3.zoom().scaleExtent([1,14]).extent([[0,0],[w,h]]).translateExtent([[0,0],[w,h]]).filter(function(e){
-      if(e.type==='wheel')return WM.act||e.ctrlKey||e.metaKey;
-      if(e.type==='touchstart')return e.touches.length>1||WM.k>1.01;   // одним пальцем при обычном масштабе листается страница
+      if(e.type==='wheel')return canHover||WM.act||e.ctrlKey||e.metaKey;   // с мышью колесо масштабирует сразу, без предварительного клика
+      if(e.type==='touchstart')return e.touches.length>1||WM.k>1.01||WM.fs;   // одним пальцем при обычном масштабе листается страница
       return !e.button;})
     .on('zoom',function(e){WM.k=e.transform.k;g.attr('transform',e.transform);wRadii();box.classList.toggle('zin',WM.k>1.01);wTipHide()});
   svg.call(zoom);WM.zoom=zoom;
-  svg.on('wheel.hint',function(e){if(WM.act||e.ctrlKey||e.metaKey)return;var hn=$('#w-hint');if(!hn)return;hn.hidden=false;clearTimeout(WM.hint);WM.hint=setTimeout(function(){hn.hidden=true},1400)});
+  if(WM.fs&&WS.layer==='countries'&&w<h*.85){var c0=proj([30,25]);svg.call(zoom.transform,d3.zoomIdentity.translate(w/2,h/2).scale(2.2).translate(-c0[0],-c0[1]))}   // вертикальный экран: сразу крупнее (Европа, Азия, Африка)
+  svg.on('wheel.hint',function(e){if(canHover||WM.act||e.ctrlKey||e.metaKey)return;var hn=$('#w-hint');if(!hn)return;hn.hidden=false;clearTimeout(WM.hint);WM.hint=setTimeout(function(){hn.hidden=true},1400)});
   box.onpointerdown=function(){WM.act=true};box.onmouseleave=function(){WM.act=false;wTipHide();wHover(null)};
   svg.on('pointermove',function(e){if(e.pointerType==='touch')return;var t=e.target.closest&&e.target.closest('.wc,.wb');wHover(t);if(t)wTipShow(t,e);else wTipHide()});
   svg.on('click',function(e){var t=e.target.closest&&e.target.closest('.wc,.wb');if(!t){wTipHide();WM.tap=null;return}
     var id=wTid(t);if(!id)return;
-    if(!canHover&&WM.tap!==id){WM.tap=id;wHover(t);wTipShow(t,e,true);return}   // телефон: первый тап — подсказка, второй — карточка
     WM.tap=null;wTipHide();if(WS.layer==='countries'&&WHOSTREV[id]){wGoLayer(WHOSTREV[id]);return}wSelect(id)});
+}
+function wFs(on){   // карта на весь экран (телефон): одним пальцем двигаем, двумя масштабируем
+  var sec=$('#wm');if(!sec)return;WM.fs=!!on;sec.classList.toggle('wfs',WM.fs);document.documentElement.classList.toggle('wfs-lock',WM.fs);
+  var bt=$('[data-wfs]');if(bt){bt.textContent=WM.fs?'✕':'⛶';bt.setAttribute('aria-label',WM.fs?'Закрыть полноэкранную карту':'Карта на весь экран')}
+  wTipHide();wMap();wPaint(WS.layer!=='countries'?'fit':0);wCard();window.scrollTo(0,0);
 }
 function wTid(t){var d=d3.select(t).datum();if(!d)return null;return t.classList.contains('wb')?'b:'+d.i:(d.iso||null)}
 function wRadii(){if(!WM.g)return;var k=WM.k;WM.g.selectAll('.wpt').attr('r',2.6/Math.pow(k,.7));WM.g.selectAll('circle.wb').attr('r',function(d){return d.r/Math.sqrt(k)})}
@@ -1890,7 +1906,7 @@ function wPaint(first){   // перекраска: меняет только fil
   if(cn){
     var d=WM.data,yi=d?wyi():0,cols=d?wColors(WS.ind):[],th=WI[WS.ind][2];
     WM.g.selectAll('.wc').style('fill',function(f){if(!d)return R.land;var v=wv(f.iso,WS.ind,yi);return v==null?R.na:cols[wBin(th,v)]}).style('stroke',R.border);
-    WM.g.select('.wbs').selectAll('circle').remove();WM.bub=[];
+    WM.g.select('.wbs').selectAll('*').remove();WM.bub=[];
   }else{
     var host=WHOST[WS.layer];
     WM.g.selectAll('.wc').style('fill',function(f){return f.iso&&f.iso===host?R.host:R.land}).style('stroke',R.border);
@@ -1914,7 +1930,7 @@ function wFitRect(L){   // рамка, в которую вписывается 
   x0-=px;x1+=px;y0-=py;y1+=py;return {x0:x0,y0:y0,x1:x1,y1:y1,k:Math.max(1,Math.min(ft?9:7,.94/Math.max((x1-x0)/WM.w,(y1-y0)/WM.h,1e-3)))}}
 function wFitBub(){var r=wFitRect(WM.reg[WS.layer]);if(!r||!WM.zoom)return;wZoomBox(r.x0,r.y0,r.x1,r.y1,.94,r.k>7?9:7)}
 function wZoomBox(x0,y0,x1,y1,fill,km){var w=WM.w,h=WM.h,k=Math.max(1,Math.min(km||8,fill/Math.max((x1-x0)/w,(y1-y0)/h,1e-3)));
-  WM.svg.transition().duration(650).call(WM.zoom.transform,d3.zoomIdentity.translate(w/2,h/2).scale(k).translate(-(x0+x1)/2,-(y0+y1)/2))}
+  WM.svg.transition().duration(650).call(WM.zoom.transform,d3.zoomIdentity.translate(w/2,WM.fs?h*.38:h/2).scale(k).translate(-(x0+x1)/2,-(y0+y1)/2))}   // во весь экран центр выше середины: снизу карточка
 function wZoomTo(id){if(id.indexOf('b:')===0){var b=WM.bub.filter(function(x){return 'b:'+x.i===id})[0];if(b){var bb=b.f&&!b.dot?WM.path.bounds(b.f):null;if(bb&&bb[1][0]-bb[0][0]<WM.w*.6)wZoomBox(bb[0][0],bb[0][1],bb[1][0],bb[1][1],.5,7);else wZoomBox(b.px-40,b.py-25,b.px+40,b.py+25,.8,6)}return}
   var f=WM.byId[id];if(!f)return;var bb=WM.path.bounds(f);wZoomBox(bb[0][0],bb[0][1],bb[1][0],bb[1][1],.6,8)}
 function wSelMark(){if(!WM.g)return;WM.g.selectAll('.wc,.wb').classed('sel',function(d){return !!WS.sel&&(d.iso?d.iso===WS.sel:('b:'+d.i)===WS.sel)});wRaiseSel()}
@@ -2195,6 +2211,7 @@ view.addEventListener('click',function(e){
   if(b=t.closest('[data-wl]')){wGoLayer(b.getAttribute('data-wl'));return}
   if(b=t.closest('[data-wi]')){WS.ind=b.getAttribute('data-wi');wSave();document.querySelectorAll('#w-ind .chip').forEach(function(c){c.classList.toggle('on',c===b)});wPaint();if(WS.sel)wCard();return}
   if(b=t.closest('[data-wb]')){WS.bm=b.getAttribute('data-wb');wSave();document.querySelectorAll('#w-ind .chip').forEach(function(c){c.classList.toggle('on',c===b)});wPaint();wCard();return}
+  if(t.closest('[data-wfs]')){wFs(!WM.fs);return}
   if(b=t.closest('[data-wz]')){var z=+b.getAttribute('data-wz');if(!WM.zoom)return;if(z===0)WM.svg.transition().duration(500).call(WM.zoom.transform,d3.zoomIdentity);else WM.svg.transition().duration(300).call(WM.zoom.scaleBy,z>0?1.8:1/1.8);return}
   if(t.closest('#w-play')){wPlay();return}
   if(t.closest('#w-sort')){WS.desc=!WS.desc;wSave();wTop();return}
@@ -2206,7 +2223,7 @@ view.addEventListener('click',function(e){
   if(b=t.closest('[data-wspk]')){var r=b.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*300,n=WM.Y.length;wStop();wYear(WM.y0+Math.max(0,Math.min(n-1,Math.round((x-6)/(288/(n-1))))));return}
 });
 view.addEventListener('input',function(e){if(state!=='world')return;if(e.target.id==='cmp-q'){cmpSuggest();return}if(e.target.hasAttribute&&e.target.hasAttribute('data-scrf')){var f=e.target.getAttribute('data-scrf');SC[f]=f==='min'?(parseFloat(String(e.target.value).replace(',','.'))||0):e.target.value;if(f==='country')SC.reg='';SC.lim=60;if(f==='country')scrForm();scrDraw();return}if(e.target.id==='w-year'){wStop();wYear(+e.target.value)}else if(e.target.id==='w-q')wSearch()});
-view.addEventListener('keydown',function(e){if(state==='world'&&e.key==='Escape'){if(WS.sel)wClose();else if(WS.layer!=='countries')wGoLayer('countries')}});
+view.addEventListener('keydown',function(e){if(state==='world'&&e.key==='Escape'){if(WM.fs&&!WS.sel)wFs(false);else if(WS.sel)wClose();else if(WS.layer!=='countries')wGoLayer('countries')}});
 view.addEventListener('mouseover',function(e){if(state!=='world'||!WM.g)return;var s=e.target.closest&&e.target.closest('[data-wbin]');wBinHL(s?+s.getAttribute('data-wbin'):null)});
 view.addEventListener('mouseout',function(e){if(state==='world'&&e.target.closest&&e.target.closest('[data-wbin]'))wBinHL(null)});
 // нижний лист на телефоне: смахнуть вниз — закрыть
@@ -2308,7 +2325,7 @@ var state='',LASTCARD='';
 function route(){
   var h=decodeURIComponent(location.hash.slice(1)),p=h.split('/');
   var sec=p[0]==='markets'?'markets':p[0]==='calc'?'calc':p[0]==='world'?'world':'learn';
-  wStop();wTipHide();
+  wStop();wTipHide();WM.fs=false;document.documentElement.classList.remove('wfs-lock');
   document.querySelectorAll('#sw a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-s')===sec)});
   state=sec;
   var bk=document.getElementById('b-back'),inCh=sec==='learn'&&CH.some(function(x){return x.id===p[1]});
