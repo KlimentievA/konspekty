@@ -49,6 +49,7 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
 .rl tr:hover td,.rl tr.on td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .rl .v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
 .rl .d{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.dl{padding:12px 0;border-bottom:1px solid var(--line)}.dl:last-child{border:0}.dl h4{margin:0 0 4px;font:600 15px/1.35 var(--sans)}.dl .m{color:var(--muted);font:500 12.5px var(--sans)}.dl p{margin:6px 0;font:400 14.5px/1.55 var(--sans)}.dl a{color:var(--accent2);font-weight:600}.dl button{margin-left:8px;border:1px solid var(--line);background:none;color:var(--fg);border-radius:999px;padding:3px 10px;font:500 12.5px var(--sans);cursor:pointer}
 .foot{margin:18px 0 8px;color:var(--faint);font:400 12.5px/1.5 var(--sans)}
 </style></head><body>
 <header class="top" id="top"><div class="bar">
@@ -65,6 +66,7 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
  <div class="etip" id="etip"></div></div>
 <div class="leg"><span><i style="background:#E8A33D"></i>Нефть, млн барр/сут</span><span><i style="background:#4EA8DE"></i>Газ по трубам, млрд м³/год</span><span><i style="background:#2FD3AE"></i>СПГ, млн т/год</span><span><i style="background:var(--faint)"></i>Не работает</span></div>
 <div id="sel"></div>
+<div class="card2"><h3>Сделки и события</h3><div id="deals"></div></div>
 <div class="card2"><h3>Все маршруты</h3><table class="rl" id="rl"></table></div>
 <p class="foot" id="foot"></p>
 </main>
@@ -128,6 +130,9 @@ function ships(){
   apply();
 }
 function byId(id){for(var i=0;i<R.length;i++)if(R[i].id===id)return R[i]}
+function deals(){
+  $('#deals').innerHTML=(D.deals||[]).map(function(x){return '<div class="dl"><div class="m">'+esc(x.d)+' · '+esc(x.s)+'</div><h4>'+esc(x.t)+'</h4><p>'+esc(x.x)+'</p><a href="'+esc(x.u)+'" target="_blank" rel="noopener">Источник</a>'+(x.r?'<button type="button" data-deal="'+esc(x.r)+'">Показать на карте</button>':'')+'</div>'}).join('')+'<p class="foot">Подборка на '+esc(D.dealsAsOf||'')+' из открытых источников; обновляется вручную, не поток в реальном времени.</p>';
+}
 function list(){
   var rs=R.filter(vis).slice().sort(function(a,b){return a.kind===b.kind?(b.v-a.v):(a.kind<b.kind?-1:1)});
   $('#rl').innerHTML=rs.map(function(r){return '<tr data-id="'+r.id+'" class="'+(F.sel===r.id?'on':'')+'"><td><span class="d" style="background:'+(r.off?'var(--faint)':COL[r.kind])+'"></span>'+esc(r.name)+'</td><td class="v">'+(r.off?'—':nf(r.v)+' <span style="color:var(--faint);font-weight:400;font-size:12px">'+UN[r.kind]+'</span>')+'</td></tr>'}).join('');
@@ -141,6 +146,7 @@ function tip(h,xy){var t=$('#etip');if(!h){t.classList.remove('on');return}t.inn
 document.addEventListener('click',function(e){
   var t=e.target,b;
   if(b=t.closest('#tools [data-k]')){F.kind=b.getAttribute('data-k');if(F.sel&&!vis(byId(F.sel)))F.sel=null;apply();return}
+  if(b=t.closest('[data-deal]')){F.kind='all';F.sel=b.getAttribute('data-deal');apply();$('#emap').scrollIntoView({behavior:'smooth',block:'center'});return}
   if(b=t.closest('#tools [data-sh]')){F.sh=!F.sh;apply();return}
   if(b=t.closest('.shp')){var s=SH.ships[+b.getAttribute('data-i')];tip('<b>'+esc(s[1]||('MMSI '+s[0]))+'</b>'+(s[4]>=.5?'идёт, '+nf(s[4])+' уз':'стоит')+(s[6]?' · курс на «'+esc(s[6])+'»':'')+' · данные '+ago(s[8]));return}
   if(b=t.closest('#tools [data-ck]')){F.ck=!F.ck;apply();return}
@@ -158,7 +164,7 @@ document.addEventListener('pointermove',function(e){
   if(rg){var r=byId(rg.getAttribute('data-id'));tip('<b>'+esc(r.name)+'</b>'+(r.off?'не работает':nf(r.v)+' '+UN[r.kind]))}else if(!(e.target.closest&&e.target.closest('.ckg')))tip(null)
 });
 $('#foot').innerHTML='Объёмы — округлённые оценки по открытым данным (EIA, Energy Institute, IEA, GIIGNL, 2023–2024), не данные в реальном времени. Маршруты схематичные.';
-tools();
+tools();deals();
 Promise.all([lib('vendor/d3.min.js','d3'),lib('vendor/topojson-client.min.js','topojson')]).then(function(){return fetch('world/countries.json').then(function(r){return r.json()})}).then(build).then(loadShips).catch(function(){$('#emap').innerHTML='<p style="padding:16px">Не удалось загрузить карту. Проверь соединение.</p>'});
 })();
 </script>

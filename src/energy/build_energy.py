@@ -8,7 +8,7 @@ for r in m.ROUTES:
     assert len(r['pts']) >= 2 and all(-180 <= x <= 180 and -90 <= y <= 90 for x, y in r['pts']), r['id']
     assert r['kind'] in ('oil', 'gas', 'lng') and r.get('v', 0) >= 0
 data = json.dumps({'routes': [{k: (list(map(list, v)) if k == 'pts' else v) for k, v in r.items()} for r in m.ROUTES],
-                   'chokes': [{'n': c['n'], 'x': c['x'], 'y': c['y'], 't': c['t']} for c in m.CHOKES]}, ensure_ascii=False, separators=(',', ':'))
+                   'deals': m.DEALS, 'dealsAsOf': m.DEALS_AS_OF, 'chokes': [{'n': c['n'], 'x': c['x'], 'y': c['y'], 't': c['t']} for c in m.CHOKES]}, ensure_ascii=False, separators=(',', ':'))
 ft = open(os.path.join(ROOT, 'src', 'finance', 'finance_template.html'), encoding='utf-8').read().split('\n')
 def span(a, b):
     i = next(k for k, s in enumerate(ft) if s.startswith(a)); j = next(k for k, s in enumerate(ft) if k >= i and s.startswith(b)); return '\n'.join(ft[i:j + 1])
