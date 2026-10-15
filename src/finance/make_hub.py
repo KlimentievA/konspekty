@@ -216,7 +216,7 @@ nastya_cards = ('<div class="cards">\n    <div class="card u"><a class="cover" h
                 '      <div class="ic">§</div><b>Учёба</b><span>Расписание группы</span>\n'
                 '      <div class="links"><a href="nastya-ucheba.html">Открыть</a></div>\n    </div>\n'
                 '    <div class="card e"><a class="cover" href="english.html" aria-label="English"></a>\n'
-                '      <div class="ic">Aa</div><b>English</b><span>Курс A1 → B1: уроки, слова, справочник</span>\n'
+                '      <div class="ic">Aa</div><b>English</b><span>Курс A2 → B1+: уроки, слова, справочник</span>\n'
                 '      <div class="links"><a href="english.html">Уроки</a><a href="english.html#words">Слова</a><a href="english.html#ref">Справочник</a></div>\n    </div>\n  </div>')
 nastya_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'nastya') + '\n  <h1>Настя</h1>\n  <p class="lead">Выбери раздел.</p>\n  '
                + nastya_cards + '\n  ' + foot + '\n</div>\n' + LOGOUT_JS)
