@@ -1,0 +1,276 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><script>(function(){var P='artem',T='b1c788442fe8f0a18b955452';function ok(){try{if(localStorage.getItem('hub:auth:'+P)===T)return true}catch(e){}return document.cookie.indexOf('hub_'+P+'='+T)>=0}if(!ok()){document.documentElement.style.visibility='hidden';var f=location.pathname.slice(location.pathname.lastIndexOf('/')+1)||'index.html';location.replace('index.html?login='+P+'&next='+encodeURIComponent(f+location.search+location.hash))}else{try{localStorage.setItem('hub:auth:'+P,T);localStorage.setItem('hub:last',P)}catch(e){}}})();</script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#171611" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Энергия">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="favicon.svg?v=31" type="image/svg+xml"><link rel="apple-touch-icon" href="apple-touch-icon.png?v=31">
+<title>Карта нефти и газа</title>
+<script>(function(){
+var Z=[0.8,0.9,1,1.1,1.2,1.3,1.45,1.6];
+function g(){try{var v=parseFloat(localStorage.getItem('siteZoom'));return v>0?v:1}catch(e){return 1}}
+function ap(v){document.documentElement.style.zoom=(v===1?'':String(v))}
+ap(g());
+window.siteZoomGet=g;
+window.siteZoom=function(d){var v=g(),i=Z.indexOf(v);if(i<0)i=2;i=d===0?2:Math.max(0,Math.min(Z.length-1,i+d));v=Z[i];try{localStorage.setItem('siteZoom',String(v))}catch(e){}ap(v);
+  document.querySelectorAll('.szv').forEach(function(o){o.textContent=Math.round(v*100)+'%'});try{window.dispatchEvent(new Event('resize'))}catch(e){}return v};
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-sz]');if(!b)return;e.preventDefault();e.stopPropagation();siteZoom(+b.getAttribute('data-sz'))},true);
+window.addEventListener('storage',function(e){if(e.key==='siteZoom')ap(g())});
+document.addEventListener('DOMContentLoaded',function(){var v=g();document.querySelectorAll('.szv').forEach(function(o){o.textContent=Math.round(v*100)+'%'})});
+})();
+/* Hub: service worker (мгновенная загрузка из кэша), тихое обновление до новой версии, фоновая подгрузка соседних разделов */
+(function(){
+  if(!('serviceWorker' in navigator)||!/^https?:$/.test(location.protocol))return;
+  try{navigator.serviceWorker.register('sw.js').catch(function(){})}catch(e){}
+  var t0=Date.now(),touched=false,shown=false;
+  ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){window.addEventListener(ev,function(){touched=true},{passive:true,once:true})});
+  function page(u){u=(u||'').replace(/[?#].*$/,'');var f=u.slice(u.lastIndexOf('/')+1);return f||'index.html'}
+  navigator.serviceWorker.addEventListener('message',function(e){
+    if(!e.data||e.data.t!=='hub-updated'||shown||page(e.data.url)!==page(location.href))return;
+    shown=true;
+    var rk='hubReload:'+page(location.href),last=0;try{last=+sessionStorage.getItem(rk)||0}catch(er){}
+    if(Date.now()-last<30000)return;                                  // эта страница только что перезагрузилась на свежую версию
+    var d=document.createElement('div');
+    d.setAttribute('role','status');
+    d.style.cssText='position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translate(-50%,140%);z-index:9999;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;border-radius:999px;border:1px solid var(--line,#D9D3C2);background:var(--surface,#FBF9F3);color:var(--fg,#25221C);box-shadow:0 10px 30px rgba(0,0,0,.18);font:500 14px/1.2 system-ui,sans-serif;white-space:nowrap;transition:transform .4s cubic-bezier(.2,.9,.25,1)';
+    d.innerHTML='<span>Hub обновился</span><button type="button" style="border:0;border-radius:999px;padding:9px 14px;background:var(--a2,var(--accent,#1F6B57));color:#fff;font:600 14px/1 system-ui,sans-serif;cursor:pointer">Обновить</button>';
+    d.querySelector('button').onclick=function(){try{sessionStorage.setItem(rk,String(Date.now()))}catch(er){}location.reload()};
+    document.body.appendChild(d);requestAnimationFrame(function(){requestAnimationFrame(function(){d.style.transform='translate(-50%,0)'})});
+  });
+  function ask(){var c=navigator.serviceWorker.controller;if(c)c.postMessage({t:'hub-check',url:location.href})}
+  ask();setTimeout(ask,1500);setTimeout(ask,4000);
+  window.addEventListener('load',function(){setTimeout(function(){
+    try{if(navigator.connection&&navigator.connection.saveData)return}catch(e){}
+    ['index.html','finance.html','ucheba.html'].forEach(function(p){if(page(location.href)!==p)fetch(p).catch(function(){})});
+  },5000)});
+})();
+/* Приложение Hub (Android): цвет системных полос берём из фона сайта, но зовём приложение только когда цвет реально изменился
+   (раньше приложение реагировало на любое изменение стилей страницы, в т.ч. при прокрутке, и телефон перерисовывал экран — отсюда рывки и тормоза) */
+(function(){
+  if(!window.HubApp||!HubApp.bar)return;
+  window.__hubObs=1;                     // не даём приложению ставить своего «наблюдателя» за стилями
+  var last='',t=null;
+  function send(){t=null;try{var c=getComputedStyle(document.body||document.documentElement).backgroundColor;if(c&&c!==last){last=c;HubApp.bar(c)}}catch(e){}}
+  function later(){if(!t)t=setTimeout(send,120)}
+  try{new MutationObserver(later).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','data-skin']})}catch(e){}
+  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',later)}catch(e){}
+  document.addEventListener('DOMContentLoaded',later);
+})();
+
+/* Hub: офлайн — плашка «нет сети» и разовая загрузка данных в кэш (раз в 12 часов) */
+(function(){
+  var p=null;
+  function show(){if(p||document.getElementById('hub-off'))return;p=document.createElement('div');p.id='hub-off';p.setAttribute('role','status');
+    p.style.cssText='position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:9998;padding:7px 14px;border-radius:999px;background:rgba(32,30,26,.92);color:#fff;font:500 13px/1.2 system-ui,sans-serif;box-shadow:0 4px 18px rgba(0,0,0,.25);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis';
+    p.textContent='Нет сети · показаны сохранённые данные';(document.body||document.documentElement).appendChild(p)}
+  function hide(){if(p&&p.parentNode)p.parentNode.removeChild(p);p=null}
+  function upd(){navigator.onLine===false?show():hide()}
+  window.addEventListener('offline',upd);window.addEventListener('online',function(){hide();warm()});
+  document.addEventListener('DOMContentLoaded',upd);
+  function warm(){try{if(!navigator.serviceWorker||!navigator.serviceWorker.controller||navigator.onLine===false)return;if(navigator.connection&&navigator.connection.saveData)return;
+    var t=+localStorage.getItem('hub:warm')||0;if(Date.now()-t<432e5)return;localStorage.setItem('hub:warm',String(Date.now()));navigator.serviceWorker.controller.postMessage({t:'hub-warm'})}catch(e){}}
+  window.addEventListener('load',function(){setTimeout(warm,6000)});
+})();
+</script>
+<style>
+:root{
+  --bg:#F4F1E8;--rail:#ECE8DB;--surface:#FBF9F3;--fg:#25221C;--muted:#665F52;--faint:#857E6E;
+  --line:#D9D3C2;--line2:#E5E0D2;--accent:#1F6B57;--accent2:#A93D28;--mark:#F5DC94;--up:#1E7B45;--down:#B3261E;
+  --serif:'Literata',Georgia,'Times New Roman',serif;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --gut:16px;color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#171611;--rail:#1D1C16;--surface:#22211A;--fg:#E8E4D8;--muted:#A39D8E;--faint:#7A7466;
+  --line:#33312A;--line2:#292820;--accent:#5FC2A3;--accent2:#E8886B;--mark:#5B4A17;--up:#4CC17E;--down:#F07167;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171611;--rail:#1D1C16;--surface:#22211A;--fg:#E8E4D8;--muted:#A39D8E;--faint:#7A7466;
+  --line:#33312A;--line2:#292820;--accent:#5FC2A3;--accent2:#E8886B;--mark:#5B4A17;--up:#4CC17E;--down:#F07167;color-scheme:dark}
+/* оформления: data-skin (плюс data-theme=light|dark, чтобы карта и графики брали нужную палитру) */
+:root[data-skin="swiss"]{--bg:#F4F4F2;--rail:#EBEBE8;--surface:#FFFFFF;--fg:#141414;--muted:#5A5A58;--faint:#85857F;--line:#D8D8D4;--line2:#E6E6E2;--accent:#C8201A;--accent2:#141414;--mark:#FFE680;--up:#1B7F3B;--down:#C8201A}
+:root[data-skin="sepia"]{--bg:#EFE3C8;--rail:#E6D8B9;--surface:#F7EDD7;--fg:#3B2F1E;--muted:#6F5E45;--faint:#8E7C60;--line:#D2C09A;--line2:#DECDAA;--accent:#8A4B14;--accent2:#A33B2A;--mark:#F0CF7A;--up:#2E6B2E;--down:#A8321F}
+:root[data-skin="ocean"]{--bg:#E9F0F6;--rail:#DCE7F0;--surface:#F7FAFD;--fg:#14283A;--muted:#4B6277;--faint:#7289A0;--line:#C5D4E1;--line2:#D6E1EB;--accent:#1A5FA8;--accent2:#C2561F;--mark:#FFE08A;--up:#1B7A47;--down:#B3261E}
+:root[data-skin="graphite"]{--bg:#15171B;--rail:#1B1E23;--surface:#1F2227;--fg:#E6E8EC;--muted:#9AA1AD;--faint:#6F7683;--line:#2E3239;--line2:#262A30;--accent:#7BA7F5;--accent2:#F2A65A;--mark:#3C4A66;--up:#4FC27F;--down:#F07167}
+:root[data-skin="forest"]{--bg:#0F1B16;--rail:#13231C;--surface:#17291F;--fg:#DDEBDD;--muted:#92AD9A;--faint:#678570;--line:#254233;--line2:#1D3328;--accent:#8FD6A6;--accent2:#E8B45A;--mark:#3F5A24;--up:#5FD08A;--down:#F08A6B}
+:root[data-skin="terminal"]{--bg:#0A0A08;--rail:#11100C;--surface:#15140F;--fg:#F0D9A0;--muted:#B79A55;--faint:#7E6A3A;--line:#3A3115;--line2:#2A240F;--accent:#FFB000;--accent2:#FF6A3D;--mark:#5A4300;--up:#7DDB6A;--down:#FF6B5B;--sans:var(--mono)}
+.thm{position:fixed;z-index:80;top:calc(54px + env(safe-area-inset-top,0px));right:10px;width:min(280px,calc(100vw - 20px));padding:8px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 14px 40px rgba(0,0,0,.28)}
+.thm p{margin:6px 8px 8px;font:600 13px/1.2 var(--sans);color:var(--muted)}
+.thm button{display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;padding:9px 10px;border-radius:10px;text-align:left;font:500 15px/1.2 var(--sans);color:var(--fg)}
+.thm button:hover{background:color-mix(in srgb,var(--fg) 7%,transparent)}
+.thm button.on{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.thm button.on::after{content:"✓";margin-left:auto;color:var(--accent);font-weight:700}
+.thm .sw{flex:none;width:34px;height:24px;border-radius:7px;border:1px solid rgba(128,128,128,.35);position:relative;overflow:hidden}
+.thm .sw i{position:absolute;right:0;bottom:0;width:16px;height:12px;border-top-left-radius:6px}
+.thm .sep{height:1px;margin:6px 4px;background:var(--line2)}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+*{-webkit-tap-highlight-color:transparent}a,button,summary,label,input,select{touch-action:manipulation}
+@media(hover:none){a,button,summary,.chip,.card{transition:opacity .16s ease,transform .16s ease,background-color .2s ease}a:active,button:active,summary:active,.chip:active{opacity:.62}.card:active{transform:scale(.985)}}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+::selection{background:var(--mark)}
+.top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:4px;max-width:1180px;margin:0 auto;padding:6px 8px 0 var(--gut);min-height:52px}
+.home{display:grid;place-items:center;width:40px;height:40px;margin-left:-10px;border-radius:10px;color:var(--muted);text-decoration:none}
+.home:hover{background:color-mix(in srgb,var(--fg) 7%,transparent);color:var(--fg)}
+.home svg,.ibtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.brand{margin-right:auto;font:600 21px/1 var(--serif);text-decoration:none;letter-spacing:-.01em;white-space:nowrap}
+.brand b{color:var(--accent);font-weight:600}
+.zm{display:flex;align-items:center;margin-right:4px;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.zm button{height:32px;padding:0 9px;font:600 13px/1 var(--sans);color:var(--muted)}
+.zm button:hover{background:color-mix(in srgb,var(--fg) 7%,transparent);color:var(--fg)}
+.zm .szv{min-width:44px;padding:0 4px;font-weight:500;font-size:12px;border-inline:1px solid var(--line2)}
+@media (max-width:420px){.zm .szv{display:none}.zm button{padding:0 8px}}
+.ibtn{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;color:var(--muted)}
+.ibtn:hover{background:color-mix(in srgb,var(--fg) 7%,transparent);color:var(--fg)}
+.chip{flex:none;padding:8px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--muted);font:500 14px/1.2 var(--sans);white-space:nowrap;background:none;min-height:40px;display:inline-flex;align-items:center}
+.chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.chip:hover:not(.on){color:var(--fg);border-color:var(--faint)}
+main{max-width:1180px;margin:0 auto;padding:0 var(--gut) 96px;min-width:0}
+.bar .brand{margin-right:auto}
+main{padding-top:18px}
+h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-spacing:-.01em}
+.lead{margin:0 0 14px;color:var(--muted);font:400 15.5px/1.55 var(--sans);max-width:66ch}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;align-items:center}
+.tools .chip.on{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.tools .chip[disabled]{opacity:.5}
+.emap{position:relative;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--accent) 5%,var(--surface));overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.emap svg{display:block;width:100%;height:auto;cursor:grab}
+.emap .land{fill:color-mix(in srgb,var(--bg) 55%,var(--line));stroke:var(--surface);stroke-width:.4;vector-effect:non-scaling-stroke}
+.emap .rt{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;transition:opacity .2s}
+.emap .rt.oil{stroke:#E8A33D}.emap .rt.gas{stroke:#4EA8DE}.emap .rt.lng{stroke:#2FD3AE}
+.emap .rt.off{stroke:var(--faint);stroke-dasharray:3 7}
+.emap .rt.flow{stroke-dasharray:1 14;animation:fl 1.1s linear infinite;stroke-linecap:round}
+.emap .base{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.28}
+.emap .base.oil{stroke:#E8A33D}.emap .base.gas{stroke:#4EA8DE}.emap .base.lng{stroke:#2FD3AE}
+.emap .hit{fill:none;stroke:transparent;stroke-width:16;vector-effect:non-scaling-stroke;cursor:pointer;pointer-events:stroke}
+.emap .dim .rt,.emap .dim .base{opacity:.08}
+.emap g.rg.sel .rt{opacity:1}.emap g.rg.sel .base{opacity:.6}
+.emap g.rg.sel .rt.flow{animation-duration:.6s}
+@keyframes fl{to{stroke-dashoffset:-30}}
+@media(prefers-reduced-motion:reduce){.emap .rt.flow{animation:none;stroke-dasharray:none;opacity:.8}}
+.emap .ck{fill:var(--bg);stroke:var(--fg);stroke-width:1.6;vector-effect:non-scaling-stroke;cursor:pointer}
+.emap .ckt{font:600 10.5px var(--sans);fill:var(--fg);paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.emap .ckt{display:var(--ckl,block)}
+@media(max-width:600px){.emap:not(.z2){--ckl:none}}
+.zb{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
+.zb button{width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:600 18px var(--sans);cursor:pointer}
+.etip{position:absolute;left:8px;bottom:8px;max-width:min(380px,calc(100% - 16px));padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font:400 13px/1.4 var(--sans);pointer-events:none;opacity:0;transition:opacity .12s}
+.etip.on{opacity:1}.etip b{display:block;font-size:13.5px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 0 6px;color:var(--muted);font:500 13px var(--sans)}
+.leg i{display:inline-block;width:22px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.card2{margin:12px 0;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.card2 h3{margin:0 0 6px;font:600 17px/1.3 var(--sans)}
+.card2 .meta{color:var(--muted);font:500 13px var(--sans);margin-bottom:6px}
+.card2 p{margin:6px 0 0;font:400 15px/1.55 var(--sans)}
+.rl{width:100%;border-collapse:collapse;margin-top:6px;font:400 14px/1.4 var(--sans)}
+.rl td{padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:top;cursor:pointer}
+.rl tr:hover td,.rl tr.on td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.rl .v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+.rl .d{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.foot{margin:18px 0 8px;color:var(--faint);font:400 12.5px/1.5 var(--sans)}
+</style></head><body>
+<header class="top" id="top"><div class="bar">
+ <a class="home" id="b-back" href="index.html" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
+ <a class="brand" href="energy.html"><b>⛽</b> Нефть и газ</a>
+ <div class="zm" role="group" aria-label="Масштаб страницы"><button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить масштаб">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div>
+</div></header>
+<main>
+<h1 class="pg">Карта нефти и газа</h1>
+<p class="lead">Кто кому поставляет: трубопроводы, танкерные маршруты и СПГ. Толщина линии — объём, движение — направление потока. Нажми на линию или пролив. На телефоне карта двигается двумя пальцами или кнопками +/−.</p>
+<div class="tools" id="tools"></div>
+<div class="emap" id="emap"><svg id="esvg" role="img" aria-label="Карта потоков нефти и газа"></svg>
+ <div class="zb"><button type="button" id="zin" aria-label="Приблизить">+</button><button type="button" id="zout" aria-label="Отдалить">−</button><button type="button" id="zrst" aria-label="Сбросить" style="font-size:14px">⟲</button></div>
+ <div class="etip" id="etip"></div></div>
+<div class="leg"><span><i style="background:#E8A33D"></i>Нефть, млн барр/сут</span><span><i style="background:#4EA8DE"></i>Газ по трубам, млрд м³/год</span><span><i style="background:#2FD3AE"></i>СПГ, млн т/год</span><span><i style="background:var(--faint)"></i>Не работает</span></div>
+<div id="sel"></div>
+<div class="card2"><h3>Все маршруты</h3><table class="rl" id="rl"></table></div>
+<p class="foot" id="foot"></p>
+</main>
+<script type="application/json" id="edata">{"routes":[{"id":"gulf-asia","kind":"oil","sea":1,"v":12,"name":"Персидский залив → Китай, Япония, Корея","note":"Главный поток мировой нефти: Саудовская Аравия, Ирак, ОАЭ, Кувейт. Идёт через Ормузский и Малаккский проливы.","pts":[[50.2,26.7],[56.5,26.5],[60,23],[66,18],[72,12],[75,8],[80,5.5],[92,5],[98,4.5],[101.5,2.4],[104,1.3],[108,6],[113,13],[118,20],[122,27],[122.3,31]]},{"id":"gulf-india","kind":"oil","sea":1,"v":3.5,"name":"Персидский залив → Индия","note":"Индия закупает около 85% нефти за рубежом; крупнейшие порты — Мундра, Вадинар, Джамнагар.","pts":[[50.2,26.7],[56.5,26.5],[60,23],[66,18],[69.5,22]]},{"id":"gulf-eur","kind":"oil","sea":1,"v":2.0,"name":"Персидский залив → Европа (через Суэц)","note":"Через Красное море и Суэцкий канал, часть по трубе SUMED. Из-за атак хуситов часть судов идёт вокруг Африки.","pts":[[50.2,26.7],[56.5,26.5],[60,23],[66,18],[55,15],[48,12.8],[43.4,12.6],[41,17],[37.5,23],[34,28],[32.5,30.2],[31,32.3],[26,34.7],[19,35],[12,37.5],[4,38],[-1,36.3],[-5.6,36],[-9.5,36.5],[-9.8,42],[-9,46],[-5,48.5],[0,50],[2.5,51.5],[4,52]]},{"id":"ru-balt-in","kind":"oil","sea":1,"v":1.4,"name":"Россия (Приморск, Усть-Луга) → Индия","note":"После 2022 года российская нефть ушла в Индию и Китай. Идёт Балтикой, Атлантикой, Средиземным и Красным морем.","pts":[[28.6,60.3],[23,59.6],[19,57.5],[14.5,55.2],[12.5,55.3],[11.5,57],[8,57.8],[4,58],[0,55],[-3,50.2],[-8,48.8],[-10,44],[-10,38.5],[-6,36],[-1,36.2],[4,38],[12,37.5],[19,35],[26,34.7],[31,32.3],[32.5,30.2],[34,28],[37.5,23],[41,17],[43.4,12.6],[50,12.8],[58,16],[66,20],[69.5,22.2]]},{"id":"ru-bs-in","kind":"oil","sea":1,"v":0.9,"name":"Россия (Новороссийск) → Индия, Турция","note":"Через Босфор и Суэц. Часть нефти остаётся в Турции.","pts":[[37.8,44.6],[33,43.2],[29.2,41.3],[28.8,40.7],[26.3,40],[25.3,37.5],[26,34.7],[31,32.3],[32.5,30.2],[34,28],[37.5,23],[41,17],[43.4,12.6],[50,12.8],[58,16],[66,20],[69.5,22.2]]},{"id":"ru-pac","kind":"oil","sea":1,"v":0.9,"name":"Козьмино (ВСТО) → Китай, Япония, Корея","note":"Морской терминал на Тихом океане, конец трубопровода ВСТО. Часть уходит в Китай, часть в Японию и Корею.","pts":[[132.9,42.7],[131.5,40],[127,36.5],[123.5,33.5],[122,30.2]]},{"id":"us-eur","kind":"oil","sea":1,"v":1.8,"name":"США (Мексиканский залив) → Европа","note":"США стали крупнейшим экспортёром нефти: около 4 млн барр/сут, почти половина уходит в Европу.","pts":[[-94.8,29.2],[-90,26.5],[-84,24.8],[-80,26],[-75,32],[-60,38],[-40,44],[-22,47.5],[-9,49],[-5,49.6],[0,50.1],[2.5,51.5],[4,52]]},{"id":"us-asia","kind":"oil","sea":1,"v":1.5,"name":"США → Китай, Индия, Корея (вокруг Африки)","note":"Идёт вокруг мыса Доброй Надежды: путь около 40 суток.","pts":[[-94.8,29.2],[-88,25],[-80,24.2],[-65,15],[-45,-2],[-30,-18],[-10,-33],[8,-37],[18.5,-36],[35,-33],[50,-25],[70,-10],[85,2],[92,5],[98,4.5],[101.5,2.4],[104,1.3],[108,6],[113,13],[118,20],[122,27],[122.3,31]]},{"id":"wafr-eur","kind":"oil","sea":1,"v":1.3,"name":"Западная Африка (Нигерия, Ангола) → Европа","note":"Лёгкая малосернистая нефть для европейских НПЗ.","pts":[[7.2,4.2],[3,2],[-4,4],[-12,8],[-17.5,15],[-17,24],[-13,31],[-10,37],[-9.8,42],[-9,46],[-5,48.5],[0,50],[2.5,51.5],[4,52]]},{"id":"wafr-asia","kind":"oil","sea":1,"v":1.3,"name":"Западная Африка → Китай","note":"Ангола и Нигерия поставляют Китаю около 1,3 млн барр/сут.","pts":[[8,3.5],[6,-4],[11,-18],[15,-30],[18.5,-36],[35,-33],[50,-25],[70,-10],[85,2],[92,5],[98,4.5],[101.5,2.4],[104,1.3],[108,6],[113,13],[118,20],[122,27],[122.3,31]]},{"id":"br-cn","kind":"oil","sea":1,"v":1.1,"name":"Бразилия → Китай","note":"Бразилия вышла в топ-10 экспортёров нефти, главный покупатель — Китай.","pts":[[-41,-22.5],[-35,-30],[-15,-37],[5,-39],[18.5,-36],[35,-33],[55,-25],[80,-12],[95,-8],[104,-6],[108,0],[109,6],[113,13],[118,20],[122,27],[122.3,31]]},{"id":"espo","kind":"oil","sea":0,"v":1.6,"name":"Трубопровод ВСТО (Тайшет → Сковородино → Козьмино)","note":"Восточная Сибирь — Тихий океан, около 1,6 млн барр/сут; ответвление в Китай (Дацин).","pts":[[98,56.1],[108,55.5],[116,54.5],[123.9,54],[130.5,50.5],[134,46],[132.9,42.8]]},{"id":"espo-cn","kind":"oil","sea":0,"v":0.6,"name":"Нефтепровод Сковородино → Дацин (Китай)","note":"Отвод ВСТО в Китай, около 0,6 млн барр/сут.","pts":[[123.9,54],[122.5,52.9],[124,49],[125,46.6]]},{"id":"druzhba","kind":"oil","sea":0,"v":0.2,"name":"Нефтепровод «Дружба» → Венгрия, Словакия","note":"Остался единственный российский нефтепровод в ЕС: поставки в Венгрию и Словакию.","pts":[[52.3,54.9],[44,53.5],[37,53],[31,52.2],[24,51],[21.5,49.5],[18.9,47.3]]},{"id":"cpc","kind":"oil","sea":0,"v":1.5,"name":"КТК: Тенгиз (Казахстан) → Новороссийск","note":"Каспийский трубопроводный консорциум, около 1,5 млн барр/сут казахстанской нефти.","pts":[[53,46.2],[48,46],[44,45.5],[40,45],[37.8,44.7]]},{"id":"btc","kind":"oil","sea":0,"v":0.6,"name":"Нефтепровод Баку — Тбилиси — Джейхан","note":"Азербайджанская нефть в обход России, выход в Средиземное море.","pts":[[49.9,40.4],[46.5,41.1],[44.8,41.7],[42.5,41],[40,39.5],[37,37.3],[35.9,36.9]]},{"id":"ca-us","kind":"oil","sea":0,"v":4.0,"name":"Канада → США (нефтепроводы)","note":"Канада даёт США около 4 млн барр/сут. Главные ветки: Keystone, Enbridge, Trans Mountain.","pts":[[-111.5,52.8],[-104,50],[-98,42],[-97,36.2],[-96,32],[-94.8,29.6]]},{"id":"ps1","kind":"gas","sea":0,"v":38,"name":"«Сила Сибири»: Чаянда → Китай","note":"Единственный большой трубопровод России в Китай, около 38 млрд м³ в год; строят «Силу Сибири — 2».","pts":[[129.5,60.4],[128,56],[127,52],[127.5,50.3],[126,47],[124,44],[120,40],[118,36],[121,31.3]]},{"id":"turkstream","kind":"gas","sea":0,"v":16,"name":"«Турецкий поток» → Турция, Болгария, Сербия, Венгрия","note":"Последняя действующая российская труба в Европу, около 16 млрд м³ в год в Европу.","pts":[[37.3,44.9],[33,43.3],[29.5,42.2],[28,41.7],[26,42.2],[23.3,42.7],[20.5,44.8],[19,47.5],[17,48.2]]},{"id":"norway","kind":"gas","sea":0,"v":90,"name":"Норвегия → Германия, Великобритания, Франция","note":"Крупнейший поставщик газа в Европу после 2022 года, около 90 млрд м³ в год.","pts":[[3.7,60.6],[3.3,57.5],[4.5,55],[6.5,53.8],[7.2,53.4]]},{"id":"algeria-it","kind":"gas","sea":0,"v":22,"name":"Алжир → Италия (Transmed)","note":"Через Тунис и Сицилию, около 22 млрд м³ в год.","pts":[[5.5,31.5],[8.5,34.5],[10,36.9],[12,37.5],[14.5,40.5],[15,41.2]]},{"id":"algeria-es","kind":"gas","sea":0,"v":10,"name":"Алжир → Испания (Medgaz)","note":"Подводный газопровод Берега — Альмерия, около 10 млрд м³ в год.","pts":[[2.5,32.8],[0,35.5],[-1.5,36.5],[-2.4,36.8]]},{"id":"cent-asia","kind":"gas","sea":0,"v":40,"name":"Центральная Азия → Китай","note":"Туркменистан, Узбекистан и Казахстан поставляют в Китай около 40 млрд м³ в год.","pts":[[62.5,38],[64.4,39.8],[68,40.8],[74,42],[80.4,44.2],[87,43.8],[95,40.5],[105,37.5],[112,35.8],[118,33],[121,31.3]]},{"id":"nordstream","kind":"gas","sea":0,"v":0,"off":1,"name":"«Северный поток» — не работает","note":"Подорван в сентябре 2022 года. До этого вместе с «Северным потоком — 2» мог качать до 110 млрд м³ в год.","pts":[[28,59.8],[23,59.6],[19,57.5],[14.5,55.2],[13.6,54.2]]},{"id":"qa-asia","kind":"lng","sea":1,"v":55,"name":"Катар → Индия, Китай, Япония, Корея","note":"Катар — один из трёх крупнейших экспортёров СПГ, около 77 млн т в год. Большая часть идёт в Азию через Ормуз.","pts":[[51.6,25.9],[56.5,26.5],[60,23],[66,18],[72,12],[75,8],[80,5.5],[92,5],[98,4.5],[101.5,2.4],[104,1.3],[108,6],[113,13],[118,20],[122,27],[122.3,31],[126,30],[130,32.5]]},{"id":"qa-eur","kind":"lng","sea":1,"v":14,"name":"Катар → Европа","note":"Через Красное море и Суэц или вокруг Африки.","pts":[[51.6,25.9],[56.5,26.5],[55,15],[48,12.8],[43.4,12.6],[41,17],[37.5,23],[34,28],[32.5,30.2],[31,32.3],[26,34.7],[19,35],[12,37.5],[4,38],[-1,36.3],[-5.6,36],[-9.5,36.5],[-9.8,42],[-9,46],[-5,48.5],[0,50],[2.5,51.5],[4,52]]},{"id":"us-lng-eur","kind":"lng","sea":1,"v":48,"name":"США (СПГ) → Европа","note":"США — крупнейший экспортёр СПГ (около 88 млн т в 2024 году), больше половины идёт в Европу.","pts":[[-93.9,29.7],[-89,26.5],[-84,24.8],[-80,26],[-75,32],[-60,38],[-40,44],[-22,47.5],[-9,49],[-5,49.6],[0,50.1],[2.5,51.5]]},{"id":"us-lng-asia","kind":"lng","sea":1,"v":14,"name":"США (СПГ) → Азия","note":"Вокруг Африки или через Панаму (в сухие годы канал ограничен).","pts":[[-93.9,29.7],[-88,25],[-80,24.2],[-65,15],[-45,-2],[-30,-18],[-10,-33],[8,-37],[18.5,-36],[35,-33],[50,-25],[70,-10],[85,2],[92,5],[98,4.5],[101.5,2.4],[104,1.3],[108,6],[113,13],[118,20],[122,27],[122.3,31],[126,30],[130,32.5]]},{"id":"au-lng","kind":"lng","sea":1,"v":75,"name":"Австралия → Япония, Китай, Корея","note":"Австралия экспортирует около 80 млн т СПГ в год, почти всё в Азию.","pts":[[151.3,-23.8],[154,-18],[150,-8],[142,0],[134,12],[128,22],[127,30],[130,32.5]]},{"id":"ru-lng","kind":"lng","sea":1,"v":20,"name":"Ямал СПГ → Европа","note":"Порт Сабетта, Арктика. Часть уходит в Азию Севморпутём летом.","pts":[[72,71.3],[60,72.5],[45,71.5],[33,71.2],[24,71.2],[14,68],[8,64],[4,61],[3,57],[2.5,52.5]]}],"chokes":[{"n":"Ормузский пролив","x":56.5,"y":26.5,"t":"около 20 млн барр/сут нефти — пятая часть мирового потребления — и до 20% мирового СПГ"},{"n":"Малаккский пролив","x":101.5,"y":2.4,"t":"около 23 млн барр/сут, главный путь нефти и СПГ в Китай, Японию, Корею"},{"n":"Баб-эль-Мандеб","x":43.4,"y":12.6,"t":"вход в Красное море; после атак хуситов с конца 2023 года трафик сильно упал"},{"n":"Суэцкий канал","x":32.5,"y":30.2,"t":"путь Азия — Европа; вместе с трубой SUMED несколько млн барр/сут"},{"n":"Босфор","x":29,"y":41.1,"t":"около 3 млн барр/сут из Чёрного моря (КТК, Новороссийск)"},{"n":"Датские проливы","x":11,"y":56,"t":"выход российской нефти из Балтики"},{"n":"Мыс Доброй Надежды","x":18.5,"y":-34.8,"t":"объезд Африки; вырос в разы из-за Красного моря"},{"n":"Панамский канал","x":-79.7,"y":9.1,"t":"часть американского СПГ и нефти в Азию; зависит от уровня воды"},{"n":"Гибралтар","x":-5.6,"y":36,"t":"вход в Средиземное море"}]}</script>
+<script>
+(function(){
+'use strict';
+var root=document.documentElement;
+function $(s,e){return (e||document).querySelector(s)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function store(k){try{return localStorage.getItem(k)}catch(e){return null}}
+var SK={swiss:'light',sepia:'light',ocean:'light',graphite:'dark',forest:'dark',terminal:'dark'};
+(function(){var id=store('fin:skin')||'auto';if(SK[id]){root.setAttribute('data-skin',id);root.setAttribute('data-theme',SK[id])}else if(id==='light'||id==='dark'){root.setAttribute('data-theme',id)}else{var t=store('theme');if(t==='dark'||t==='light')root.setAttribute('data-theme',t)}})();
+var D=JSON.parse($('#edata').textContent),R=D.routes,CK=D.chokes,UN={oil:'млн барр/сут',gas:'млрд м³/год',lng:'млн т/год'},KN={oil:'Нефть',gas:'Газ (труба)',lng:'СПГ'},COL={oil:'#E8A33D',gas:'#4EA8DE',lng:'#2FD3AE'};
+var F={kind:'all',ck:true,sel:null};
+function wd(r){var v=r.v||0;return r.kind==='oil'?1.4+Math.sqrt(v)*1.5:r.kind==='gas'?1.4+Math.sqrt(v)*.6:1.4+Math.sqrt(v)*.85}
+function nf(v){return String(v).replace('.',',')}
+function lib(src,ok){return window[ok]?Promise.resolve():new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+var svg,g,proj,path,zoom,W=1000,H=450;
+function tools(){
+  var h=[['all','Всё'],['oil','Нефть'],['gas','Газ (труба)'],['lng','СПГ']].map(function(x){return '<button type="button" class="chip'+(F.kind===x[0]?' on':'')+'" data-k="'+x[0]+'">'+x[1]+'</button>'}).join('');
+  h+='<button type="button" class="chip'+(F.ck?' on':'')+'" data-ck="1">Проливы</button><button type="button" class="chip" disabled title="Нужен ключ AIS — подключим следующим шагом">Живые танкеры · скоро</button>';
+  $('#tools').innerHTML=h;
+}
+function vis(r){return F.kind==='all'||r.kind===F.kind}
+function build(geo){
+  var feat=topojson.feature(geo,geo.objects.countries).features;
+  svg=d3.select('#esvg').attr('viewBox','0 0 '+W+' '+H);
+  proj=d3.geoNaturalEarth1().fitExtent([[4,4],[W-4,H-4]],{type:'MultiPoint',coordinates:[[-169,76],[179,76],[-169,-56],[179,-56],[0,-56],[0,76],[-90,76],[90,76]]});path=d3.geoPath(proj);
+  svg.selectAll('*').remove();
+  g=svg.append('g');
+  g.selectAll('path.land').data(feat.filter(function(f){return f.id!=='010'&&f.properties.name!=='Antarctica'})).enter().append('path').attr('class','land').attr('d',path);
+  var rg=g.append('g').attr('id','rts');
+  R.forEach(function(r){
+    var d=path({type:'LineString',coordinates:r.pts});if(!d)return;
+    var gr=rg.append('g').attr('class','rg').attr('data-id',r.id);
+    gr.append('path').attr('class','base '+r.kind).attr('d',d).attr('stroke-width',wd(r));
+    gr.append('path').attr('class','rt '+r.kind+(r.off?' off':' flow')).attr('d',d).attr('stroke-width',r.off?2:Math.max(1.6,wd(r)*.55));
+    gr.append('path').attr('class','hit').attr('d',d);
+  });
+  var cg=g.append('g').attr('id','cks');
+  CK.forEach(function(c,i){var p=proj([c.x,c.y]);if(!p)return;var q=cg.append('g').attr('class','ckg').attr('data-i',i).attr('transform','translate('+p+')');q.append('circle').attr('class','ck').attr('r',5);q.append('text').attr('class','ckt').attr('x',8).attr('y',3).text(c.n)});
+  zoom=d3.zoom().scaleExtent([1,9]).translateExtent([[0,0],[W,H]]).filter(function(e){if(e.type==='wheel')return e.ctrlKey;if(e.touches)return e.touches.length>1;return !e.button}).on('zoom',function(e){g.attr('transform',e.transform);var k=e.transform.k;$('#emap').classList.toggle('z2',k>=2.2);g.selectAll('.ckt').style('font-size',(10.5/Math.sqrt(k))+'px');g.selectAll('.ck').attr('r',5/Math.sqrt(k))});
+  svg.call(zoom);
+  apply();
+}
+function apply(){
+  if(!g)return;
+  g.selectAll('g.rg').style('display',function(){var r=byId(this.getAttribute('data-id'));return vis(r)?null:'none'}).classed('sel',function(){return this.getAttribute('data-id')===F.sel});
+  g.select('#rts').classed('dim',!!F.sel);
+  g.select('#cks').style('display',F.ck?null:'none');
+  g.selectAll('g.rg').each(function(){if(this.getAttribute('data-id')===F.sel)this.parentNode.appendChild(this)});
+  tools();list();card();
+}
+function byId(id){for(var i=0;i<R.length;i++)if(R[i].id===id)return R[i]}
+function list(){
+  var rs=R.filter(vis).slice().sort(function(a,b){return a.kind===b.kind?(b.v-a.v):(a.kind<b.kind?-1:1)});
+  $('#rl').innerHTML=rs.map(function(r){return '<tr data-id="'+r.id+'" class="'+(F.sel===r.id?'on':'')+'"><td><span class="d" style="background:'+(r.off?'var(--faint)':COL[r.kind])+'"></span>'+esc(r.name)+'</td><td class="v">'+(r.off?'—':nf(r.v)+' <span style="color:var(--faint);font-weight:400;font-size:12px">'+UN[r.kind]+'</span>')+'</td></tr>'}).join('');
+}
+function card(){
+  var r=F.sel&&byId(F.sel);
+  if(!r){$('#sel').innerHTML='';return}
+  $('#sel').innerHTML='<div class="card2"><h3>'+esc(r.name)+'</h3><div class="meta">'+KN[r.kind]+' · '+(r.sea?'морской путь':'трубопровод')+' · '+(r.off?'не работает':nf(r.v)+' '+UN[r.kind])+'</div><p>'+esc(r.note)+'</p></div>';
+}
+function tip(h,xy){var t=$('#etip');if(!h){t.classList.remove('on');return}t.innerHTML=h;t.classList.add('on')}
+document.addEventListener('click',function(e){
+  var t=e.target,b;
+  if(b=t.closest('#tools [data-k]')){F.kind=b.getAttribute('data-k');if(F.sel&&!vis(byId(F.sel)))F.sel=null;apply();return}
+  if(b=t.closest('#tools [data-ck]')){F.ck=!F.ck;apply();return}
+  if(b=t.closest('#rl tr')){var id=b.getAttribute('data-id');F.sel=F.sel===id?null:id;apply();if(F.sel)$('#emap').scrollIntoView({behavior:'smooth',block:'center'});return}
+  if(b=t.closest('g.rg')){var id2=b.getAttribute('data-id');F.sel=F.sel===id2?null:id2;apply();return}
+  if(b=t.closest('.ckg')){var c=CK[+b.getAttribute('data-i')];tip('<b>'+esc(c.n)+'</b>'+esc(c.t));return}
+  if(t.closest('#zin')){svg.transition().duration(200).call(zoom.scaleBy,1.6);return}
+  if(t.closest('#zout')){svg.transition().duration(200).call(zoom.scaleBy,1/1.6);return}
+  if(t.closest('#zrst')){svg.transition().duration(250).call(zoom.transform,d3.zoomIdentity);return}
+  if(t.closest('#emap')){F.sel=null;tip(null);apply()}
+});
+document.addEventListener('pointermove',function(e){
+  if(e.pointerType==='touch')return;
+  var rg=e.target.closest&&e.target.closest('g.rg');
+  if(rg){var r=byId(rg.getAttribute('data-id'));tip('<b>'+esc(r.name)+'</b>'+(r.off?'не работает':nf(r.v)+' '+UN[r.kind]))}else if(!(e.target.closest&&e.target.closest('.ckg')))tip(null)
+});
+$('#foot').innerHTML='Объёмы — округлённые оценки по открытым данным (EIA, Energy Institute, IEA, GIIGNL, 2023–2024), не данные в реальном времени. Маршруты схематичные.';
+tools();
+Promise.all([lib('vendor/d3.min.js','d3'),lib('vendor/topojson-client.min.js','topojson')]).then(function(){return fetch('world/countries.json').then(function(r){return r.json()})}).then(build).catch(function(){$('#emap').innerHTML='<p style="padding:16px">Не удалось загрузить карту. Проверь соединение.</p>'});
+})();
+</script>
+</body></html>

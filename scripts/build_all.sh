@@ -10,4 +10,5 @@ python3 src/finance/make_hub.py
 python3 src/finance/make_ucheba.py src/index.src.html ucheba.html
 python3 src/finance/build_finance.py src/finance/content src/marked.min.js finance.html
 python3 src/english/build_english.py
+python3 src/energy/build_energy.py
 python3 src/finance/make_search.py
