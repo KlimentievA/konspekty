@@ -66,6 +66,10 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
 .bl{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 13px var(--sans);color:var(--muted)}.bl b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .calc{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:8px 0}.calc label{display:flex;flex-direction:column;gap:3px;font:500 12.5px var(--sans);color:var(--muted)}.calc input{width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:500 16px var(--sans)}
 .cres{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:8px}.cres div{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}.cres b{display:block;font:600 20px var(--sans);font-variant-numeric:tabular-nums}.cres span{font:400 12.5px var(--sans);color:var(--muted)}
+.wt{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:8px}.wt div{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}.wt b{display:block;font:600 19px/1.25 var(--sans);font-variant-numeric:tabular-nums}.wt span{display:block;margin-top:3px;font:400 13px/1.4 var(--sans);color:var(--muted)}.wt i{display:block;margin-top:4px;font:400 11.5px var(--sans);font-style:normal;color:var(--faint)}
+.hb{display:grid;grid-template-columns:130px 1fr 74px;gap:8px;align-items:center;padding:4px 0;font:400 14px var(--sans)}.hb em{font-style:normal;height:10px;border-radius:5px;background:var(--line);overflow:hidden}.hb em u{display:block;height:100%;background:var(--accent);text-decoration:none}.hb b{text-align:right;font-variant-numeric:tabular-nums}
+.gp{max-height:460px;overflow:auto;margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:2px 12px}.gp .hb{grid-template-columns:150px 1fr 84px}.gp .hb small{display:none}
+.srch{flex:1 1 150px;min-width:150px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:400 15px var(--sans)}
 .qz .q{margin:12px 0 4px;font:600 15.5px/1.4 var(--sans)}.qz .o{display:block;width:100%;text-align:left;margin:5px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:400 15px/1.35 var(--sans);cursor:pointer}
 .qz .o.ok{background:color-mix(in srgb,var(--up) 22%,var(--bg));border-color:var(--up)}.qz .o.no{background:color-mix(in srgb,var(--down) 22%,var(--bg));border-color:var(--down)}
 .qz .ex{margin:4px 0 8px;font:400 14px/1.5 var(--sans);color:var(--muted)}
@@ -90,6 +94,11 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
 <div class="two">
  <div class="card2"><h3>Рейтинги</h3><div class="meta">по данным, показанным на карте</div><h3 style="font-size:14px;margin-top:10px">Крупнейшие НПЗ, тыс. барр/сут</h3><ol class="rk" id="rk1"></ol></div>
  <div class="card2"><h3>Крупнейшие заводы СПГ</h3><div class="meta">млн тонн в год</div><ol class="rk" id="rk2"></ol><h3 style="font-size:14px;margin-top:14px">Рекорды</h3><div id="rec"></div></div>
+</div>
+<div class="card2"><h3>Мир в цифрах</h3><div class="meta">нефтяной рынок 2026 года, данные МЭА и EIA</div><div class="wt" id="wt"></div></div>
+<div class="two">
+ <div class="card2"><h3>Добыча нефти по странам</h3><div class="meta">сырая нефть с конденсатом, млн барр/сут, 2025, EIA</div><div id="prod"></div></div>
+ <div class="card2"><h3>Цена бензина по странам</h3><div class="meta" id="gmeta"></div><div class="calc" style="margin:6px 0 0"><input class="srch" id="gq" placeholder="Найти страну" autocomplete="off"><button type="button" class="chip on" data-cur="usd">$ за литр</button><button type="button" class="chip" data-cur="rub">₽ за литр</button><button type="button" class="chip" data-gs="asc">Сначала дешёвые</button></div><div class="gp" id="gp"></div></div>
 </div>
 <div class="card2"><h3>Из чего складывается цена бензина</h3><div class="meta">США, ориентировочно по данным EIA; доли меняются по годам и регионам</div>
  <div class="bar2"><i style="width:54%;background:#E8A33D">Нефть 54%</i><i style="width:14%;background:#E8604C">Переработка 14%</i><i style="width:17%;background:#6C8FB5">Доставка и продажа 17%</i><i style="width:15%;background:#7A8B99">Налоги 15%</i></div>
@@ -178,7 +187,7 @@ function list(){
 }
 function card(){
   var o=F.ob!=null&&OB[F.ob],r=F.sel&&byId(F.sel);
-  if(o){$('#sel').innerHTML='<div class="card2"><h3>'+esc(o.n)+'</h3><div class="meta">'+TS[o.t]+' · '+esc(o.c)+'</div><dl class="facts"><dt>Мощность</dt><dd>'+esc(o.cap)+'</dd><dt>Владелец</dt><dd>'+esc(o.o)+'</dd><dt>Сырьё и рынки</dt><dd>'+esc(o.f)+'</dd><dt>Акции</dt><dd>'+esc(o.st||'—')+'</dd></dl><div class="fk">'+esc(o.fact)+'</div></div>';return}
+  if(o){$('#sel').innerHTML='<div class="card2"><h3>'+esc(o.n)+'</h3><div class="meta">'+TS[o.t]+' · '+esc(o.c)+'</div><div style="font:600 20px/1.3 var(--sans);margin:2px 0 6px">'+(o.t==='field'?'Добыча: ':o.t==='ref'?'Переработка: ':o.t==='lng'?'Мощность: ':'')+esc(o.cap)+'</div><dl class="facts"><dt>Владелец</dt><dd>'+esc(o.o)+'</dd><dt>Сырьё и рынки</dt><dd>'+esc(o.f)+'</dd><dt>Акции</dt><dd>'+esc(o.st||'—')+'</dd></dl><div class="fk">'+esc(o.fact)+'</div></div>';return}
   if(r){$('#sel').innerHTML='<div class="card2"><h3>'+esc(r.name)+'</h3><div class="meta">'+KN[r.kind]+' · '+(r.sea?'морской путь':'трубопровод')+' · '+(r.off?'не работает':nf(r.v)+' '+UN[r.kind])+'</div><p>'+esc(r.note)+'</p></div>';return}
   $('#sel').innerHTML='';
 }
@@ -219,6 +228,27 @@ function rankings(){
   $('#rk2').innerHTML=lg.map(function(o){return '<li data-rk="'+o.id+'">'+esc(o.n)+', '+esc(o.c)+'<span>'+nf(o.v)+'</span></li>'}).join('');
   $('#rec').innerHTML=D.records.map(function(x){return '<p style="margin:6px 0;font:400 14.5px/1.5 var(--sans)">'+esc(x)+'</p>'}).join('');
 }
+/* ---- статистика ---- */
+var CUR='usd',GSORT='desc',FXR=null;
+function stats(){
+  $('#wt').innerHTML=D.world.map(function(w){return '<div><b>'+esc(w[0])+'</b><span>'+esc(w[1])+'</span><i>'+esc(w[2])+'</i></div>'}).join('');
+  var mx=Math.max.apply(0,D.production.map(function(p){return p[1]}));
+  $('#prod').innerHTML=D.production.map(function(p){return '<div class="hb"><span>'+esc(p[0])+'</span><em><u style="width:'+(p[1]/mx*100)+'%"></u></em><b>'+nf(p[1])+'</b></div>'}).join('');
+  gasDraw();
+}
+function gasDraw(){
+  var q=($('#gq').value||'').toLowerCase().trim(),rows=D.gas.filter(function(r){return !q||r[0].toLowerCase().indexOf(q)>=0});
+  rows.sort(function(a,b){return GSORT==='asc'?a[1]-b[1]:b[1]-a[1]});
+  var k=CUR==='rub'&&FXR?FXR:1,mx=Math.max.apply(0,D.gas.map(function(r){return r[1]}))*k;
+  $('#gp').innerHTML=rows.map(function(r){var v=r[1]*k;return '<div class="hb" title="Срез '+esc(r[2])+'"><span>'+esc(r[0])+'</span><em><u style="width:'+Math.max(1.5,v/mx*100)+'%"></u></em><b>'+(v<10?v.toFixed(2):v.toFixed(0)).replace('.',',')+'</b></div>'}).join('')||'<p style="padding:10px 0;color:var(--muted)">Не найдено</p>';
+  $('#gmeta').textContent=(CUR==='rub'&&FXR?'₽ за литр по курсу ЦБ '+nf(FXR.toFixed(2))+'. ':'$ за литр. ')+D.gasSrc+'. Показано '+rows.length+' стран.';
+}
+document.addEventListener('input',function(e){if(e.target.id==='gq')gasDraw()});
+document.addEventListener('click',function(e){var b;
+  if(b=e.target.closest('[data-cur]')){CUR=b.getAttribute('data-cur');document.querySelectorAll('[data-cur]').forEach(function(x){x.classList.toggle('on',x===b)});gasDraw()}
+  if(b=e.target.closest('[data-gs]')){GSORT=GSORT==='asc'?'desc':'asc';b.textContent=GSORT==='asc'?'Сначала дорогие':'Сначала дешёвые';b.setAttribute('data-gs',GSORT==='asc'?'desc':'asc');gasDraw()}
+});
+fetch('markets.json').then(function(r){return r.json()}).then(function(m){var u=m&&m.fx&&m.fx.Valute&&m.fx.Valute.USD;if(u&&u.Value>0){FXR=u.Value/(u.Nominal||1);gasDraw()}}).catch(function(){});
 /* ---- калькулятор ---- */
 var YL={gas:19,dsl:12,jet:4},GAL=3.785;
 function calc(){
@@ -245,7 +275,7 @@ function deals(){
   $('#deals').innerHTML=(D.deals||[]).map(function(x){return '<div class="dl"><div class="m">'+esc(x.d)+' · '+esc(x.s)+'</div><h4>'+esc(x.t)+'</h4><p>'+esc(x.x)+'</p><a href="'+esc(x.u)+'" target="_blank" rel="noopener">Источник</a>'+(x.r?'<button type="button" data-deal="'+esc(x.r)+'">Показать на карте</button>':'')+'</div>'}).join('')+'<p class="foot">Подборка на '+esc(D.dealsAsOf||'')+' из открытых источников; обновляется вручную, не поток в реальном времени.</p>';
 }
 $('#foot').innerHTML='Мощности и объёмы — округлённые оценки по открытым данным (компании, EIA, Energy Institute, IEA, GIIGNL), у разных источников и в разные годы они отличаются. Положение значков и маршруты схематичные. Это не данные в реальном времени и не инвестиционная рекомендация.';
-tools();rankings();calc();qzDraw();deals();
+tools();rankings();stats();calc();qzDraw();deals();
 Promise.all([lib('vendor/d3.min.js','d3'),lib('vendor/topojson-client.min.js','topojson')]).then(function(){return fetch('world/countries.json').then(function(r){return r.json()})}).then(build).catch(function(){$('#emap').innerHTML='<p style="padding:16px">Не удалось загрузить карту. Проверь соединение.</p>'});
 })();
 </script>
