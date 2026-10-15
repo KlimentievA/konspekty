@@ -1766,7 +1766,7 @@ var WUNIT={NGDPD:'млрд $',PPPGDP:'млрд межд. $',NGDPDPC:'$',PPPPC:'�
 var WLAY=[['countries','Страны']];   // остальные слои приходят из world/regions/index.json
 var WBL={gdp:'размер',pc:'на душу',gr:'рост',rev:'Доходы бюджета',exp:'Расходы бюджета',bal:'Баланс бюджета',debt:'Долг'};   // подписи переключателя
 var WBK={gdp:'gdp',pc:'gdp_pc',gr:'growth',rev:'rev',exp:'exp',bal:'bal',debt:'debt'};   // поле элемента для показателя
-var WHOST={},WHOSTREV={};
+var WHOST={},WHOSTREV={},WHOSTCO={};
 var WRAMP={
   light:{seq:['#D7EDE0','#A9D9C0','#5DB991','#0A9466','#04452F'],bad:['#F5EAD6','#EDC690','#DE8C57','#B9472F','#6B1E14'],neg:['#F1BDAE','#A8261C'],pos:['#D5EDDF','#04452F'],
     defl:'#C9D5DF',na:'#DCD7CA',land:'#E4E0D5',host:'#D3CDBD',border:'#FBF9F3',bub:'#0A9466'},
@@ -1789,6 +1789,13 @@ function wDark(){var t=root.getAttribute('data-theme');return t==='dark'||(!t&&!
 function wR(){return WRAMP[wDark()?'dark':'light']}
 function wScript(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.async=true;s.onload=ok;s.onerror=function(){s.parentNode&&s.parentNode.removeChild(s);no(new Error(src))};document.head.appendChild(s)})}
 function wGet(u,opt){return fetch(u,opt||{}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
+function cosLoad(ix){   // страны без карты регионов, только список компаний (+ справки)
+  return Promise.all(((ix&&ix.cos)||[]).map(function(c){return Promise.all([wGet('world/companies/'+c.id+'.json').catch(function(){return null}),wGet('world/companies/'+c.id+'-detail.json').catch(function(){return null})]).then(function(e){
+    if(e[0]&&e[0].items&&e[0].items.length){WM.reg[c.id]={id:c.id,title:c.label,label:c.label,items:[],coonly:true,co:e[0],cd:(e[1]&&e[1].items)||null};WHOSTCO[c.host]=c.id}})}))}
+function wPostLoad(wg){   // зарплаты в слои, привязка компаний к слою
+  Object.keys(WM.reg).forEach(function(l){var L=WM.reg[l];if(L.co)L.co.items.forEach(function(c){c.__l=l})});
+  WM.wages=wg&&wg.items?wg:null;if(!WM.wages)return;
+  Object.keys(wg.layers||{}).forEach(function(l){var L=WM.reg[l],W=wg.layers[l];if(!L||!W||!W.items)return;L.wg={cur:W.cur,per:W.per,y:W.y,def:W.def,src:W.src,url:W.url,note:W.note};L.items.forEach(function(x){if(W.items[x.name]!=null)x.wage=W.items[x.name]})})}
 function wLoad(){
   if(WM.load)return WM.load;
   var libs=Promise.all([window.d3?0:wScript('vendor/d3.min.js'),window.topojson?0:wScript('vendor/topojson-client.min.js')]);
@@ -1801,8 +1808,8 @@ function wLoad(){
       if(!it.length)return;j.items=it;
       var extra=[wGet('world/regions/geo/'+l.id+'.json').catch(function(){return null}),l.companies?wGet('world/companies/'+l.companies+'.json').catch(function(){return null}):null,l.companies?wGet('world/companies/'+l.companies+'-detail.json').catch(function(){return null}):null,l.sectors?wGet('world/regions/'+l.sectors+'.json').catch(function(){return null}):null];
       return Promise.all(extra).then(function(e){if(e[0]&&e[0].objects)j.topo=e[0];if(e[1]&&e[1].items&&e[1].items.length)j.co=e[1];if(e[2]&&e[2].items)j.cd=e[2].items;if(e[3]&&e[3].items)j.st=e[3];return [l,j]})}).catch(function(){})})).then(function(a){
-      a.forEach(function(r){if(r){WM.reg[r[0].id]=r[1];WLAY.push([r[0].id,r[0].label]);if(r[0].host){WHOST[r[0].id]=r[0].host;WHOSTREV[r[0].host]=r[0].id};if(r[0].fit)r[1].fit=r[0].fit}})})});
-  WM.load=Promise.all([libs,wGet('world/countries.json'),dat,regs]).then(function(r){WM.geo=r[1];WM.data=wCheck(r[2]);wPrep()}).catch(function(e){WM.load=null;throw e});
+      a.forEach(function(r){if(r){WM.reg[r[0].id]=r[1];WLAY.push([r[0].id,r[0].label]);if(r[0].host){WHOST[r[0].id]=r[0].host;WHOSTREV[r[0].host]=r[0].id};if(r[0].fit)r[1].fit=r[0].fit}});return cosLoad(ix)})});
+  WM.load=Promise.all([libs,wGet('world/countries.json'),dat,regs,wGet('world/wages.json').catch(function(){return null})]).then(function(r){WM.geo=r[1];WM.data=wCheck(r[2]);wPostLoad(r[4]);wPrep()}).catch(function(e){WM.load=null;throw e});
   return WM.load;
 }
 function wCheck(j){if(!j||!j.years||!j.years.length||!j.data||!j.ind)return null;return j}
@@ -1865,6 +1872,7 @@ function wfmtB(x,k,L){
   if(k==='gdp_pc')return nf(v,v>=100?0:1)+' '+(L.unit_pc||'');
   if(k==='pop')return v>=1?nf(v,v>=10?1:2)+' млн чел.':nf(v*1000,0)+' тыс. чел.';
   if(k==='growth')return (v>0?'+':v<0?'−':'')+nf(Math.abs(v),1)+'%';
+  if(k==='wage'){var g=L.wg||{},cs={RUB:'₽',USD:'$',EUR:'€',CAD:'C$',CNY:'¥'};return nf(v,v>=100?0:1)+' тыс. '+(cs[g.cur]||g.cur||'')+(g.per?' в '+(g.per==='мес'?'месяц':g.per==='нед'?'неделю':'год'):'')}
   return esc(v);
 }
 
@@ -1889,7 +1897,7 @@ function renderWorld(){
 var WDEEP=null;
 function wBuild(){
   var l=$('#w-load');if(l)l.remove();
-  if(WDEEP){var dp=WDEEP;WDEEP=null;if(WM.reg[dp.layer]){var DL=WM.reg[dp.layer],di=DL.items.findIndex(function(x){return x.name===dp.name});WS.layer=dp.layer;WS.sel=di>=0?'b:'+di:null;if(di>=0)setTimeout(function(){if(state==='world'&&WS.sel==='b:'+di)wZoomTo(WS.sel)},900)}}
+  if(WDEEP){var dp=WDEEP;WDEEP=null;if(WM.reg[dp.layer]&&!WM.reg[dp.layer].coonly){var DL=WM.reg[dp.layer],di=DL.items.findIndex(function(x){return x.name===dp.name});WS.layer=dp.layer;WS.sel=di>=0?'b:'+di:null;if(di>=0)setTimeout(function(){if(state==='world'&&WS.sel==='b:'+di)wZoomTo(WS.sel)},900)}}
   wLayChips();wMap();wCtl();wPaint(true);wCard();
 }
 function wLayChips(){
@@ -2114,7 +2122,7 @@ function wShareHTML(id){
 function wCoGroups(list){   // [{id, sum, items:[…]}] по секторам, крупные сначала
   var g={};list.forEach(function(c){var k=c.sector||'promyshlennost';(g[k]=g[k]||{id:k,sum:0,items:[]});g[k].sum+=c.rev||0;g[k].items.push(c)});
   return Object.keys(g).map(function(k){g[k].items.sort(function(a,b){return (b.rev||0)-(a.rev||0)});return g[k]}).sort(function(a,b){return b.sum-a.sum})}
-function wCoDet(c){var d=WM.reg[WS.layer]&&WM.reg[WS.layer].cd;return d&&d[c.name]||null}
+function wCoDet(c){var L=WM.reg[c.__l||WS.layer],d=L&&L.cd;return d&&d[c.name]||null}
 function wStaff(d){if(d.staff==null)return '';var v=d.staff,t=v>=1000?nf(v/1000,2)+' млн':v>=1?nf(v,v>=100?0:1)+' тыс.':nf(v*1000,0);return t+' чел.'+(d.staff_y?' ('+d.staff_y+')':'')}
 function wDom(u){try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return u}}
 function wCoBody(d){
@@ -2152,6 +2160,13 @@ function wCoCountry(L){   // страна целиком: сектора по в
   if(!L||!L.co)return '';var C=L.co,u=C.unit,gs=wCoGroups(C.items),mx=gs.length?gs[0].sum:1,top=C.items.slice().sort(function(a,b){return (b.rev||0)-(a.rev||0)}).slice(0,10);
   return '<p class="wsm" style="margin:14px 0 6px"><b>Сектора по выручке крупнейших компаний'+(C.year?' · '+C.year:'')+'</b></p><div class="wbars">'+gs.map(function(g){return '<div class="wbr"><span><a href="#world/sectors/'+g.id+'">'+esc(WSN[g.id]||g.id)+'</a></span><div><i style="width:'+(g.sum/mx*100)+'%"></i></div><b>'+wfmtC(g.sum,u).replace(/ (млрд|трлн) .*/,' $1')+'</b></div>'}).join('')+'</div><p class="wsm">Сумма по '+C.items.length+' компаниям списка, не по всей экономике страны.</p>'+
     '<p class="wsm" style="margin:12px 0 2px"><b>Крупнейшие компании</b></p><div class="wcl">'+top.map(function(c){return wCoRow(c,u)}).join('')+'</div>'+wCoNote(C)}
+function wWageHTML(id){   // средняя зарплата страны (годовая, брутто)
+  var W=WM.wages,w=W&&W.items&&W.items[id];if(!w)return '';
+  var ks=Object.keys(W.items).filter(function(k){return W.items[k].usd>0}).sort(function(a,b){return W.items[b].usd-W.items[a].usd}),rk=w.usd>0?ks.indexOf(id)+1:0;
+  var rows=[];if(w.usd>0)rows.push('<tr><td>В долларах по курсу<small> · '+w.y+'</small></td><td class="v">'+nf(w.usd,0)+' $ в год</td></tr><tr><td>Это в месяц</td><td class="v">'+nf(w.usd/12,0)+' $</td></tr>');
+  if(w.ppp>0)rows.push('<tr><td>По паритету покупательной способности<small> · '+(w.y_ppp||w.y)+'</small></td><td class="v">'+nf(w.ppp,0)+' межд. $</td></tr>');
+  if(w.local&&w.local.v>0)rows.push('<tr><td>В местной валюте</td><td class="v">'+nf(w.local.v,0)+' '+esc(w.local.cur)+' в год</td></tr>');
+  return '<p class="wsm" style="margin:14px 0 6px"><b>Средняя зарплата</b>'+(rk?' · '+rk+'-е место из '+ks.length+' стран с данными':'')+'</p><table class="wkv">'+rows.join('')+'</table><details class="wcalc wsrcd"><summary>ⓘ Откуда цифра</summary>'+esc(W.countries&&W.countries.definition||'')+'<br>'+esc(w.note||'')+(w.src?' · <a href="'+esc(w.src)+'" target="_blank" rel="noopener">источник ↗</a>':'')+'</details>'}
 function wCountryCard(id,nc,withCo){
   var n=WM.names[id]||id,d=WM.data,h='<div class="wck"><div><p class="wck-e">'+(d?WS.year+(WS.year>WM.la?' · прогноз МВФ':' · факт'):'Страна')+'</p><h3>'+esc(n)+'</h3></div>'+(nc?'':'<button type="button" class="wx" data-wclose aria-label="Закрыть">×</button>')+'</div><div class="wcmpb">'+cmpBtn('c:'+id)+'</div>'+(!nc&&WHOSTREV[id]&&WS.layer==='countries'?'<button type="button" class="chip on" data-wl="'+WHOSTREV[id]+'" style="margin:2px 0 10px">Открыть регионы →</button>':'');
   var r=d&&d.data[id],yi=d?wyi():0;
@@ -2161,7 +2176,7 @@ function wCountryCard(id,nc,withCo){
     h+='<div class="wbig">'+wfmt('NGDPD',g)+'</div><p class="wsm">ВВП'+(rk?' · '+rk+'-е место в мире':'')+(g!=null&&wg?' · '+nf(g/wg*100,g/wg<.01?2:1)+'% мирового ВВП':'')+(pp!=null&&wp?' · по ППС '+nf(pp/wp*100,pp/wp<.01?2:1)+'%':'')+'</p>';
     h+='<table class="wkv">'+WORD.map(function(k){var v=wv(id,k,yi),p=v!=null?wRank(k,yi):null;
       return '<tr'+(k===WS.ind?' class="on"':'')+'><td>'+esc(WI[k][0])+'</td><td class="v">'+wfmt(k,v,1)+'</td><td class="r">'+(p&&p.pos[id]?p.pos[id]+'/'+p.length:'')+'</td></tr>'}).join('')+'</table>';
-    h+=wShareHTML(id);if((nc||withCo)&&WS.layer!=='countries')h+=wCoCountry(WM.reg[WS.layer]);
+    h+=wShareHTML(id);h+=wWageHTML(id);if((nc||withCo)&&WS.layer!=='countries')h+=wCoCountry(WM.reg[WS.layer]);else if(WS.layer==='countries'){var cl2=WM.reg[WHOSTCO[id]||WHOSTREV[id]];if(cl2&&cl2.co)h+=wCoCountry(cl2)}
     h+=wSpark(id);
   }
   var cur=WCUR[id];
@@ -2201,13 +2216,13 @@ function wBubCard(i){
   else h+='<p class="wsm">'+esc(L.metric||'ВВП')+': данных нет</p>';
   h+='<nav class="wtabs" role="tablist">'+WTABS.filter(function(t){return av[t[0]]}).map(function(t){return '<button type="button" role="tab" class="'+(t[0]===tab?'on':'')+'" data-wtab="'+t[0]+'" aria-selected="'+(t[0]===tab)+'">'+t[1]+'</button>'}).join('')+'</nav>';
   if(tab==='main'){
-    h+='<table class="wkv">'+[['gdp',L.metric||'ВВП'],['gdp_pc','На душу'],['pop','Население'],['growth','Реальный рост'],['rev','Доходы бюджета'],['exp','Расходы бюджета'],['bal','Баланс бюджета'],['debt','Долг']].filter(function(k){return x[k[0]]!=null}).map(function(k){return '<tr><td>'+esc(k[1])+'</td><td class="v">'+wfmtB(x,k[0],L)+'</td></tr>'}).join('')+'</table>';
+    h+='<table class="wkv">'+[['gdp',L.metric||'ВВП'],['gdp_pc','На душу'],['pop','Население'],['growth','Реальный рост'],['wage','Средняя зарплата'],['rev','Доходы бюджета'],['exp','Расходы бюджета'],['bal','Баланс бюджета'],['debt','Долг']].filter(function(k){return x[k[0]]!=null}).map(function(k){return '<tr><td>'+esc(k[1])+'</td><td class="v">'+wfmtB(x,k[0],L)+'</td></tr>'}).join('')+'</table>';
     h+='<p class="wsm" style="margin-top:12px">Дальше: <a href="#" data-wtab="bud">бюджет и долг</a>'+(av.eco?' · <a href="#" data-wtab="eco">на чём держится экономика</a>':'')+(av.co?' · <a href="#" data-wtab="co">компании</a>':'')+'.</p>'}
   else if(tab==='bud')h+=wBudget(L,x);
   else if(tab==='eco')h+=wRegEco(L,x);
   else h+=wRegCo(L,x);
   var sr=[];if(L.byear&&(x.rev!=null||x.exp!=null||x.debt!=null))sr.push('Бюджет: '+esc(L.byear)+(L.bnote?' · '+esc(L.bnote):''));
-  sr.push('ВРП/ВВП: '+esc(L.source||'—')+(L.bsource?'; бюджеты — '+esc(L.bsource):''));if(L.st&&L.st.source&&L.st.items&&L.st.items[x.name])sr.push('Структура: '+esc(L.st.source));if(x.note)sr.push(esc(x.note));
+  sr.push('ВРП/ВВП: '+esc(L.source||'—')+(L.bsource?'; бюджеты — '+esc(L.bsource):''));if(L.wg&&x.wage!=null)sr.push('Зарплата: '+esc(L.wg.def||'')+' — '+esc(L.wg.src||'')+(L.wg.note?' · '+esc(L.wg.note):''));if(L.st&&L.st.source&&L.st.items&&L.st.items[x.name])sr.push('Структура: '+esc(L.st.source));if(x.note)sr.push(esc(x.note));
   return h+'<details class="wcalc wsrcd"><summary>ⓘ Источники и пояснения</summary>'+sr.join('<br>')+'</details>';
 }
 function wSpark(id){   // ВВП (линия) и реальный рост (столбики) 2000…последний год прогноза; прогноз — штрихом на тонированном фоне
@@ -2310,7 +2325,7 @@ function cmpDraw(){
     WORD.map(function(c){var vs=cs.map(function(k){return wv(k.slice(2),c,yi)}),mx=Math.max.apply(null,vs.map(function(v){return v==null?0:Math.abs(v)}));return '<tr><td>'+esc(WI[c][0])+'</td>'+vs.map(function(v){return cmpCell(wfmt(c,v,1),v,mx)}).join('')+'</tr>'}).join('')+'</table></div>'}
   var byL={};it.filter(function(k){return k.indexOf('r:')===0}).forEach(function(k){var q=k.slice(2).split('|');(byL[q[0]]=byL[q[0]]||[]).push(q[1])});
   Object.keys(byL).forEach(function(l){var L=WM.reg[l],xs=byL[l].map(function(n){return L.items.filter(function(x){return x.name===n})[0]}).filter(Boolean),ll=WLAY.filter(function(x){return x[0]===l})[0];
-    var rows=[['gdp',L.metric||'ВВП'],['gdp_pc','На душу'],['pop','Население'],['growth','Реальный рост'],['rev','Доходы бюджета'],['exp','Расходы бюджета'],['bal','Баланс бюджета'],['debt','Долг']].filter(function(r){return xs.some(function(x){return x[r[0]]!=null})});
+    var rows=[['gdp',L.metric||'ВВП'],['gdp_pc','На душу'],['pop','Население'],['growth','Реальный рост'],['wage','Средняя зарплата'],['rev','Доходы бюджета'],['exp','Расходы бюджета'],['bal','Баланс бюджета'],['debt','Долг']].filter(function(r){return xs.some(function(x){return x[r[0]]!=null})});
     h+='<p class="wsm" style="margin:14px 0 4px"><b>'+esc(ll?ll[1]:l)+(L.year?' · '+L.year:'')+'</b></p><div class="cmp-sc"><table class="wkv wcmp"><thead><tr><td></td>'+xs.map(function(x){return '<td class="v">'+esc(x.name)+'</td>'}).join('')+'</tr></thead>'+
       rows.map(function(r){var mx=Math.max.apply(null,xs.map(function(x){return x[r[0]]==null?0:Math.abs(x[r[0]])}));return '<tr><td>'+esc(r[1])+'</td>'+xs.map(function(x){return cmpCell(wfmtB(x,r[0],L),x[r[0]],mx)}).join('')+'</tr>'}).join('')+'</table></div>'});
   if(cs.length&&it.some(function(k){return k.indexOf('r:')===0}))h+='<p class="wsm">Страны и регионы сравниваются в разных единицах (ВВП страны — в долларах, региона — в местной валюте), поэтому они в разных таблицах.</p>';
@@ -2331,7 +2346,7 @@ var SC={q:'',country:'',sec:'',reg:'',min:0,sign:'',sort:'rev',desc:true,usd:tru
 function scrRates(){if(SC.rates!==null)return Promise.resolve();return fetch('https://open.er-api.com/v6/latest/USD').then(function(r){return r.json()}).then(function(j){SC.rates=j&&j.rates?j.rates:{}}).catch(function(){SC.rates={}})}
 function scrBuild(){
   var R=[];Object.keys(WM.reg).forEach(function(l){var L=WM.reg[l];if(!L.co)return;var ll=WLAY.filter(function(x){return x[0]===l})[0],cur=/₽/.test(L.co.unit||'')?'RUB':/¥/.test(L.co.unit||'')?'CNY':/\$/.test(L.co.unit||'')?'USD':/€/.test(L.co.unit||'')?'EUR':'';
-    L.co.items.forEach(function(c){R.push({c:c,layer:l,country:ll?ll[1]:l,cur:cur,u:L.co.unit||'',det:(L.cd||{})[c.name]||null,rev:c.rev,profit:c.profit,m:(c.rev>0&&c.profit!=null)?c.profit/c.rev*100:null})})});
+    L.co.items.forEach(function(c){R.push({c:c,layer:l,country:ll?ll[1]:(L.label||l),cur:cur,u:L.co.unit||'',det:(L.cd||{})[c.name]||null,rev:c.rev,profit:c.profit,m:(c.rev>0&&c.profit!=null)?c.profit/c.rev*100:null})})});
   SC.rows=R}
 function scrUsd(r,v){if(v==null)return null;if(r.cur==='USD')return v;var x=SC.rates&&SC.rates[r.cur];return x?v/x:null}
 function scrList(){
@@ -2352,7 +2367,7 @@ function scrDraw(){
   sh.forEach(function(r,i){var idx=SC.rows.indexOf(r),c=r.c,op=SC.open[idx];
     h+='<div class="scr-r'+(op?' open':'')+'"><button type="button" class="scr-t" data-scrx="'+idx+'"><span class="nm">'+esc(c.name)+(c.ticker?' <small>'+esc(c.ticker)+'</small>':'')+'<small class="rg">'+esc(r.country+(c.region?' · '+c.region:'')+' · '+(WSN[c.sector]||c.sector||''))+'</small></span>'+
       '<span class="v">'+scrFmt(r,c.rev,o.usd)+'</span><span class="v '+(c.profit<0?'neg':'')+'">'+scrFmt(r,c.profit,o.usd)+'</span><span class="v mg">'+(r.m==null?'—':nf(r.m,1)+'%')+'</span></button>'+
-      (op?'<div class="wcb">'+(r.m!=null?'<p class="wcw" style="font-style:normal">Маржа прибыли: <b>'+nf(r.m,1)+'%</b></p>':'')+(r.det?wCoBody(r.det):'<p class="wcw">Подробной справки пока нет — только выручка и прибыль.</p>')+'<p class="wcs"><a href="#world/'+r.layer+'/'+encodeURIComponent(c.region||'')+'">Показать регион на карте →</a>'+(c.note?' · '+esc(c.note):'')+'</p></div>':'')+'</div>'});
+      (op?'<div class="wcb">'+(r.m!=null?'<p class="wcw" style="font-style:normal">Маржа прибыли: <b>'+nf(r.m,1)+'%</b></p>':'')+(r.det?wCoBody(r.det):'<p class="wcw">Подробной справки пока нет — только выручка и прибыль.</p>')+'<p class="wcs">'+(WM.reg[r.layer].coonly?'':'<a href="#world/'+r.layer+'/'+encodeURIComponent(c.region||'')+'">Показать регион на карте →</a>'+(c.note?' · ':''))+(c.note?esc(c.note):'')+'</p></div>':'')+'</div>'});
   if(a.length>SC.lim)h+='<button type="button" class="chip" data-scrmore style="margin:12px 0">Показать ещё '+Math.min(60,a.length-SC.lim)+'</button>';
   el.innerHTML=h}
 function scrToggle(i){SC.open[i]=!SC.open[i];scrDraw()}
@@ -2364,14 +2379,14 @@ function scrForm(){
   var cs={};SC.rows.forEach(function(r){cs[r.c.sector]=1});var regs={};SC.rows.forEach(function(r){if((!SC.country||r.layer===SC.country)&&r.c.region)regs[r.c.region]=1});
   var opt=function(v,t,s){return '<option value="'+esc(v)+'"'+(s===v?' selected':'')+'>'+esc(t)+'</option>'};
   el.innerHTML='<div class="scr-f"><input type="search" class="wq" data-scrf="q" placeholder="Название, тикер, город" value="'+esc(SC.q)+'" aria-label="Поиск компании">'+
-    '<select data-scrf="country" aria-label="Страна">'+opt('','Все страны',SC.country)+ls.map(function(l){var ll=WLAY.filter(function(x){return x[0]===l})[0];return opt(l,ll?ll[1]:l,SC.country)}).join('')+'</select>'+
+    '<select data-scrf="country" aria-label="Страна">'+opt('','Все страны',SC.country)+ls.map(function(l){var ll=WLAY.filter(function(x){return x[0]===l})[0];return opt(l,ll?ll[1]:((WM.reg[l]&&WM.reg[l].label)||l),SC.country)}).join('')+'</select>'+
     '<select data-scrf="sec" aria-label="Сектор">'+opt('','Все сектора',SC.sec)+Object.keys(cs).sort(function(a,b){return String(WSN[a]).localeCompare(String(WSN[b]),'ru')}).map(function(k){return opt(k,WSN[k]||k,SC.sec)}).join('')+'</select>'+
     '<select data-scrf="reg" aria-label="Регион">'+opt('','Все регионы',SC.reg)+Object.keys(regs).sort(function(a,b){return a.localeCompare(b,'ru')}).map(function(k){return opt(k,k,SC.reg)}).join('')+'</select>'+
     '<select data-scrf="sign" aria-label="Прибыль">'+opt('','Любая прибыль',SC.sign)+opt('+','Только прибыльные',SC.sign)+opt('-','Только убыточные',SC.sign)+'</select>'+
     '<input class="wq" data-scrf="min" inputmode="decimal" placeholder="Выручка от (млрд'+(SC.country?'':' $')+')" value="'+(SC.min||'')+'" aria-label="Минимальная выручка"></div>'+
     '<div class="scr-b"><button type="button" class="chip sm" data-scrcsv>Скачать CSV</button></div>'}
 function renderScreener(){
-  view.innerHTML=wsub('companies')+'<section class="wm"><div class="wh"><h1>Скринер компаний</h1><p class="wlead">Крупнейшие компании России и Китая: фильтр по сектору, региону, выручке и прибыли. Нажми на строку — откроется справка о компании.</p></div><div id="scr-form"></div><div id="scr-list"><span class="empty skel"></span></div></section>';
+  view.innerHTML=wsub('companies')+'<section class="wm"><div class="wh"><h1>Скринер компаний</h1><p class="wlead">Крупнейшие компании 18 стран (Россия, Китай, США, Европа, Япония, Индия и др.): фильтр по сектору, региону, выручке и прибыли. Нажми на строку — откроется справка о компании.</p></div><div id="scr-form"></div><div id="scr-list"><span class="empty skel"></span></div></section>';
   Promise.all([wLoad(),scrRates()]).then(function(){if(state!=='world'||!$('#scr-list'))return;scrBuild();scrForm();scrDraw()}).catch(function(){var e=$('#scr-list');if(e)e.innerHTML='<p class="empty">Не удалось загрузить данные. <button type="button" class="chip sm" data-wretry>Повторить</button></p>'});
 }
 

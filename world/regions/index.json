@@ -15,17 +15,20 @@
     24,
     -66,
     49.8
-   ]
+   ],
+   "companies": "us"
   },
   {
    "id": "es-communities",
    "label": "Испания",
-   "host": "ESP"
+   "host": "ESP",
+   "companies": "es"
   },
   {
    "id": "de-lander",
    "label": "Германия",
-   "host": "DEU"
+   "host": "DEU",
+   "companies": "de"
   },
   {
    "id": "ca-provinces",
@@ -42,7 +45,70 @@
   {
    "id": "in-states",
    "label": "Индия",
-   "host": "IND"
+   "host": "IND",
+   "companies": "in"
+  }
+ ],
+ "cos": [
+  {
+   "id": "fr",
+   "label": "Франция",
+   "host": "FRA"
+  },
+  {
+   "id": "gb",
+   "label": "Великобритания",
+   "host": "GBR"
+  },
+  {
+   "id": "it",
+   "label": "Италия",
+   "host": "ITA"
+  },
+  {
+   "id": "nl",
+   "label": "Нидерланды",
+   "host": "NLD"
+  },
+  {
+   "id": "ch",
+   "label": "Швейцария",
+   "host": "CHE"
+  },
+  {
+   "id": "se",
+   "label": "Швеция",
+   "host": "SWE"
+  },
+  {
+   "id": "jp",
+   "label": "Япония",
+   "host": "JPN"
+  },
+  {
+   "id": "br",
+   "label": "Бразилия",
+   "host": "BRA"
+  },
+  {
+   "id": "sa",
+   "label": "Саудовская Аравия",
+   "host": "SAU"
+  },
+  {
+   "id": "ae",
+   "label": "ОАЭ",
+   "host": "ARE"
+  },
+  {
+   "id": "tr",
+   "label": "Турция",
+   "host": "TUR"
+  },
+  {
+   "id": "il",
+   "label": "Израиль",
+   "host": "ISR"
   }
  ]
 }
