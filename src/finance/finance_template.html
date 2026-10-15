@@ -33,6 +33,40 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 ::selection{background:var(--mark)}
 
+
+/* нижнее меню на телефоне */
+.bnav{display:none}
+@media (max-width:760px){
+  #sw{display:none}.top .zm{display:none}
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--bg);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px))}
+  .bnav a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;text-decoration:none;color:var(--faint);font:500 11px/1.1 var(--sans)}
+  .bnav a svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .bnav a.on{color:var(--accent)}.bnav a.on svg{stroke-width:2.1}
+  main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  #totop{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  .hero{padding-top:20px}.hero p{display:none}
+  html.wfs-lock .bnav{display:none}
+}
+/* главная */
+.hm{padding-top:22px}.hm h1{margin:0;font:600 clamp(30px,6vw,44px)/1.1 var(--serif);letter-spacing:-.02em}.hm .hm-sub{margin:8px 0 0;color:var(--muted);font:400 16px/1.5 var(--serif)}
+.hm-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px}
+@media (min-width:900px){.hm-cards{grid-template-columns:repeat(4,1fr)}}
+.hm-card{display:flex;flex-direction:column;gap:6px;min-height:132px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);text-decoration:none;color:var(--fg)}
+.hm-card:hover{border-color:var(--faint)}
+.hm-card svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.hm-card b{font:600 18px/1.2 var(--serif)}.hm-card span{font:400 13.5px/1.4 var(--sans);color:var(--muted)}.hm-card em{margin-top:auto;font:600 12.5px/1.2 var(--sans);font-style:normal;color:var(--accent)}
+.hm-resume{display:flex;flex-direction:column;gap:3px;margin-top:16px;padding:14px 16px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;background:var(--surface);text-decoration:none}
+.hm-resume small{font:500 11px/1 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}.hm-resume b{font:600 17px/1.3 var(--serif)}
+.hm-sec{margin-top:28px}.hm-sec h2{margin:0 0 6px;font:600 13px/1.2 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.hm-list{display:grid;grid-template-columns:1fr;gap:0 24px}@media (min-width:700px){.hm-list{grid-template-columns:1fr 1fr}}
+.hm-list a{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 2px;border-top:1px solid var(--line2);text-decoration:none;font:500 16px/1.3 var(--sans)}
+.hm-list a small{display:block;margin-top:2px;font:400 13px/1.3 var(--sans);color:var(--muted)}.hm-list a::after{content:"›";color:var(--faint);font-size:20px}
+.hm-set{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:8px;color:var(--muted);font:400 14px var(--sans)}
+.hm-set .zm{display:flex}
+/* блоки обучения сворачиваются */
+details.track>summary{list-style:none;cursor:pointer}details.track>summary::-webkit-details-marker{display:none}
+details.track>summary h2::before{content:"▸";font-size:14px;color:var(--faint);transition:transform .15s}details.track[open]>summary h2::before{transform:rotate(90deg)}
+
 /* шапка */
 .top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;gap:4px;max-width:1180px;margin:0 auto;padding:6px 8px 0 var(--gut);min-height:52px}
@@ -523,15 +557,16 @@ html.wfs-lock,html.wfs-lock body{overflow:hidden}
 <header class="top">
   <div class="bar">
     <a class="home" id="b-back" href="artem.html" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
-    <a class="brand" href="#learn"><b>₽</b> Финансы</a>
+    <a class="brand" href="#home"><b>₽</b> Финансы</a>
     <div class="zm" role="group" aria-label="Масштаб страницы"><button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить масштаб">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div><button class="ibtn" id="b-search" type="button" aria-label="Поиск"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
     <button class="ibtn" id="b-theme" type="button" aria-label="Сменить тему"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></button>
   </div>
   <div class="search" id="search"><input id="q" type="search" placeholder="Поиск: WACC, EBITDA, банки…" autocomplete="off" enterkeyhint="search" aria-label="Поиск по справочнику"></div>
-  <nav class="sw" id="sw"><a href="#learn" data-s="learn">Обучение</a><a href="#calc" data-s="calc">Калькуляторы</a><a href="#markets" data-s="markets">Рынки</a><a href="#world" data-s="world">Мир</a><a href="ucheba.html" class="out" title="Перейти в раздел «Учёба»">Учёба →</a></nav>
+  <nav class="sw" id="sw"><a href="#home" data-s="home">Главная</a><a href="#learn" data-s="learn">Обучение</a><a href="#markets" data-s="markets">Рынки</a><a href="#world" data-s="world">Мир</a><a href="#calc" data-s="calc">Расчёты</a><a href="ucheba.html" class="out" title="Перейти в раздел «Учёба»">Учёба →</a></nav>
 </header>
 <div id="prog"></div><button id="totop" type="button" aria-label="Наверх" hidden>↑</button>
 <main id="view"></main>
+<nav class="bnav" id="bnav" aria-label="Разделы"><a href="#home" data-s="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg><span>Главная</span></a><a href="#learn" data-s="learn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h9a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z"/><path d="M5 16a4 4 0 0 1 4-4h9"/></svg><span>Обучение</span></a><a href="#markets" data-s="markets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17l5-5 4 4 7-8"/><path d="M15 8h5v5"/></svg><span>Рынки</span></a><a href="#world" data-s="world"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18"/><path d="M12 3c-3 3-3 15 0 18"/></svg><span>Мир</span></a><a href="#calc" data-s="calc"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 12h2"/><path d="M12 12h2"/><path d="M8 16h2"/><path d="M12 16h2"/></svg><span>Расчёты</span></a></nav>
 <div id="tip" hidden></div>
 <!--DATA-->
 <!--MARKED-->
@@ -598,14 +633,34 @@ function renderLearn(){
     '<div class="prog" id="lprog"></div>'+(last?'<a class="resume" href="#learn/'+last.id+'"><small>Продолжить</small><b>'+esc(last.title)+'</b></a>':'<a class="resume" href="#learn/ib"><small>Начать отсюда</small><b>'+esc(CH[0].title)+'</b></a>')+'</section>';
   TRACKS.forEach(function(tr){
     var tids=tr[2].filter(function(id){return CH.some(function(x){return x.id===id})}),tn=doneStat(tids);
-    h+='<section class="track"><h2>'+esc(tr[0])+'<span>'+esc(tr[1])+'</span><span class="tp'+(tn===tids.length&&tids.length?' all':'')+'" data-tp="'+esc(tr[0])+'">'+tn+' из '+tids.length+'</span></h2><div class="chs">';
+    var opn=(last?tr[2].indexOf(last.id)>=0:tr[0]==='С чего начать');
+    h+='<details class="track"'+(opn?' open':'')+'><summary><h2>'+esc(tr[0])+'<span>'+esc(tr[1])+'</span><span class="tp'+(tn===tids.length&&tids.length?' all':'')+'" data-tp="'+esc(tr[0])+'">'+tn+' из '+tids.length+'</span></h2></summary><div class="chs">';
     tr[2].forEach(function(id){var c=CH.filter(function(x){return x.id===id})[0];if(!c)return;var dn=doneIs(c.id);
       h+='<div class="chw'+(dn?' dn':'')+'"><a class="ch'+(last&&last.id===c.id?' cur':'')+'" href="#learn/'+c.id+'"><span class="n">'+(c.i+1)+'</span><span><b>'+esc(c.title)+'</b><i>'+esc(c.short)+'</i><em>'+c.min+' мин чтения'+(CALC_LINK[c.id]?' · есть калькулятор':'')+'</em></span></a>'+
         '<button type="button" class="ck'+(dn?' on':'')+'" data-ck="'+c.id+'" aria-pressed="'+(dn?'true':'false')+'" aria-label="'+(dn?'Снять отметку «пройдено»':'Отметить пройденным')+': '+esc(c.title)+'" title="'+(dn?'Пройдено — нажми, чтобы снять':'Отметить пройденным')+'">✓</button></div>'});
-    h+='</div></section>';
+    h+='</div></details>';
   });
   h+='<p class="dreset"><button type="button" data-dreset>Сбросить отметки о прохождении</button></p>';
   view.innerHTML=h;learnProg();
+}
+
+function renderHome(){
+  var last=CH.filter(function(x){return x.id===store('fin:last')})[0],all=CH.filter(function(x){return x.id!=='glossariy'&&x.id!=='istochniki'}),n=doneStat(all.map(function(x){return x.id}));
+  function I(d){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>'}
+  var cards=[['#learn','Обучение','Справочник по корпоративным финансам: от основ до M&A',n+' из '+all.length+' пройдено',I('<path d="M5 4h9a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z"/><path d="M5 16a4 4 0 0 1 4-4h9"/>')],
+    ['#markets','Рынки','Котировки, новости, облигации, дивиденды, макро','Живые данные',I('<path d="M4 17l5-5 4 4 7-8"/><path d="M15 8h5v5"/>')],
+    ['#world','Мир','Карта экономики стран и регионов, компании, сравнение','Страны и регионы',I('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3 3 15 0 18"/><path d="M12 3c-3 3-3 15 0 18"/>')],
+    ['#calc','Расчёты','DCF, WACC, LBO, вклад или облигации',CALCS.length+' калькуляторов',I('<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 12h2"/><path d="M12 12h2"/><path d="M8 16h2"/><path d="M12 16h2"/>')]];
+  var h='<section class="hm"><h1>Финансы</h1><p class="hm-sub">Выбери, что нужно сейчас.</p>'+
+    '<div class="hm-cards">'+cards.map(function(c){return '<a class="hm-card" href="'+c[0]+'">'+c[4]+'<b>'+c[1]+'</b><span>'+c[2]+'</span><em>'+c[3]+'</em></a>'}).join('')+'</div>'+
+    '<a class="hm-resume" href="#learn/'+(last||CH[0]).id+'"><small>'+(last?'Продолжить урок':'Начать обучение')+'</small><b>'+esc((last||CH[0]).title)+'</b></a>';
+  function lst(t,a){return '<div class="hm-sec"><h2>'+t+'</h2><div class="hm-list">'+a.map(function(x){return '<a href="'+x[0]+'"><span>'+x[1]+(x[2]?'<small>'+x[2]+'</small>':'')+'</span></a>'}).join('')+'</div></div>'}
+  h+=lst('Следить за рынком',[['#markets/news','Новости','Главное за день, с важностью'],['#markets/week','Итоги недели','Кто вырос и упал'],['#markets/cal','Календарь событий','Заседания ЦБ, отчёты, данные'],['#markets/divs','Дивиденды','Даты закрытия реестра']]);
+  h+=lst('Посчитать',[['#calc/yield','Вклад или облигации','Что выгоднее на ваш срок'],['#calc/dcf','DCF-модель','Оценка стоимости компании'],['#calc/wacc','WACC','Стоимость капитала'],['#calc/lbo','LBO','Доходность фонда']]);
+  h+=lst('Изучить мир',[['#world/map','Карта мира','Страны, регионы, бюджеты'],['#world/compare','Сравнить регионы и страны','До пяти позиций'],['#world/companies','Компании мира','Фильтры и выгрузка в CSV'],['#world/sectors','Сектора экономики','Как устроена отрасль']]);
+  h+=lst('Справка',[['#learn/glossariy','Глоссарий','Термины по буквам'],['search.html','Поиск по всему сайту','Главы, термины, компании, регионы'],['ucheba.html','Учёба','Расписание, билеты, сессия']]);
+  h+='<div class="hm-sec"><h2>Размер текста</h2><div class="hm-set"><div class="zm" role="group" aria-label="Масштаб страницы"><button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить масштаб">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div><span>Тема — кнопка ◐ вверху справа.</span></div></div></section>';
+  view.innerHTML=h;
 }
 function learnProg(){   // общая полоса прогресса в шапке «Обучения»
   var el=document.getElementById('lprog');if(!el)return;var all=CH.filter(function(x){return x.id!=='glossariy'&&x.id!=='istochniki'}),n=doneStat(all.map(function(x){return x.id}));
@@ -2253,16 +2308,18 @@ function renderScreener(){
 var state='',LASTCARD='';
 function route(){
   var h=decodeURIComponent(location.hash.slice(1)),p=h.split('/');
-  var sec=p[0]==='markets'?'markets':p[0]==='calc'?'calc':p[0]==='world'?'world':'learn';
+  var sec=p[0]==='markets'?'markets':p[0]==='calc'?'calc':p[0]==='world'?'world':p[0]==='learn'?'learn':'home';
   wStop();wTipHide();WM.fs=false;document.documentElement.classList.remove('wfs-lock');
-  document.querySelectorAll('#sw a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-s')===sec)});
+  document.querySelectorAll('#sw a,#bnav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-s')===sec)});
   state=sec;
   var bk=document.getElementById('b-back'),inCh=sec==='learn'&&CH.some(function(x){return x.id===p[1]});
-  bk.setAttribute('href',sec==='world'?(p[1]==='sectors'?(p[2]?'#world/sectors':'#world'):'#learn'):sec==='markets'?(p[1]==='idx'?'#markets':p[1]&&p[1]!=='summary'?(p[2]?'#markets/'+p[1]:'#markets'):'#learn'):sec==='calc'?'#learn':(inCh?'#learn':'artem.html'));bk.setAttribute('aria-label',(sec==='learn'&&!inCh)?'Все разделы':'Назад');
+  bk.setAttribute('href',sec==='home'?'artem.html':sec==='world'?(p[1]==='sectors'?(p[2]?'#world/sectors':'#world'):'#home'):sec==='markets'?(p[1]==='idx'?'#markets':p[1]&&p[1]!=='summary'?(p[2]?'#markets/'+p[1]:'#markets'):'#home'):sec==='calc'?'#home':(inCh?'#learn':'#home'));bk.setAttribute('aria-label',sec==='home'?'Назад':(sec==='learn'&&!inCh)?'На главную':'Назад');
   if(sec==='markets'){
     cur=SUBS.some(function(s){return s[0]===p[1]})?p[1]:'summary';store('fin:sub',cur);
     CARD.tic=(cur==='ru'&&p[2])?p[2].toUpperCase():null;ASSET={kind:null,id:null};var ck=p[2]?p[1]+'/'+p[2]:'';if(ck&&ck!==LASTCARD&&!/^(ev-|[0-9a-f]{10}$)/.test(p[2]))CARD.range='1m';if(ck&&p[1]!=='news')LASTCARD=ck;if(p[2]&&(p[1]==='us'||p[1]==='crypto'||p[1]==='idx')){if(p[1]==='idx')cur='summary';openAsset(p[1]==='crypto'?'cr':p[1],p[2].toUpperCase())}NEWSID=(cur==='news'&&p[2])?p[2]:null;if(cur==='news'&&!TEXTS)setTimeout(function(){try{if(navigator.connection&&navigator.connection.saveData)return}catch(e){}if(state==='markets'&&cur==='news')loadTexts()},2500);if(CARD.tic){PC.d=null;NLIM=12;Promise.all([loadCoRU(),loadCandles(CARD.tic,CARD.range),loadDivs(CARD.tic),loadNews(),loadEN(enFile('ru',CARD.tic))]).then(function(){drawMarkets(true)})}
     drawMarkets(true);refresh();startTimer();document.title='Рынки · Финансы';
+  }else if(sec==='home'){
+    clearInterval(timer);renderHome();document.title='Финансы'
   }else if(sec==='calc'){
     clearInterval(timer);renderCalc(p[1]);document.title='Калькуляторы · Финансы';
   }else if(sec==='world'){
