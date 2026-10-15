@@ -1647,8 +1647,8 @@ var WCUR=(function(){var m={},s='USD:USA ECU SLV PAN TLS FSM MHL PLW PRI GUM ASM
   s.split('|').forEach(function(p){var a=p.split(':');a[1].split(' ').forEach(function(i){m[i]=a[0]})});return m})();
 var WM={load:null,geo:null,data:null,reg:{},feat:[],byId:{},names:{},svg:null,g:null,zoom:null,proj:null,path:null,w:0,h:0,k:1,play:null,act:false,tap:null,rk:{},bub:[],hint:null};
 var WS=(function(){var s={};try{s=JSON.parse(store('world:st')||'{}')||{}}catch(e){}
-  return {layer:s.layer||'countries',ind:WI[s.ind]?s.ind:'NGDPD',year:0,bm:WBL[s.bm]?s.bm:'gdp',desc:s.desc!==false,sel:null}})();
-function wSave(){store('world:st',JSON.stringify({layer:WS.layer,ind:WS.ind,year:WS.year,bm:WS.bm,desc:WS.desc}))}
+  return {layer:'countries',ind:WI[s.ind]?s.ind:'NGDPD',year:0,bm:WBL[s.bm]?s.bm:'gdp',desc:s.desc!==false,sel:null}})();
+function wSave(){store('world:st',JSON.stringify({ind:WS.ind,year:WS.year,bm:WS.bm,desc:WS.desc}))}
 function wDark(){var t=root.getAttribute('data-theme');return t==='dark'||(!t&&!!window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)}
 function wR(){return WRAMP[wDark()?'dark':'light']}
 function wScript(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.async=true;s.onload=ok;s.onerror=function(){s.parentNode&&s.parentNode.removeChild(s);no(new Error(src))};document.head.appendChild(s)})}
@@ -1757,7 +1757,7 @@ function wBuild(){
   wLayChips();wMap();wCtl();wPaint(true);wCard();
 }
 function wLayChips(){
-  var lay=$('#w-lay'),av=WLAY.filter(function(x){return x[0]==='countries'||WM.reg[x[0]]});
+  var lay=$('#w-lay'),av=WLAY.filter(function(x){return x[0]==='countries'||(WM.reg[x[0]]&&!WHOST[x[0]])});
   lay.hidden=av.length<2;lay.innerHTML=av.map(function(x){return '<button type="button" class="chip'+(WS.layer===x[0]?' on':'')+'" data-wl="'+x[0]+'">'+esc(x[1])+'</button>'}).join('');
   var cr=$('#w-crumb');if(cr){var cl=WLAY.filter(function(x){return x[0]===WS.layer})[0];
     if(WS.layer==='countries'||!cl){cr.hidden=true;cr.innerHTML=''}else{cr.hidden=false;cr.innerHTML='<button type="button" class="chip sm" data-wl="countries">← Весь мир</button><span>Мир › <b>'+esc(cl[1])+'</b></span>'+(WHOST[WS.layer]?'<button type="button" class="chip sm" data-wsel="c:'+WHOST[WS.layer]+'">О стране и секторах</button>':'')}}
@@ -2254,7 +2254,7 @@ function route(){
     else if(p[1]==='companies'){renderScreener();document.title='Компании · Мир · Финансы'}
     else if(p[1]==='sectors'){var sc=SEC.filter(function(x){return x.id===p[2]})[0];
       if(sc){renderChapter(sc);document.title=sc.title+' · Сектора · Финансы'}else{renderSectors();document.title='Сектора мировой экономики · Финансы'}}
-    else{WDEEP=(p[1]&&p[1]!=='map'&&p[2])?{layer:p[1],name:p.slice(2).join('/')}:null;renderWorld();document.title='Карта мира · Финансы'}
+    else{WDEEP=(p[1]&&p[1]!=='map'&&p[2])?{layer:p[1],name:p.slice(2).join('/')}:null;if(!WDEEP){WS.layer='countries';WS.sel=null}renderWorld();document.title='Карта мира · Финансы'}
   }else{
     clearInterval(timer);
     var c=CH.filter(function(x){return x.id===p[1]})[0];
