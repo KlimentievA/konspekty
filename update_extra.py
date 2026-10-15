@@ -81,6 +81,7 @@ def parse_div_html(h):
         if not iv: continue
         for r in tab:
             if len(r) <= max(idate, iv[0]): continue
+            if any('прогноз' in c.lower() for c in r): continue   # прогнозные дивиденды в календарь не берём, только объявленные и выплаченные
             d = _date(r[idate]); v = _num(r[iv[0]])
             if v is not None and float(v).is_integer() and 1990 <= v <= 2100: continue   # это год, а не дивиденд
             if d and v is not None and 0 < v < 100000: out.append((d, v))
