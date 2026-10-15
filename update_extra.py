@@ -65,6 +65,7 @@ def _num(x):
     x = x.replace('\xa0', '').replace(' ', '').replace(',', '.')
     m = re.match(r'^-?\d+(\.\d+)?', x)
     return float(m.group(0)) if m else None
+_HDR = []
 def parse_div_html(h):
     P = _TP(); P.feed(h); out = []
     for tab in P.tabs:
@@ -74,11 +75,14 @@ def parse_div_html(h):
             if any('реестр' in c for c in low): hdr = low; break
         if not hdr: continue
         idate = [i for i, c in enumerate(hdr) if 'реестр' in c][0]
-        iv = [i for i, c in enumerate(hdr) if ('дивиденд' in c or 'выплат' in c or 'размер' in c) and '%' not in c and 'доход' not in c and 'реестр' not in c and 'дата' not in c]
+        iv = [i for i, c in enumerate(hdr) if ('дивиденд' in c or 'выплат' in c or 'размер' in c) and '%' not in c and 'доход' not in c and 'реестр' not in c and 'дата' not in c and 'год' not in c and 'период' not in c]
+        iv.sort(key=lambda i: (0 if 'руб' in hdr[i] or 'акци' in hdr[i] else 1, i))
+        if not _HDR: _HDR.append(1); print('таблица дивидендов, заголовок:', hdr, 'колонка значения:', iv[:2], 'строка:', tab[1] if len(tab) > 1 else None)
         if not iv: continue
         for r in tab:
             if len(r) <= max(idate, iv[0]): continue
             d = _date(r[idate]); v = _num(r[iv[0]])
+            if v is not None and float(v).is_integer() and 1990 <= v <= 2100: continue   # это год, а не дивиденд
             if d and v is not None and 0 < v < 100000: out.append((d, v))
     return out
 def corp_cal_alt():
