@@ -318,7 +318,7 @@ function skinMenu(open){
 }
 
 /* ---------- прогресс ---------- */
-var P=(function(){try{var o=JSON.parse(store('eng:'+PROF)||'{}')||{};return {done:o.done||{},test:o.test||{},ex:o.ex||{},cards:o.cards||{},days:o.days||{},mode:o.mode||'en',start:o.start||1,pl:o.pl||null}}catch(e){return {done:{},test:{},ex:{},cards:{},days:{},mode:'en',start:1,pl:null}}})();
+var P=(function(){try{var o=JSON.parse(store('eng:'+PROF)||'{}')||{};return {done:o.done||{},test:o.test||{},ex:o.ex||{},cards:o.cards||{},days:o.days||{},mode:o.mode||'en',start:o.start||13,pl:o.pl||null}}catch(e){return {done:{},test:{},ex:{},cards:{},days:{},mode:'en',start:1,pl:null}}})();
 function pSave(){store('eng:'+PROF,JSON.stringify(P))}
 function today(){return Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5)}
 function act(n){var d=today();P.days[d]=(P.days[d]||0)+(n||1);var ks=Object.keys(P.days);if(ks.length>400){ks.sort(function(a,b){return a-b}).slice(0,ks.length-400).forEach(function(k){delete P.days[k]})}}
@@ -441,7 +441,7 @@ function lessonRow(l){
 function renderHome(){
   setNav('home');document.title='English';
   var done=Object.keys(P.done).filter(function(k){return BYID[k]}).length,tot=LS.length,nx=nextLesson(),due=dueCount(),st=streak();
-  var h='<h1 class="pg">English: от A1 до B1</h1><p class="lead">'+tot+' уроков примерно по часу: теория, слова, диалог, упражнения с проверкой и мини-тест. Справочник и карточки слов — рядом. Начинать можно с любого урока, но по порядку проще.</p>';
+  var h='<h1 class="pg">English: от A2 до B1+</h1><p class="lead">'+tot+' уроков примерно по часу: теория, слова, диалог, упражнения с проверкой и мини-тест. Справочник и карточки слов — рядом. Базовый блок A1 свёрнут: начинаем с уровня A2. Нужно повторить основы — раскрой его ниже.</p>';
   h+='<div class="hero"><div class="box"><h3>Прогресс</h3><div class="big">'+done+' <small>из '+tot+' уроков</small></div><div class="bar2"><i style="width:'+Math.round(done/tot*100)+'%"></i></div>'
     +'<div class="stats"><span>Слов в карточках: <b>'+allCards()+'</b></span><span>Серия дней: <b>'+st+'</b></span><span>Пройдено часов: <b>'+done+'</b></span></div></div>';
   h+= nx?'<a class="box cont" href="#lesson/'+nx.id+'"><h3>'+(done?'Продолжить':'Начать')+'</h3><b>Урок '+nx.n+'. '+esc(nx.title)+'</b><small>'+esc(nx.short)+'</small><span class="btn sm" style="align-self:flex-start">Открыть урок</span></a>'
@@ -452,14 +452,16 @@ function renderHome(){
   if(due)h+='<a class="box cont" href="#words/study" style="margin-bottom:6px"><h3>Слова на сегодня</h3><b>'+due+' '+plural(due,['карточка','карточки','карточек'])+' ждут повторения</b><span class="btn sm" style="align-self:flex-start">Повторить</span></a>';
   h+='<div class="tools"><input type="search" id="lq" placeholder="Найти урок: Present, артикли, еда…" aria-label="Поиск урока"><button type="button" class="chip'+(HOME_F==='all'?' on':'')+'" data-hf="all">Все</button><button type="button" class="chip'+(HOME_F==='g'?' on':'')+'" data-hf="g">Грамматика</button><button type="button" class="chip'+(HOME_F==='t'?' on':'')+'" data-hf="t">Темы</button></div>';
   for(var u=1;u<=5;u++){var ls=LS.filter(function(l){return l.unit===u});if(!ls.length)continue;
-    h+='<div class="unit" data-u="'+u+'"><h2>'+UNITS[u][0]+'</h2><span>'+UNITS[u][1]+' · '+ls.length+' уроков</span></div><div data-ul="'+u+'">'+ls.map(lessonRow).join('')+'</div>'}
+    var base=ls.every(function(l){return l.n<P.start&&!P.done[l.id]});
+    h+='<div class="unit" data-u="'+u+'"'+(base?' data-base="1"':'')+'><h2>'+UNITS[u][0]+'</h2><span>'+UNITS[u][1]+' · '+ls.length+' уроков</span>'+(base?'<button type="button" class="chip" data-showbase="1">Показать</button>':'')+'</div><div data-ul="'+u+'">'+ls.map(lessonRow).join('')+'</div>'}
   h+='<div class="empty" id="lnone" hidden>Ничего не найдено.</div>';
   view.innerHTML=h;filterHome();
 }
+var SHOWBASE=false;
 function filterHome(){
   var q=($('#lq')||{}).value||'';q=q.toLowerCase().trim();var any=false;
   $$('.lrow').forEach(function(a){var ok=(HOME_F==='all'||a.getAttribute('data-f')===HOME_F)&&(!q||a.getAttribute('data-q').indexOf(q)>=0);a.hidden=!ok;if(ok)any=true});
-  $$('.unit').forEach(function(u){var box=$('[data-ul="'+u.getAttribute('data-u')+'"]');var vis=$$('.lrow',box).some(function(a){return !a.hidden});u.hidden=!vis;box.hidden=!vis});
+  $$('.unit').forEach(function(u){var box=$('[data-ul="'+u.getAttribute('data-u')+'"]');var vis=$$('.lrow',box).some(function(a){return !a.hidden});var fold=u.hasAttribute('data-base')&&!SHOWBASE&&!q;u.hidden=!vis;box.hidden=!vis||fold;var bt=$('[data-showbase]',u);if(bt)bt.textContent=fold?'Показать':'Скрыть'});
   var n=$('#lnone');if(n)n.hidden=any;
 }
 function plural(n,f){var m=n%10,c=n%100;return m===1&&c!==11?f[0]:(m>=2&&m<=4&&(c<10||c>=20)?f[1]:f[2])}
@@ -568,7 +570,7 @@ function renderRef(id){
   setNav('ref');
   if(!id){document.title='Справочник · English';
     view.innerHTML='<h1 class="pg">Справочник</h1><p class="lead">Таблицы и списки, к которым удобно возвращаться: времена, неправильные глаголы, артикли, предлоги, фразовые глаголы, слова по темам и разговорные фразы.</p><div class="refs">'
-     +RF.map(function(r){return '<a href="#ref/'+r.id+'"><b>'+esc(r.title)+'</b><small>'+esc(r.short)+'</small></a>'}).join('')+'</div>';return}
+     +RF.filter(function(r){return !/alfavit/.test(r.id)}).map(function(r){return '<a href="#ref/'+r.id+'"><b>'+esc(r.title)+'</b><small>'+esc(r.short)+'</small></a>'}).join('')+'</div>';return}
   var r=RF.filter(function(x){return x.id===id})[0];if(!r){location.hash='#ref';return}
   document.title=r.title+' · English';
   var i=RF.indexOf(r),pv=RF[i-1],nx=RF[i+1];
@@ -599,6 +601,7 @@ document.addEventListener('click',function(e){
   if(document.getElementById('thm')&&!t.closest('#thm'))skinMenu(false);
   if(b=t.closest('[data-sz]')){if(window.siteZoom)window.siteZoom(+b.getAttribute('data-sz'));return}
   if(b=t.closest('[data-go]')){var el=document.getElementById(b.getAttribute('data-go'));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(b=t.closest('[data-showbase]')){SHOWBASE=!SHOWBASE;filterHome();return}
   if(b=t.closest('[data-hf]')){HOME_F=b.getAttribute('data-hf');$$('[data-hf]').forEach(function(x){x.classList.toggle('on',x===b)});filterHome();return}
   if(b=t.closest('[data-eo]')){pickOpt(b);return}
   if(b=t.closest('[data-chk]')){var si=b.getAttribute('data-chk');checkSet(si==='T'?'T':+si);return}
