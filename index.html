@@ -180,7 +180,7 @@ h1.brand{line-height:0;margin:4px 0 14px}h1.brand .wm{height:clamp(52px,12vw,76p
   <p class="lead">Выбери профиль.</p>
   <div class="cards prof"><button type="button" class="card pf" data-p="artem"><span class="lock" data-lock="artem"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><em>пароль</em></span><div class="av a">А</div><b>Артем</b><span>Учёба и финансы</span></button><button type="button" class="card pf" data-p="nastya"><span class="lock" data-lock="nastya"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><em>пароль</em></span><div class="av n">Н</div><b>Настя</b><span>Учёба</span></button></div>
   <div class="zmr">Масштаб: <button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div>
-<p class="foot" id="appfoot">Приложение для Android: <a href="https://github.com/KlimentievA/konspekty/releases/latest/download/Hub.apk" style="color:inherit">скачать Hub.apk</a>. На iPhone: Safari → «Поделиться» → «На экран Домой».</p>
+<p class="foot" id="appfoot">Приложение для Android: <a href="https://github.com/klimentiev-a/konspekty/releases/latest/download/Hub.apk" style="color:inherit">скачать Hub.apk</a>. На iPhone: Safari → «Поделиться» → «На экран Домой».</p>
 </div>
 <div class="pin" hidden><div class="sh" role="dialog" aria-modal="true"><div class="av" id="pav"></div><b id="pname"></b><small>Введи пароль</small><input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Пароль"><div class="err" id="perr"></div><button type="button" class="go" id="pgo">Войти</button><button type="button" class="cancel" id="pcancel">Отмена</button></div></div>
 <script>
@@ -228,7 +228,7 @@ if(window.HubApp){try{var af=document.getElementById('appfoot');af.innerHTML='П
   var d=document.createElement('div');d.className='inst';d.setAttribute('role','dialog');
   d.innerHTML='<button class="x" aria-label="Закрыть">×</button><div class="hd"><img class="ic" src="icon-192.png?v=31" alt="" style="padding:0;border:0;background:none"><div><b>'+(ios?'Установи Hub на iPhone':'Приложение Hub для Android')+'</b><small>'+(ios?'Откроется во весь экран, как приложение':'Во весь экран, с обновлениями внутри')+'</small></div></div>'+
     (ios?'<ol><li>Нажми '+share+' «Поделиться» внизу Safari</li><li>Выбери '+plus+' «На экран Домой»</li><li>Нажми «Добавить» — готово</li></ol><span class="arr"></span>'
-        :'<a class="go" href="https://github.com/KlimentievA/konspekty/releases/latest/download/Hub.apk">Скачать Hub.apk</a>');
+        :'<a class="go" href="https://github.com/klimentiev-a/konspekty/releases/latest/download/Hub.apk">Скачать Hub.apk</a>');
   document.body.appendChild(d);
   function hide(){d.classList.remove('on');try{localStorage.setItem('hubInstallHide',String(Date.now()))}catch(e){}}
   d.querySelector('.x').onclick=hide;
