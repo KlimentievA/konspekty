@@ -32,13 +32,83 @@ def load(p, d=None):
 def save(p, o):
     json.dump(o, open(os.path.join(HERE, p), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 
+
+# ---------- запасной источник дивидендов: HTML-страницы (ISS перестал отдавать дивиденды) ----------
+from html.parser import HTMLParser
+class _TP(HTMLParser):
+    def __init__(self): super().__init__(); self.tabs = []; self._t = None; self._r = None; self._c = None
+    def handle_starttag(self, tag, a):
+        if tag == 'table': self._t = []; self.tabs.append(self._t)
+        elif tag == 'tr' and self._t is not None: self._r = []; self._t.append(self._r)
+        elif tag in ('td', 'th') and self._r is not None: self._c = []
+    def handle_endtag(self, tag):
+        if tag in ('td', 'th') and self._c is not None and self._r is not None: self._r.append(' '.join(''.join(self._c).split())); self._c = None
+        elif tag == 'tr': self._r = None
+        elif tag == 'table': self._t = None
+    def handle_data(self, d):
+        if self._c is not None: self._c.append(d)
+def _page(url, t=25):
+    req = urllib.request.Request(url, headers=dict(UA, **{'Accept': 'text/html,*/*', 'Accept-Language': 'ru'}))
+    b = urllib.request.urlopen(req, timeout=t).read()
+    h = b.decode('utf-8', 'replace')
+    if 'реестр' not in h.lower():
+        try: h2 = b.decode('cp1251', 'replace')
+        except Exception: h2 = h
+        if 'реестр' in h2.lower(): h = h2
+    return h
+def _date(x):
+    m = re.search(r'(\d{2})\.(\d{2})\.(\d{4})', x)
+    if m: return '%s-%s-%s' % (m.group(3), m.group(2), m.group(1))
+    m = re.search(r'(\d{4})-(\d{2})-(\d{2})', x)
+    return m.group(0) if m else None
+def _num(x):
+    x = x.replace('\xa0', '').replace(' ', '').replace(',', '.')
+    m = re.match(r'^-?\d+(\.\d+)?', x)
+    return float(m.group(0)) if m else None
+def parse_div_html(h):
+    P = _TP(); P.feed(h); out = []
+    for tab in P.tabs:
+        hdr = None
+        for r in tab[:4]:
+            low = [c.lower() for c in r]
+            if any('реестр' in c for c in low): hdr = low; break
+        if not hdr: continue
+        idate = [i for i, c in enumerate(hdr) if 'реестр' in c][0]
+        iv = [i for i, c in enumerate(hdr) if ('дивиденд' in c or 'выплат' in c or 'размер' in c) and '%' not in c and 'доход' not in c and 'реестр' not in c and 'дата' not in c]
+        if not iv: continue
+        for r in tab:
+            if len(r) <= max(idate, iv[0]): continue
+            d = _date(r[idate]); v = _num(r[iv[0]])
+            if d and v is not None and 0 < v < 100000: out.append((d, v))
+    return out
+def corp_cal_alt():
+    lim = (NOW - datetime.timedelta(days=430)).strftime('%Y-%m-%d'); items = []; ok = 0; shown = set()
+    for r in S.RU:
+        t = r[0]; got = None
+        for name, url in (('smartlab', 'https://smart-lab.ru/q/%s/dividend/' % t), ('dohod', 'https://www.dohod.ru/ik/analytics/dividend/%s' % t.lower())):
+            try:
+                h = _page(url); rows = parse_div_html(h)
+                if name not in shown: shown.add(name); print(name, t, 'байт', len(h), 'строк', len(rows), rows[:2])
+                if rows: got = rows; break
+            except Exception as e:
+                if name not in shown: shown.add(name); print(name, t, 'ошибка', str(e)[:120])
+        if got:
+            ok += 1
+            for d, v in got:
+                if d >= lim: items.append({'t': t, 'd': d, 'v': v, 'c': 'RUB'})
+        time.sleep(0.4)
+    print('альтернативный источник: эмитентов с данными', ok, 'записей', len(items))
+    return items, ok
+
 _DBG = []
 # ---------- дивиденды ----------
 def corp_cal():
     if not S: return
     lim = (NOW - datetime.timedelta(days=430)).strftime('%Y-%m-%d'); items = []; ok = 0
+    fails = 0
     for r in S.RU:
         t = r[0]
+        if fails >= 3 and ok == 0: break   # ISS не отдаёт дивиденды — не тратим время
         try:
             j = get('https://iss.moex.com/iss/securities/%s/dividends.json?iss.meta=off' % t, 15)
             if 'dividends' not in j:
@@ -51,8 +121,10 @@ def corp_cal():
                     items.append({'t': t, 'd': d, 'v': v, 'c': row[ix.get('currencyid', 0)] if 'currencyid' in ix else 'RUB'})
             ok += 1
         except Exception as e:
-            print('div', t, e)
+            fails += 1; print('div', t, e)
         time.sleep(0.15)
+    if ok < 5:
+        print('ISS дивиденды недоступны, пробую запасной источник'); items, ok = corp_cal_alt()
     if ok < 5:
         print('corp_cal: слишком мало ответов, файл не трогаем'); return
     items.sort(key=lambda x: x['d'], reverse=True)
