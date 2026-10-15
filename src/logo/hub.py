@@ -25,12 +25,18 @@ def word(c, letters='hub'):
         f, w = {'h': h, 'u': u, 'b': b}[ch](c, x); out += f; x += w + GAP
     return out, x - GAP
 RING = '#BDF7DF'   # мятное кольцо вокруг h: hub — точка, где всё сходится
+MW, MR, MH = 44, 56, 240     # знак значка: толщина, радиус арки, высота h (все концы скруглены)
+def mark_geo():
+    w = 2*MR + MW; s = 256 - w/2 + MW/2; e = s + 2*MR; top = 256 - MH/2; base = 256 + MH/2
+    ay = base - MH*0.66 + MR + MW/2
+    return s, e, top, base, ay
 def mark(c='#FFFFFF', ring=None):
-    """знак для значка: h в тонком кольце, по центру 512×512 (h чуть правее — у неё тяжёлая левая стойка)"""
-    f, w = h(c)
-    k = 0.80
-    glyph = f'<g transform="translate({256 + 5} 256) scale({k}) translate({-w/2} {-(ASC + BASE)/2})">{f}</g>'
-    return f'<circle cx="256" cy="256" r="190" fill="none" stroke="{ring or RING}" stroke-width="25"/>' + glyph
+    """знак для значка: h в тонком мятном кольце, строго по центру 512×512"""
+    s, e, top, base, ay = mark_geo()
+    st = f'fill="none" stroke="{c}" stroke-width="{MW}" stroke-linecap="round"'
+    return (f'<circle cx="256" cy="256" r="200" fill="none" stroke="{ring or RING}" stroke-width="12"/>'
+            f'<path d="M{s} {top+MW/2}V{base-MW/2}" {st}/>'
+            f'<path d="M{s} {ay}A{MR} {MR} 0 0 1 {e} {ay}V{base-MW/2}" {st}/>')
 GRAD = ('#22D39A', '#05704C')
 def defs(u):
     a, b_ = GRAD
