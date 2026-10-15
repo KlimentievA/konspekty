@@ -1120,9 +1120,9 @@ function finBlockRU(t){
 /* дивиденды */
 function dvPx(t){var l=(M.ru||{})[t];return l&&l.p?l.p:null}
 function vDivs(){
-  var F=XD.cal,h='<div class="sect"><h2>Дивиденды российских компаний</h2><p class="note" style="margin-top:0">Даты закрытия реестра и размер выплат по данным Мосбиржи (ISS) для компаний справочника сайта. Доходность — к текущей цене.</p>';
+  var F=XD.cal,h='<div class="sect"><h2>Дивиденды российских компаний</h2><p class="note" style="margin-top:0">Даты закрытия реестра и размер выплат по данным dohod.ru для компаний справочника сайта; прогнозные выплаты не показываются. Доходность — к текущей цене.</p>';
   if(F===undefined)return h+'<p class="empty">Загружаю…</p></div>';
-  if(!F||!F.items)return h+'<p class="empty">Календарь дивидендов пока пуст: сервер не получил данные Мосбиржи. Источник перепроверяется при каждом автообновлении, как только отдаст данные — таблица заполнится сама.</p></div>';
+  if(!F||!F.items)return h+'<p class="empty">Календарь дивидендов пока пуст: сервер не получил данные о дивидендах. Источник перепроверяется при каждом автообновлении, как только отдаст данные — таблица заполнится сама.</p></div>';
   var today=new Date().toISOString().slice(0,10),yr=new Date(Date.now()-365*864e5).toISOString().slice(0,10),up=F.items.filter(function(x){return x.d>=today}).sort(function(a,b){return a.d<b.d?-1:1}),past=F.items.filter(function(x){return x.d<today}),ttm={};
   past.forEach(function(x){if(x.d>=yr&&(x.c==='RUB'||x.c==='SUR'||!x.c))ttm[x.t]=(ttm[x.t]||0)+x.v});
   var row=function(x){var p=dvPx(x.t),y=p?x.v/p*100:null;return ['<a href="#markets/ru/'+x.t+'">'+esc(rname(x.t))+'</a> <small>'+x.t+'</small>',new Date(x.d+'T00:00:00').toLocaleDateString('ru-RU'),nf(x.v,2)+' ₽',y!=null?nf(y,1)+'%':'—']};
