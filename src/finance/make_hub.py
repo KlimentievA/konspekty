@@ -2,7 +2,7 @@
 """Главная Hub с профилями. Из шаблона src/finance/hub.html (стили, масштаб, подсказка об установке) собирает:
   index.html         — выбор профиля (Артем / Настя) и ввод пароля;
   artem.html         — разделы Артема: Учёба и Финансы;
-  nastya.html        — разделы Насти: Учёба;
+  nastya.html        — разделы Насти: Учёба, English;
   nastya-ucheba.html — Учёба Насти (пока пусто).
 Пароль сверяется по SHA-256 (в коде лежит только хэш), после ввода запоминается в localStorage и куки на год.
 Это замок от случайных посетителей: файлы сайта всё равно лежат в открытом репозитории.
@@ -214,7 +214,10 @@ artem_html = page('Hub · Артем', artem_body, 'artem')   # просто: А
 # ---------------- nastya.html ----------------
 nastya_cards = ('<div class="cards">\n    <div class="card u"><a class="cover" href="nastya-ucheba.html" aria-label="Учёба"></a>\n'
                 '      <div class="ic">§</div><b>Учёба</b><span>Расписание группы</span>\n'
-                '      <div class="links"><a href="nastya-ucheba.html">Открыть</a></div>\n    </div>\n  </div>')
+                '      <div class="links"><a href="nastya-ucheba.html">Открыть</a></div>\n    </div>\n'
+                '    <div class="card e"><a class="cover" href="english.html" aria-label="English"></a>\n'
+                '      <div class="ic">Aa</div><b>English</b><span>Курс A1 → B1: уроки, слова, справочник</span>\n'
+                '      <div class="links"><a href="english.html">Уроки</a><a href="english.html#words">Слова</a><a href="english.html#ref">Справочник</a></div>\n    </div>\n  </div>')
 nastya_body = ('<div class="w">\n  ' + topbar('index.html', 'Профили', 'nastya') + '\n  <h1>Настя</h1>\n  <p class="lead">Выбери раздел.</p>\n  '
                + nastya_cards + '\n  ' + foot + '\n</div>\n' + LOGOUT_JS)
 nastya_html = page('Hub · Настя', nastya_body, 'nastya')

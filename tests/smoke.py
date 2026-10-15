@@ -24,7 +24,7 @@ PAGES = ['index.html', 'artem.html', 'nastya.html', 'nastya-ucheba.html',
          'finance.html#markets', 'finance.html#markets/news', 'finance.html#markets/ru', 'finance.html#markets/us',
          'finance.html#markets/crypto', 'finance.html#markets/bonds', 'finance.html#markets/fx', 'finance.html#markets/cal',
          'finance.html#markets/ru/SBER', 'finance.html#markets/us/NVDA', 'finance.html#markets/crypto/BTC', 'finance.html#markets/idx/IMOEX',
-         'finance.html#world', 'finance.html#world/compare', 'finance.html#world/ranking', 'finance.html#world/life', 'finance.html#world/fav', 'finance.html#world/country/DEU', 'finance.html#world/companies', 'finance.html#world/ru-regions/Москва', 'finance.html#markets/week', 'finance.html#markets/macro', 'finance.html#markets/divs', 'finance.html#markets/events', 'finance.html#calc/yield', 'search.html', 'search.html?q=wacc', 'finance.html#world/sectors', 'finance.html#world/sectors/neft-gaz', 'finance.html#learn/marshrut', 'finance.html#learn/model-3-otchetov']
+         'finance.html#world', 'english.html', 'english.html#words', 'english.html#words/list', 'english.html#ref', 'english.html#ref/vremena', 'finance.html#world/compare', 'finance.html#world/ranking', 'finance.html#world/life', 'finance.html#world/fav', 'finance.html#world/country/DEU', 'finance.html#world/companies', 'finance.html#world/ru-regions/Москва', 'finance.html#markets/week', 'finance.html#markets/macro', 'finance.html#markets/divs', 'finance.html#markets/events', 'finance.html#calc/yield', 'search.html', 'search.html?q=wacc', 'finance.html#world/sectors', 'finance.html#world/sectors/neft-gaz', 'finance.html#learn/marshrut', 'finance.html#learn/model-3-otchetov']
 IGNORE = re.compile(r'Failed to fetch|NetworkError|Load failed|ResizeObserver')
 
 problems = []
@@ -38,7 +38,9 @@ with sync_playwright() as p:
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
         pg.goto(B + 'finance.html#learn'); pg.wait_for_timeout(800)
         chapters = sorted(set(pg.evaluate("Array.from(document.querySelectorAll('a[href^=\"#learn/\"]')).map(a=>a.getAttribute('href'))")))
-        for u in PAGES + ['finance.html' + h for h in chapters]:
+        pg.goto(B + 'english.html'); pg.wait_for_timeout(600)
+        lessons = sorted(set(pg.evaluate("Array.from(document.querySelectorAll('a[href^=\"#lesson/\"]')).map(a=>a.getAttribute('href'))")))
+        for u in PAGES + ['finance.html' + h for h in chapters] + ['english.html' + h for h in lessons]:
             errs.clear()
             pg.goto(B + u); pg.wait_for_timeout(2500 if 'markets' in u else 700)
             bad = [e for e in errs if not IGNORE.search(e)]
@@ -51,7 +53,7 @@ with sync_playwright() as p:
         ctx.close()
     br.close()
 srv.shutdown()
-print('Проверено страниц: %d × 2 размера экрана' % (len(PAGES) + len(chapters)))
+print('Проверено страниц: %d × 2 размера экрана' % (len(PAGES) + len(chapters) + len(lessons)))
 if problems:
     print('\n'.join('✗ ' + x for x in problems)); sys.exit(1)
 print('✓ ошибок нет')
