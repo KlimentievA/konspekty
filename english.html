@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><script>(function(){var T={"nastya": "2c54db437dd05987dc351662", "artem": "b1c788442fe8f0a18b955452"};function ok(){for(var p in T){try{if(localStorage.getItem('hub:auth:'+p)===T[p]){localStorage.setItem('hub:last',p);return true}}catch(e){}if(document.cookie.indexOf('hub_'+p+'='+T[p])>=0){try{localStorage.setItem('hub:last',p)}catch(e){}return true}}return false}if(!ok()){document.documentElement.style.visibility='hidden';var l='nastya';try{if(localStorage.getItem('hub:last')==='artem')l='artem'}catch(e){}var f=location.pathname.slice(location.pathname.lastIndexOf('/')+1)||'english.html';location.replace('index.html?login='+l+'&next='+encodeURIComponent(f+location.search+location.hash))}})();</script>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><script>(function(){var T={"nastya": "2c54db437dd05987dc351662"};function ok(){for(var p in T){try{if(localStorage.getItem('hub:auth:'+p)===T[p]){localStorage.setItem('hub:last',p);return true}}catch(e){}if(document.cookie.indexOf('hub_'+p+'='+T[p])>=0){try{localStorage.setItem('hub:last',p)}catch(e){}return true}}return false}if(!ok()){document.documentElement.style.visibility='hidden';var l='nastya';var f=location.pathname.slice(location.pathname.lastIndexOf('/')+1)||'english.html';location.replace('index.html?login='+l+'&next='+encodeURIComponent(f+location.search+location.hash))}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#F4F1E8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#171611" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="English">
@@ -292,7 +292,7 @@ function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localSto
 var view=$('#view');
 var D=JSON.parse($('#edata').textContent),LS=D.lessons,RF=D.refs,BYID={};
 LS.forEach(function(l,i){l.i=i;BYID[l.id]=l});
-var PROF=store('hub:last')==='artem'?'artem':'nastya';
+var PROF='nastya';
 $('#b-back').setAttribute('href',PROF+'.html');
 
 /* ---------- оформление (общее с разделом «Финансы») ---------- */
@@ -362,7 +362,8 @@ function itemHTML(it,si,ii){
 function setHTML(l,si){
   var items=itemsOf(l,si),h='';
   h+=items.map(function(it,ii){return itemHTML(it,si,ii)}).join('');
-  h+='<div class="sf"><button type="button" class="btn sm" data-chk="'+si+'">Проверить</button><button type="button" class="btn sm ghost" data-rst="'+si+'" hidden>Ещё раз</button><span class="sc" id="sc'+setKey(si)+'"></span></div>';
+  var allc=l.id!=='_pl'&&items.every(function(x){return x.t==='c'});
+  h+='<div class="sf">'+(allc?'':'<button type="button" class="btn sm" data-chk="'+si+'">Проверить</button>')+'<button type="button" class="btn sm ghost" data-rst="'+si+'" hidden>Ещё раз</button><span class="sc" id="sc'+setKey(si)+'"></span></div>';
   return h;
 }
 function scoreText(si){var st=RS.sets[setKey(si)];if(!st||!st.checked)return '';var ok=st.items.filter(function(x){return x&&x.ok}).length,n=st.items.length;return ok+' из '+n+(ok===n?' — отлично!':ok/n>=.7?' — хорошо':' — повтори теорию и попробуй ещё раз')}
@@ -371,6 +372,7 @@ function checkSet(si){
   items.forEach(function(it,ii){
     var box=document.getElementById('e'+key+'-'+ii);if(!box)return;
     var fb=$('.fb',box),ok=false,html='';
+    if(it.t==='c'&&box.getAttribute('data-done')){st.items[ii]={ok:!!(RS.inst&&RS.inst[key+':'+ii])};return}
     if(it.t==='c'){
       var sel=$('.eo.sel',box),j=sel?+sel.getAttribute('data-eo'):-1;ok=j===it.a;
       $$('.eo',box).forEach(function(b,k){b.disabled=true;b.classList.remove('sel');if(k===it.a)b.classList.add('ok');else if(k===j)b.classList.add('no')});
@@ -386,7 +388,7 @@ function checkSet(si){
     box.classList.toggle('ok',ok);box.classList.toggle('bad',!ok);
     st.items[ii]={ok:ok,forced:false};
   });
-  $('[data-chk="'+si+'"]').hidden=true;$('[data-rst="'+si+'"]').hidden=false;
+  var cb=$('[data-chk="'+si+'"]');if(cb)cb.hidden=true;$('[data-rst="'+si+'"]').hidden=false;
   finishSet(si);
 }
 function finishSet(si){
@@ -399,7 +401,7 @@ function finishSet(si){
 }
 function resetSet(si){
   var l=RS.l,key=setKey(si),wrap=document.getElementById('w'+key);
-  RS.sets[key]=null;wrap.innerHTML=setHTML(l,si);
+  RS.sets[key]=null;if(RS.inst)Object.keys(RS.inst).forEach(function(k){if(k.indexOf(key+':')===0)delete RS.inst[k]});wrap.innerHTML=setHTML(l,si);
   if(si==='T'){var tb=$('#tres');if(tb)tb.hidden=true}
 }
 function forceItem(key,ii){
@@ -408,6 +410,23 @@ function forceItem(key,ii){
   box.classList.remove('bad');box.classList.add('ok');var inp=$('.ei',box);if(inp){inp.classList.remove('no');inp.classList.add('ok')}
   var fb=$('.fb',box);fb.innerHTML='<span class="a">Засчитано.</span> Запомни и такой вариант.';
   finishSet(si);
+}
+
+function pickOpt(b){
+  var it=b.closest('.it'),si=it.getAttribute('data-si'),key=setKey(si),ii=+it.getAttribute('data-ii'),st=RS&&RS.sets[key];
+  if((st&&st.checked)||it.getAttribute('data-done'))return;
+  var l=RS.l,items=itemsOf(l,si==='T'?'T':+si);
+  if(l.id==='_pl'){$$('.eo',it).forEach(function(x){x.classList.toggle('sel',x===b)});
+    if($$('#wT .it').every(function(x){return $('.eo.sel',x)}))checkSet('T');return}
+  var item=items[ii],j=+b.getAttribute('data-eo'),ok=j===item.a;
+  it.setAttribute('data-done','1');RS.inst=RS.inst||{};RS.inst[key+':'+ii]=ok;
+  $$('.eo',it).forEach(function(x,k){x.disabled=true;if(k===item.a)x.classList.add('ok');else if(k===j)x.classList.add('no')});
+  var html=ok?'':'Верно: <span class="a">'+esc(item.o[item.a])+'</span>';if(item.e)html+=(html?'<br>':'')+'<span>'+esc(item.e)+'</span>';
+  var fb=$('.fb',it);fb.hidden=!html;fb.innerHTML=html;it.classList.add(ok?'ok':'bad');
+  var sk=si==='T'?'T':+si;
+  if(items.every(function(x){return x.t==='c'})&&items.every(function(x,k){return RS.inst[key+':'+k]!==undefined})){
+    RS.sets[key]={checked:true,items:items.map(function(x,k){return {ok:RS.inst[key+':'+k]}})};
+    var rb=$('[data-rst="'+si+'"]');if(rb)rb.hidden=false;finishSet(sk)}
 }
 
 /* ---------- страницы ---------- */
@@ -581,7 +600,7 @@ document.addEventListener('click',function(e){
   if(b=t.closest('[data-sz]')){if(window.siteZoom)window.siteZoom(+b.getAttribute('data-sz'));return}
   if(b=t.closest('[data-go]')){var el=document.getElementById(b.getAttribute('data-go'));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(b=t.closest('[data-hf]')){HOME_F=b.getAttribute('data-hf');$$('[data-hf]').forEach(function(x){x.classList.toggle('on',x===b)});filterHome();return}
-  if(b=t.closest('[data-eo]')){var it=b.closest('.it'),key=setKey(it.getAttribute('data-si')),st=RS&&RS.sets[key];if(st&&st.checked)return;$$('.eo',it).forEach(function(x){x.classList.toggle('sel',x===b)});return}
+  if(b=t.closest('[data-eo]')){pickOpt(b);return}
   if(b=t.closest('[data-chk]')){var si=b.getAttribute('data-chk');checkSet(si==='T'?'T':+si);return}
   if(b=t.closest('[data-rst]')){var s2=b.getAttribute('data-rst');resetSet(s2==='T'?'T':+s2);return}
   if(b=t.closest('[data-force]')){var q=b.getAttribute('data-force').split(':');forceItem(q[0],+q[1]);return}

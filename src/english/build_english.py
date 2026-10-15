@@ -54,9 +54,9 @@ prof = dict(re.findall(r"'(\w+)': \('[^']+', '(\d+)'", src))
 tok = {p: hashlib.sha256(('hub:%s:%s' % (p, pw)).encode()).hexdigest()[:24] for p, pw in prof.items()}
 gate = ("<script>(function(){var T=%s;function ok(){for(var p in T){try{if(localStorage.getItem('hub:auth:'+p)===T[p]){localStorage.setItem('hub:last',p);return true}}catch(e){}"
         "if(document.cookie.indexOf('hub_'+p+'='+T[p])>=0){try{localStorage.setItem('hub:last',p)}catch(e){}return true}}return false}"
-        "if(!ok()){document.documentElement.style.visibility='hidden';var l='nastya';try{if(localStorage.getItem('hub:last')==='artem')l='artem'}catch(e){}"
+        "if(!ok()){document.documentElement.style.visibility='hidden';var l='nastya';"
         "var f=location.pathname.slice(location.pathname.lastIndexOf('/')+1)||'english.html';location.replace('index.html?login='+l+'&next='+encodeURIComponent(f+location.search+location.hash))}})();</script>"
-        ) % json.dumps({k: tok[k] for k in ('nastya', 'artem')})
+        ) % json.dumps({k: tok[k] for k in ('nastya',)})
 html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">' + gate, 1)
 open(out, 'w', encoding='utf-8').write(html)
 words = sum(len(l['words']) for l in lessons)
