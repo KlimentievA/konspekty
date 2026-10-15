@@ -1,33 +1,12 @@
-2026-10-15T08:47Z
+2026-10-15T09:39Z
 ответ без dividends: ['description', 'boards'] {'description': {'columns': ['name', 'title', 'value', 'type', 'sort_order', 'is_hidden', 'precision'], 'data': [['SECID', 'Код ценной бумаги', 'SBER', 'string', 1, 0, None], ['ISSUENAME', 'Наименование ценной бумаги', 'Акции обыкновенные', 'string', 2, 0, None], ['NAME', 'Полное наименование', 'Сбе
 div SBER 'dividends'
 div LKOH 'dividends'
 div ROSN 'dividends'
-div NVTK 'dividends'
-div SIBN 'dividends'
-div GAZP 'dividends'
-div GMKN 'dividends'
-div TATN 'dividends'
-div PLZL 'dividends'
-div YDEX 'dividends'
-div TRNFP 'dividends'
-div SNGS 'dividends'
-div T 'dividends'
-div VTBR 'dividends'
-div OZON 'dividends'
-div PHOR 'dividends'
-div CHMF 'dividends'
-div X5 'dividends'
-div NLMK 'dividends'
-div RUAL 'dividends'
-div MOEX 'dividends'
-div MTSS 'dividends'
-div IRAO 'dividends'
-div MGNT 'dividends'
-div ALRS 'dividends'
-div HEAD 'dividends'
-div AFLT 'dividends'
-div POSI 'dividends'
-corp_cal: слишком мало ответов, файл не трогаем
+ISS дивиденды недоступны, пробую запасной источник
+smartlab SBER ошибка The read operation timed out
+dohod SBER байт 40089 строк 26 [('2026-07-20', 2026.0), ('2025-07-18', 2025.0)]
+альтернативный источник: эмитентов с данными 28 записей 42
+corp_cal 42 записей по 28 эмитентам
 fin: свежий, пропуск
 digest: база 2026-10-14 дней 1 новостей 8
