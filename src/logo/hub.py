@@ -28,7 +28,7 @@ RING = '#BDF7DF'   # мятное кольцо вокруг h: hub — точк�
 def mark(c='#FFFFFF', ring=None):
     """знак для значка: h в тонком кольце, по центру 512×512 (h чуть правее — у неё тяжёлая левая стойка)"""
     f, w = h(c)
-    k = 0.68
+    k = 0.75
     glyph = f'<g transform="translate({256 + 5} 256) scale({k}) translate({-w/2} {-(ASC + BASE)/2})">{f}</g>'
     return f'<circle cx="256" cy="256" r="148" fill="none" stroke="{ring or RING}" stroke-width="20"/>' + glyph
 GRAD = ('#22D39A', '#05704C')
