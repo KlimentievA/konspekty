@@ -54,7 +54,8 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
 .emap .ob{stroke:var(--surface);stroke-width:1;vector-effect:non-scaling-stroke;cursor:pointer}
 .emap .ob.ref{fill:#E8604C}.emap .ob.field{fill:#A87BE0}.emap .ob.lng{fill:#2FD3AE}.emap .ob.port{fill:#6C8FB5}
 .emap .ob.on{stroke:var(--fg);stroke-width:2.5}
-.emap .dimo .ob:not(.on){opacity:.35}
+.emap .ob.hl{stroke:var(--fg);stroke-width:2.5}
+.emap .dimo .ob:not(.on):not(.hl){opacity:.3}
 .regs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.regs .chip{min-height:32px;padding:5px 12px;font-size:13px}.regs .chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
 .tools .lbl{font:600 11.5px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-right:4px}
 .sym{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px}
@@ -73,6 +74,19 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
 .qz .q{margin:12px 0 4px;font:600 15.5px/1.4 var(--sans)}.qz .o{display:block;width:100%;text-align:left;margin:5px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);font:400 15px/1.35 var(--sans);cursor:pointer}
 .qz .o.ok{background:color-mix(in srgb,var(--up) 22%,var(--bg));border-color:var(--up)}.qz .o.no{background:color-mix(in srgb,var(--down) 22%,var(--bg));border-color:var(--down)}
 .qz .ex{margin:4px 0 8px;font:400 14px/1.5 var(--sans);color:var(--muted)}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:6px 0 14px;padding-bottom:4px;position:sticky;top:56px;z-index:5;background:var(--bg);scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:8px 16px;font:500 14.5px var(--sans);cursor:pointer;white-space:nowrap}.tabs button.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+section[hidden]{display:none}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}.presets button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:12px;padding:8px 14px;font:600 14px var(--sans);cursor:pointer}.presets button:hover{border-color:var(--accent)}
+.pt{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}.pt div{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}.pt b{display:block;font:600 22px var(--sans);font-variant-numeric:tabular-nums}.pt span{font:500 12.5px var(--sans);color:var(--muted)}.pt svg{display:block;width:100%;height:34px;margin-top:6px}.pt .up{color:var(--up)}.pt .dn{color:var(--down)}
+.srow{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font:400 14.5px var(--sans)}.srow:last-child{border:0}.srow span:first-child{flex:1}.srow b{font-variant-numeric:tabular-nums}.up{color:var(--up)}.dn{color:var(--down)}
+.nw{padding:9px 0;border-bottom:1px solid var(--line)}.nw:last-child{border:0}.nw a{color:var(--fg);font:600 15px/1.4 var(--sans);text-decoration:none}.nw a:hover{text-decoration:underline}.nw .m{color:var(--muted);font:400 12.5px var(--sans)}
+.co{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}.co button{text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);cursor:pointer;font:400 14px/1.45 var(--sans)}.co button:hover{border-color:var(--accent)}.co b{display:block;font:600 16px var(--sans)}.co em{font-style:normal;color:var(--muted);font-size:12.5px}.co .px{margin-top:6px;font:600 15px var(--sans);font-variant-numeric:tabular-nums}
+.sl label{display:block;margin:10px 0;font:500 14.5px var(--sans)}.sl input[type=range]{width:100%}.sl .ck{display:flex;gap:8px;align-items:center}
+.modes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}.modes .chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tl{position:relative;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}.tl .e{position:relative;padding:0 0 18px}.tl .e::before{content:"";position:absolute;left:-25px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--accent)}.tl .d{font:600 12.5px var(--sans);color:var(--muted)}.tl h4{margin:2px 0;font:600 15.5px/1.35 var(--sans)}.tl p{margin:2px 0;font:400 14.5px/1.5 var(--sans)}.tl a{color:var(--accent2);font-weight:600;font-size:13px}
+.cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:6px 12px;align-items:center;margin-top:8px;font:400 15px var(--sans)}.cmp .l{color:var(--muted);text-align:center;font-size:12.5px}.cmp .v{font-weight:600;font-variant-numeric:tabular-nums}.cmp .v.w{color:var(--up)}.cmp .v:nth-child(3n+1){text-align:right}
 </style></head><body>
 <header class="top" id="top"><div class="bar">
  <a class="home" id="b-back" href="index.html" aria-label="Назад"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
@@ -80,8 +94,12 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
  <div class="zm" role="group" aria-label="Масштаб страницы"><button type="button" data-sz="-1" aria-label="Уменьшить">A−</button><button type="button" class="szv" data-sz="0" title="Сбросить масштаб">100%</button><button type="button" data-sz="1" aria-label="Увеличить">A+</button></div>
 </div></header>
 <main>
-<h1 class="pg">Карта нефти и газа</h1>
-<p class="lead">НПЗ, месторождения, заводы СПГ и порты мира, а также потоки нефти и газа между странами. Нажми на значок или линию, чтобы узнать подробности. На телефоне карта двигается двумя пальцами или кнопками +/−.</p>
+<h1 class="pg">Нефть и газ</h1>
+<nav class="tabs" id="tabs" aria-label="Разделы"></nav>
+
+<section data-tab="map">
+<p class="lead">Нажми на значок или линию, чтобы узнать подробности. Карта двигается двумя пальцами или кнопками +/−.</p>
+<div class="presets" id="presets"></div>
 <div class="tools" id="tools"></div>
 <div class="regs" id="regs"></div>
 <div class="emap" id="emap"><svg id="esvg" role="img" aria-label="Карта нефтяной и газовой отрасли"></svg>
@@ -91,24 +109,61 @@ h1.pg{margin:6px 0 4px;font:600 clamp(26px,5.5vw,36px)/1.15 var(--serif);letter-
 <div id="sel"></div>
 <div class="card2"><h3 id="ol-t">Объекты</h3><table class="rl" id="ol"></table></div>
 <div class="card2" id="rcard"><h3>Маршруты потоков</h3><table class="rl" id="rl"></table></div>
-<div class="two">
- <div class="card2"><h3>Рейтинги</h3><div class="meta">по данным, показанным на карте</div><h3 style="font-size:14px;margin-top:10px">Крупнейшие НПЗ, тыс. барр/сут</h3><ol class="rk" id="rk1"></ol></div>
- <div class="card2"><h3>Крупнейшие заводы СПГ</h3><div class="meta">млн тонн в год</div><ol class="rk" id="rk2"></ol><h3 style="font-size:14px;margin-top:14px">Рекорды</h3><div id="rec"></div></div>
-</div>
+</section>
+
+<section data-tab="market" hidden>
+<p class="lead">Цены на нефть и газ, как они двигаются сегодня, главные новости и сделки.</p>
+<div class="card2"><h3>Цены сейчас</h3><div class="meta" id="pmeta"></div><div class="pt" id="pt"></div></div>
+<div class="card2"><h3>Нефтяные акции за день</h3><div class="meta">как сегодня двигались нефть и бумаги нефтяных компаний</div><div id="ostk"></div></div>
+<div class="card2"><h3>Новости нефти и газа</h3><div class="meta" id="nmeta">из ленты сайта</div><div id="nws"></div></div>
+<div class="card2"><h3>Сделки и события</h3><div id="deals"></div></div>
 <div class="card2"><h3>Мир в цифрах</h3><div class="meta">нефтяной рынок 2026 года, данные МЭА и EIA</div><div class="wt" id="wt"></div></div>
+</section>
+
+<section data-tab="countries" hidden>
+<p class="lead">Добыча нефти, цены на бензин и сравнение стран.</p>
+<div class="card2"><h3>Сравнить страны</h3><div class="calc" style="margin:6px 0"><label>Первая<select id="cmp-a" class="srch"></select></label><label>Вторая<select id="cmp-b" class="srch"></select></label></div><div id="cmp"></div></div>
 <div class="two">
  <div class="card2"><h3>Добыча нефти по странам</h3><div class="meta">сырая нефть с конденсатом, млн барр/сут, 2025, EIA</div><div id="prod"></div></div>
  <div class="card2"><h3>Цена бензина по странам</h3><div class="meta" id="gmeta"></div><div class="calc" style="margin:6px 0 0"><input class="srch" id="gq" placeholder="Найти страну" autocomplete="off"><button type="button" class="chip on" data-cur="usd">$ за литр</button><button type="button" class="chip" data-cur="rub">₽ за литр</button><button type="button" class="chip" data-gs="asc">Сначала дешёвые</button></div><div class="gp" id="gp"></div></div>
 </div>
+<div class="two">
+ <div class="card2"><h3>Крупнейшие НПЗ, тыс. барр/сут</h3><div class="meta">по данным, показанным на карте</div><ol class="rk" id="rk1"></ol></div>
+ <div class="card2"><h3>Крупнейшие заводы СПГ</h3><div class="meta">млн тонн в год</div><ol class="rk" id="rk2"></ol><h3 style="font-size:14px;margin-top:14px">Рекорды</h3><div id="rec"></div></div>
+</div>
 <div class="card2"><h3>Из чего складывается цена бензина</h3><div class="meta">США, ориентировочно по данным EIA; доли меняются по годам и регионам</div>
  <div class="bar2"><i style="width:54%;background:#E8A33D">Нефть 54%</i><i style="width:14%;background:#E8604C">Переработка 14%</i><i style="width:17%;background:#6C8FB5">Доставка и продажа 17%</i><i style="width:15%;background:#7A8B99">Налоги 15%</i></div>
  <div class="bl"><span><b style="background:#E8A33D"></b>сырая нефть</span><span><b style="background:#E8604C"></b>НПЗ</span><span><b style="background:#6C8FB5"></b>распределение и розница</span><span><b style="background:#7A8B99"></b>налоги</span></div>
- <p style="margin:10px 0 0;font:400 14.5px/1.55 var(--sans)">Поэтому бензин дорожает не только при росте нефти: на цену влияют маржа НПЗ (когда заводы стоят на ремонте, она растёт), логистика и налоги. В странах с высокими акцизами, например в Европе, доля налогов заметно больше.</p></div>
+ <p style="margin:10px 0 0;font:400 14.5px/1.55 var(--sans)">Поэтому бензин дорожает не только при росте нефти: на цену влияют маржа НПЗ, логистика и налоги. В странах с высокими акцизами, например в Европе, доля налогов заметно больше.</p></div>
 <div class="card2"><h3>Калькулятор: из барреля — в топливо</h3><div class="meta">типичный выход, около 42 галлонов нефти (≈ 159 л) на барреле; у разных НПЗ он отличается</div>
  <div class="calc"><label>Баррелей<input id="c-b" type="number" min="0" step="1" value="1000" inputmode="decimal"></label><label>Цена нефти, $ за баррель<input id="c-p" type="number" min="0" step="0.5" value="70" inputmode="decimal"></label></div>
  <div class="cres" id="c-r"></div></div>
-<div class="card2 qz"><h3>Мини-викторина</h3><div id="qz"></div></div>
-<div class="card2"><h3>Сделки и события</h3><div id="deals"></div></div>
+</section>
+
+<section data-tab="companies" hidden>
+<p class="lead">Нефтегазовые компании: нажми на компанию, и её объекты подсветятся на карте.</p>
+<div class="co" id="co"></div>
+</section>
+
+<section data-tab="scenario" hidden>
+<p class="lead">Что будет, если закрыть Ормузский пролив? Двигай ползунки и смотри грубую оценку.</p>
+<div class="card2"><h3>Сценарий: закрыт Ормузский пролив</h3>
+ <div class="sl"><label>Сколько дней: <b id="s-dv">30</b><input id="s-d" type="range" min="1" max="120" value="30"></label>
+ <label>Какая доля потока заблокирована: <b id="s-sv">100%</b><input id="s-s" type="range" min="10" max="100" step="5" value="100"></label>
+ <label class="ck"><input id="s-b" type="checkbox" checked> учесть обходные трубопроводы (Саудовская Аравия, ОАЭ)</label></div>
+ <div class="cres" id="s-r"></div><p class="foot" id="s-n"></p></div>
+</section>
+
+<section data-tab="games" hidden>
+<p class="lead">Проверь себя: викторины по отрасли.</p>
+<div class="card2 qz"><h3>Викторина</h3><div class="modes" id="qmodes"></div><div id="qz"></div></div>
+</section>
+
+<section data-tab="timeline" hidden>
+<p class="lead">Главные события отрасли и кризиса 2026 года.</p>
+<div class="card2"><div id="tl"></div></div>
+</section>
+
 <p class="foot" id="foot"></p>
 </main>
 <!--DATA-->
@@ -123,7 +178,7 @@ var SK={swiss:'light',sepia:'light',ocean:'light',graphite:'dark',forest:'dark',
 (function(){var id=store('fin:skin')||'auto';if(SK[id]){root.setAttribute('data-skin',id);root.setAttribute('data-theme',SK[id])}else if(id==='light'||id==='dark'){root.setAttribute('data-theme',id)}else{var t=store('theme');if(t==='dark'||t==='light')root.setAttribute('data-theme',t)}})();
 var D=JSON.parse($('#edata').textContent),R=D.routes,CK=D.chokes,OB=D.objects,REG=D.regions,UN={oil:'млн барр/сут',gas:'млрд м³/год',lng:'млн т/год'},KN={oil:'Нефть',gas:'Газ (труба)',lng:'СПГ'},COL={oil:'#E8A33D',gas:'#4EA8DE',lng:'#2FD3AE'};
 var TN={ref:'НПЗ',field:'Месторождения',lng:'СПГ',port:'Порты'},TS={ref:'Нефтеперерабатывающий завод',field:'Месторождение',lng:'Завод или терминал СПГ',port:'Порт или нефтебаза'},TC={ref:'#E8604C',field:'#A87BE0',lng:'#2FD3AE',port:'#6C8FB5'};
-var F={flows:false,kind:'all',ck:false,sel:null,ob:null,lay:{ref:true,field:true,lng:true,port:true},reg:'world'};
+var F={flows:false,kind:'all',ck:false,sel:null,ob:null,lay:{ref:true,field:true,lng:true,port:true},reg:'world',hl:null};
 function nf(v){return String(v).replace('.',',')}
 function wd(r){var v=r.v||0;return r.kind==='oil'?1.4+Math.sqrt(v)*1.5:r.kind==='gas'?1.4+Math.sqrt(v)*.6:1.4+Math.sqrt(v)*.85}
 function lib(src,ok){return window[ok]?Promise.resolve():new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
@@ -169,11 +224,11 @@ function apply(){
     g.selectAll('g.rg').style('display',function(){var r=byId(this.getAttribute('data-id'));return F.flows&&visR(r)?null:'none'}).classed('sel',function(){return this.getAttribute('data-id')===F.sel});
     g.select('#rts').classed('dim',!!F.sel);
     g.select('#cks').style('display',F.ck?null:'none');
-    g.selectAll('.ob').style('display',function(o){return visO(o)?null:'none'}).classed('on',function(o){return o.id===F.ob});
-    g.select('#obs').classed('dimo',F.ob!=null);
+    g.selectAll('.ob').style('display',function(o){return visO(o)?null:'none'}).classed('on',function(o){return o.id===F.ob}).classed('hl',function(o){return !!F.hl&&F.hl.indexOf(o.id)>=0});
+    g.select('#obs').classed('dimo',F.ob!=null||!!F.hl);
     g.selectAll('g.rg').each(function(){if(this.getAttribute('data-id')===F.sel)this.parentNode.appendChild(this)});
   }
-  list();card();
+  presetDraw();list();card();
 }
 function capShort(o){return o.t==='ref'?nf(o.v)+' тыс. барр/сут':o.t==='lng'&&o.v?nf(o.v)+' млн т/год':o.cap}
 function list(){
@@ -187,7 +242,7 @@ function list(){
 }
 function card(){
   var o=F.ob!=null&&OB[F.ob],r=F.sel&&byId(F.sel);
-  if(o){$('#sel').innerHTML='<div class="card2"><h3>'+esc(o.n)+'</h3><div class="meta">'+TS[o.t]+' · '+esc(o.c)+'</div><div style="font:600 20px/1.3 var(--sans);margin:2px 0 6px">'+(o.t==='field'?'Добыча: ':o.t==='ref'?'Переработка: ':o.t==='lng'?'Мощность: ':'')+esc(o.cap)+'</div><dl class="facts"><dt>Владелец</dt><dd>'+esc(o.o)+'</dd><dt>Сырьё и рынки</dt><dd>'+esc(o.f)+'</dd><dt>Акции</dt><dd>'+esc(o.st||'—')+'</dd></dl><div class="fk">'+esc(o.fact)+'</div></div>';return}
+  if(o){$('#sel').innerHTML='<div class="card2"><h3>'+esc(o.n)+'</h3><div class="meta">'+TS[o.t]+' · '+esc(o.c)+'</div><div style="font:600 20px/1.3 var(--sans);margin:2px 0 6px">'+(o.t==='field'?'Добыча: ':o.t==='ref'?'Переработка: ':o.t==='lng'?'Мощность: ':'')+esc(o.cap)+'</div><dl class="facts"><dt>Владелец</dt><dd>'+esc(o.o)+'</dd><dt>Сырьё и рынки</dt><dd>'+esc(o.f)+'</dd><dt>Акции</dt><dd>'+esc(o.st||'—')+'</dd></dl><div class="fk">'+esc(o.fact)+'</div>'+objNews(o)+'</div>';return}
   if(r){$('#sel').innerHTML='<div class="card2"><h3>'+esc(r.name)+'</h3><div class="meta">'+KN[r.kind]+' · '+(r.sea?'морской путь':'трубопровод')+' · '+(r.off?'не работает':nf(r.v)+' '+UN[r.kind])+'</div><p>'+esc(r.note)+'</p></div>';return}
   $('#sel').innerHTML='';
 }
@@ -211,7 +266,7 @@ document.addEventListener('click',function(e){
   if(t.closest('#zout')){svg.transition().duration(200).call(zoom.scaleBy,1/1.6);return}
   if(t.closest('#zrst')){svg.transition().duration(250).call(zoom.transform,d3.zoomIdentity);return}
   if(b=t.closest('.qz .o')){qzPick(b);return}
-  if(t.closest('#emap')){F.sel=null;F.ob=null;tip(null);apply()}
+  if(t.closest('#emap')){F.sel=null;F.ob=null;F.hl=null;tip(null);apply()}
 });
 document.addEventListener('pointermove',function(e){
   if(e.pointerType==='touch')return;
@@ -274,8 +329,131 @@ document.addEventListener('click',function(e){if(e.target.closest('[data-qn]')){
 function deals(){
   $('#deals').innerHTML=(D.deals||[]).map(function(x){return '<div class="dl"><div class="m">'+esc(x.d)+' · '+esc(x.s)+'</div><h4>'+esc(x.t)+'</h4><p>'+esc(x.x)+'</p><a href="'+esc(x.u)+'" target="_blank" rel="noopener">Источник</a>'+(x.r?'<button type="button" data-deal="'+esc(x.r)+'">Показать на карте</button>':'')+'</div>'}).join('')+'<p class="foot">Подборка на '+esc(D.dealsAsOf||'')+' из открытых источников; обновляется вручную, не поток в реальном времени.</p>';
 }
-$('#foot').innerHTML='Мощности и объёмы — округлённые оценки по открытым данным (компании, EIA, Energy Institute, IEA, GIIGNL), у разных источников и в разные годы они отличаются. Положение значков и маршруты схематичные. Это не данные в реальном времени и не инвестиционная рекомендация.';
-tools();rankings();stats();calc();qzDraw();deals();
+/* ---- вкладки ---- */
+var TABS=[['map','Карта'],['market','Рынок'],['countries','Страны'],['companies','Компании'],['scenario','Сценарий'],['games','Игры'],['timeline','Хронология']];
+function showTab(id){
+  if(!TABS.some(function(t){return t[0]===id}))id='map';
+  document.querySelectorAll('section[data-tab]').forEach(function(s){s.hidden=s.getAttribute('data-tab')!==id});
+  $('#tabs').innerHTML=TABS.map(function(t){return '<button type="button" data-tab="'+t[0]+'" class="'+(t[0]===id?'on':'')+'">'+t[1]+'</button>'}).join('');
+  if(id==='market')loadNews();
+  if(id==='companies')coDraw();
+}
+function curTab(){return (location.hash||'#map').slice(1)}
+window.addEventListener('hashchange',function(){showTab(curTab());window.scrollTo(0,0)});
+document.addEventListener('click',function(e){var b=e.target.closest('#tabs [data-tab]');if(b){var id=b.getAttribute('data-tab');if(location.hash==='#'+id)showTab(id);else location.hash=id;window.scrollTo(0,0)}});
+/* ---- пресеты ---- */
+var PR=[['all','Всё'],['oil','Нефть'],['gas','Газ'],['lng','СПГ'],['ref','Переработка']];
+function preset(p){
+  F.ob=null;F.sel=null;F.hl=null;F.reg='world';
+  var L={ref:0,field:0,lng:0,port:0};
+  if(p==='all'){L={ref:1,field:1,lng:1,port:1};F.flows=false}
+  if(p==='oil'){L={ref:1,field:1,port:1,lng:0};F.flows=true;F.kind='oil'}
+  if(p==='gas'){L={field:1,lng:1,ref:0,port:0};F.flows=true;F.kind='gas'}
+  if(p==='lng'){L={lng:1,port:1,ref:0,field:0};F.flows=true;F.kind='lng'}
+  if(p==='ref'){L={ref:1,field:0,lng:0,port:0};F.flows=false}
+  Object.keys(L).forEach(function(k){F.lay[k]=!!L[k]});
+  PRS=p;apply();zoomTo(null);
+}
+var PRS='all';
+function presetDraw(){$('#presets').innerHTML=PR.map(function(p){return '<button type="button" data-pr="'+p[0]+'"'+(PRS===p[0]?' style="background:var(--fg);color:var(--bg);border-color:var(--fg)"':'')+'>'+p[1]+'</button>'}).join('')}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-pr]');if(b)preset(b.getAttribute('data-pr'))});
+/* ---- рынок ---- */
+var MK=null;
+function spark(a,up){if(!a||a.length<2)return '';var mn=Math.min.apply(0,a),mx=Math.max.apply(0,a),r=(mx-mn)||1;return '<svg viewBox="0 0 100 34" preserveAspectRatio="none"><polyline fill="none" stroke="currentColor" stroke-width="1.6" vector-effect="non-scaling-stroke" points="'+a.map(function(v,i){return (i/(a.length-1)*100).toFixed(1)+','+(32-(v-mn)/r*30).toFixed(1)}).join(' ')+'"/></svg>'}
+function pc(v){return (v>0?'+':'')+nf(v.toFixed(2))+'%'}
+function market(m){
+  MK=m;var E=m&&m.energy,ks=E?Object.keys(E).filter(function(k){return E[k]&&E[k].p!=null}):[];
+  if(ks.length){
+    $('#pt').innerHTML=ks.map(function(k){var x=E[k],c=x.ch||0;return '<div class="'+(c>=0?'up':'dn')+'"><span>'+esc(x.n)+', '+esc(x.u)+'</span><b style="color:var(--fg)">'+nf(Number(x.p).toFixed(2))+'</b><span class="'+(c>=0?'up':'dn')+'">'+pc(c)+' за день</span>'+spark(x.s)+'</div>'}).join('');
+    $('#pmeta').textContent='Цены обновляются вместе с рынком ('+esc(m.updated||'')+'). Линия — последние 30 торговых дней. Задержка может быть до 15 минут.';
+  }else{
+    $('#pt').innerHTML='<p style="margin:6px 0;color:var(--muted);font:400 14.5px var(--sans)">Котировки нефти и газа появятся после ближайшего обновления данных сайта.</p>';$('#pmeta').textContent='';
+  }
+  var rows=[];
+  if(E&&E['BZ=F']&&E['BZ=F'].ch!=null)rows.push(['Нефть Brent',E['BZ=F'].ch]);
+  var u=m&&m.fx&&m.fx.Valute&&m.fx.Valute.USD;if(u&&u.Previous)rows.push(['Доллар к рублю (ЦБ)',(u.Value/u.Previous-1)*100]);
+  [['ru','ROSN','Роснефть'],['ru','LKOH','Лукойл'],['ru','GAZP','Газпром'],['ru','TATN','Татнефть'],['ru','SNGS','Сургутнефтегаз'],['ru','NVTK','НОВАТЭК'],['ru','SIBN','Газпром нефть'],['us','XOM','ExxonMobil'],['us','CVX','Chevron']].forEach(function(t){var x=m&&m[t[0]]&&m[t[0]][t[1]];if(x&&x.ch!=null)rows.push([t[2],x.ch])});
+  $('#ostk').innerHTML=rows.length?rows.map(function(r){return '<div class="srow"><span>'+esc(r[0])+'</span><b class="'+(r[1]>=0?'up':'dn')+'">'+pc(r[1])+'</b></div>'}).join('')+'<p class="foot">Это изменение за сегодня, а не корреляция: так видно, двигаются ли акции вместе с нефтью. Рост доллара обычно поддерживает рублёвые акции экспортёров.</p>':'<p style="color:var(--muted)">Нет данных.</p>';
+}
+var NEWS=null,NRE=/нефт|газ(?!ет)|СПГ|\bOPEC\b|ОПЕК|Brent|Ормуз|танкер|НПЗ|бензин|Роснефт|Газпром|Лукойл|oil\b|crude|natural gas|\bLNG\b|refiner|pipeline|Hormuz/i;
+function nitem(x){var d=(x.d||'').slice(0,10).split('-').reverse().join('.');return '<div class="nw"><a href="'+esc(x.u)+'" target="_blank" rel="noopener">'+esc(x.t||x.to)+'</a><div class="m">'+esc(x.s||'')+' · '+d+'</div></div>'}
+function loadNews(){
+  if(NEWS)return;NEWS=[];
+  fetch('news.json').then(function(r){return r.json()}).then(function(n){
+    NEWS=(n.items||[]).filter(function(x){return NRE.test((x.t||'')+' '+(x.to||''))}).sort(function(a,b){return (b.d||'')<(a.d||'')?-1:1});
+    $('#nws').innerHTML=NEWS.slice(0,15).map(nitem).join('')||'<p style="color:var(--muted)">Нет свежих новостей по теме.</p>';
+    $('#nmeta').textContent='Найдено '+NEWS.length+' новостей из ленты сайта, показаны свежие 15. Переводы автоматические.';card();
+  }).catch(function(){NEWS=null;$('#nws').innerHTML='<p style="color:var(--muted)">Не удалось загрузить новости.</p>'});
+}
+function objNews(o){
+  if(!NEWS||!NEWS.length)return '';
+  var core=o.n.replace(/\s*(НПЗ|порт|терминал|завод)\s*/gi,' ').trim().split(/[\s(]+/)[0];if(core.length<4)return '';
+  var re=new RegExp(core.slice(0,Math.max(4,core.length-1)),'i');
+  var f=NEWS.filter(function(x){return re.test((x.t||'')+' '+(x.to||''))}).slice(0,3);
+  return f.length?'<h3 style="font-size:14px;margin:12px 0 0">Новости</h3>'+f.map(nitem).join(''):'';
+}
+/* ---- компании ---- */
+function coObjs(c){var re=new RegExp(c.re,'i');return OB.filter(function(o){return re.test(o.o+' '+(o.st||''))})}
+function coDraw(){
+  $('#co').innerHTML=D.companies.map(function(c,i){var px=(c.tk||[]).map(function(t){var x=MK&&MK[t[0]]&&MK[t[0]][t[1]];return x?'<div class="px">'+t[1]+' '+nf(Number(x.p).toFixed(2))+' '+esc(t[2])+' <span class="'+(x.ch>=0?'up':'dn')+'">'+pc(x.ch||0)+'</span></div>':'<div class="px" style="color:var(--faint)">'+t[1]+'</div>'}).join('');
+    return '<button type="button" data-co="'+i+'"><b>'+esc(c.n)+'</b><em>'+esc(c.c)+' · объектов на карте: '+coObjs(c).length+'</em><div>'+esc(c.b)+'</div>'+px+'</button>'}).join('');
+}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-co]');if(!b)return;var c=D.companies[+b.getAttribute('data-co')],os=coObjs(c);
+  F.hl=os.map(function(o){return o.id});F.ob=null;F.sel=null;os.forEach(function(o){F.lay[o.t]=true});F.reg='world';PRS='';location.hash='map';showTab('map');apply();zoomTo(null);window.scrollTo(0,0)});
+/* ---- сравнение стран ---- */
+function cmpInit(){
+  var s={};D.production.forEach(function(p){s[p[0]]=1});D.gas.forEach(function(p){s[p[0]]=1});OB.forEach(function(o){s[o.c]=1});
+  var names=Object.keys(s).sort(function(a,b){return a.localeCompare(b,'ru')});
+  var opt=names.map(function(n){return '<option>'+esc(n)+'</option>'}).join('');$('#cmp-a').innerHTML=opt;$('#cmp-b').innerHTML=opt;
+  $('#cmp-a').value=names.indexOf('Россия')>=0?'Россия':names[0];$('#cmp-b').value=names.indexOf('США')>=0?'США':names[1];cmpDraw();
+}
+function cmpInfo(n){
+  var p=D.production.filter(function(x){return x[0]===n})[0],g=D.gas.filter(function(x){return x[0]===n})[0],os=OB.filter(function(o){return o.c===n}),rf=os.filter(function(o){return o.t==='ref'});
+  return {prod:p?p[1]:null,gas:g?g[1]:null,rn:rf.length,rc:rf.reduce(function(a,o){return a+o.v},0),fl:os.filter(function(o){return o.t==='field'}).length,lg:os.filter(function(o){return o.t==='lng'}).length,all:os.length};
+}
+function cmpDraw(){
+  var a=$('#cmp-a').value,b=$('#cmp-b').value,A=cmpInfo(a),B=cmpInfo(b);
+  function row(l,x,y,hi,fmt){var w=x!=null&&y!=null&&x!==y?(hi?x>y:x<y)?0:1:-1;return '<div class="v'+(w===0?' w':'')+'">'+(x==null?'—':fmt(x))+'</div><div class="l">'+l+'</div><div class="v'+(w===1?' w':'')+'" style="text-align:left">'+(y==null?'—':fmt(y))+'</div>'}
+  var f1=function(v){return nf(v)},fg=function(v){return '$'+nf(v.toFixed(2))};
+  $('#cmp').innerHTML='<div class="cmp"><div class="v" style="text-align:right">'+esc(a)+'</div><div></div><div class="v" style="text-align:left">'+esc(b)+'</div>'
+   +row('добыча нефти, млн барр/сут',A.prod,B.prod,true,f1)+row('бензин, за литр',A.gas,B.gas,false,fg)+row('НПЗ на карте',A.rn,B.rn,true,f1)+row('мощность этих НПЗ, тыс. барр/сут',A.rc,B.rc,true,function(v){return Math.round(v).toLocaleString('ru-RU')})+row('месторождений на карте',A.fl,B.fl,true,f1)+row('заводов СПГ на карте',A.lg,B.lg,true,f1)+'</div>'
+   +'<p class="foot">Зелёным выделено большее значение (для бензина — меньшее, то есть дешевле). Объекты — только показанные на карте, это не вся страна; «—» — нет данных.</p>';
+}
+document.addEventListener('change',function(e){if(e.target.id==='cmp-a'||e.target.id==='cmp-b')cmpDraw()});
+/* ---- сценарий ---- */
+function scen(){
+  var S=D.scen,d=+$('#s-d').value,sh=+$('#s-s').value/100,by=$('#s-b').checked;
+  $('#s-dv').textContent=d;$('#s-sv').textContent=Math.round(sh*100)+'%';
+  var bl=S.flow*sh,net=Math.max(0,bl-(by?S.bypass:0)),tot=net*d,pw=net/S.world*100;
+  function f(v,n){return nf(v.toFixed(n==null?1:n))}
+  $('#s-r').innerHTML=[['Недополучит рынок в день, млн барр',f(net)],['Это от мировой добычи',f(pw)+'%'],['За весь срок, млн барр',Math.round(tot).toLocaleString('ru-RU')],['Из них ударит по Азии, млн барр/сут',f(net*S.asia/100)],['Для сравнения: прогноз падения 2026, млн барр/сут','5,7']].map(function(x){return '<div><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join('');
+  $('#s-n').innerHTML='Это грубая арифметика, а не прогноз цен. '+esc(S.note)+' <a href="'+esc(D.wiki)+'" target="_blank" rel="noopener">Статья о кризисе</a>';
+}
+document.addEventListener('input',function(e){if(/^s-[dsb]$/.test(e.target.id))scen()});
+/* ---- игры ---- */
+var MODE='quiz';
+function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function genObj(){
+  var pool=shuf(OB.filter(function(o){return o.fact&&o.fact.length>20})).slice(0,8);
+  return pool.map(function(o){var same=shuf(OB.filter(function(x){return x.t===o.t&&x.id!==o.id})).slice(0,3),opts=shuf([o].concat(same));
+    return {q:'Что это за объект? '+o.fact.replace(new RegExp(o.n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'…'),o:opts.map(function(x){return x.n+', '+x.c}),a:opts.indexOf(o),e:o.n+', '+o.c+'. '+o.cap+'. Владелец: '+o.o+'.'}})
+}
+function genGas(){
+  var out=[];for(var i=0;i<8;i++){var s=shuf(D.gas),a=s[0],b=s[1];if(Math.abs(a[1]-b[1])<0.15){i--;continue}
+    out.push({q:'Где бензин дороже?',o:[a[0],b[0]],a:a[1]>b[1]?0:1,e:a[0]+': $'+nf(a[1].toFixed(2))+' за литр, '+b[0]+': $'+nf(b[1].toFixed(2))+' за литр (срез '+a[2]+' и '+b[2]+').'})}
+  return out;
+}
+function setMode(m){MODE=m;QS=m==='quiz'?D.quiz:m==='obj'?genObj():genGas();qi=0;qs=0;
+  $('#qmodes').innerHTML=[['quiz','Викторина'],['obj','Угадай объект'],['gas','Где бензин дороже']].map(function(x){return '<button type="button" class="chip'+(MODE===x[0]?' on':'')+'" data-qm="'+x[0]+'">'+x[1]+'</button>'}).join('');qzDraw()}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-qm]');if(b)setMode(b.getAttribute('data-qm'));
+  if(e.target.closest('[data-qr]')&&MODE!=='quiz')setMode(MODE)});
+/* ---- хронология ---- */
+function tlDraw(){$('#tl').innerHTML='<div class="tl">'+D.timeline.map(function(x){return '<div class="e"><div class="d">'+esc(x.d)+'</div><h4>'+esc(x.t)+'</h4><p>'+esc(x.x)+'</p>'+(x.u?'<a href="'+esc(x.u)+'" target="_blank" rel="noopener">Источник</a>':'')+'</div>'}).join('')+'</div>'}
+
+$('#foot').innerHTML='Мощности и объёмы — округлённые оценки по открытым данным (компании, EIA, Energy Institute, IEA, GIIGNL), у разных источников и в разные годы они отличаются. Положение значков и маршруты схематичные. Цены нефти и газа — с задержкой; остальное не в реальном времени. Не инвестиционная рекомендация.';
+tools();rankings();stats();calc();deals();tlDraw();cmpInit();scen();setMode('quiz');showTab(curTab());
+fetch('markets.json').then(function(r){return r.json()}).then(function(m){market(m);if(curTab()==='companies')coDraw()}).catch(function(){market(null)});
+
 Promise.all([lib('vendor/d3.min.js','d3'),lib('vendor/topojson-client.min.js','topojson')]).then(function(){return fetch('world/countries.json').then(function(r){return r.json()})}).then(build).catch(function(){$('#emap').innerHTML='<p style="padding:16px">Не удалось загрузить карту. Проверь соединение.</p>'});
 })();
 </script>

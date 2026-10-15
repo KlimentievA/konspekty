@@ -97,5 +97,22 @@ for t in US:
     time.sleep(0.4)
 out['us'] = us or old.get('us') or {}
 
+# нефть и газ (Yahoo, фьючерсы): Brent, WTI, Henry Hub, TTF + 30 дней закрытий для мини-графика
+EN = [('BZ=F', 'Brent', '$/барр'), ('CL=F', 'WTI', '$/барр'), ('NG=F', 'Henry Hub', '$/млн BTU'), ('TTF=F', 'TTF (Европа)', '€/МВт·ч')]
+energy = {}
+for t, n, u in EN:
+    try:
+        j = get('https://query1.finance.yahoo.com/v8/finance/chart/' + urllib.parse.quote(t) + '?range=1mo&interval=1d')
+        r0 = j['chart']['result'][0]
+        cl = [round(c, 3) for c in (r0['indicators']['quote'][0].get('close') or []) if c]
+        p = r0['meta'].get('regularMarketPrice') or (cl[-1] if cl else None)
+        pc = cl[-2] if len(cl) >= 2 else (r0['meta'].get('previousClose') or r0['meta'].get('chartPreviousClose'))
+        if p:
+            energy[t] = {'n': n, 'u': u, 'p': p, 'ch': (p / pc - 1) * 100 if pc else None, 's': cl[-30:]}
+    except Exception as e:
+        print('yahoo energy', t, e, file=sys.stderr)
+    time.sleep(0.4)
+out['energy'] = energy or old.get('energy') or {}
+
 json.dump(out, open('markets.json', 'w'), ensure_ascii=False, separators=(',', ':'))
 print('ok', {k: (len(v) if hasattr(v, '__len__') else v) for k, v in out.items()})
