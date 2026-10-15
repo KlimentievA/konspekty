@@ -3,12 +3,16 @@
 import hashlib, importlib.util, json, os, re
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.path.dirname(HERE))
 sp = importlib.util.spec_from_file_location('routes', os.path.join(HERE, 'routes.py')); m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
+sp2 = importlib.util.spec_from_file_location('objects', os.path.join(HERE, 'objects.py')); ob = importlib.util.module_from_spec(sp2); sp2.loader.exec_module(ob)
+for o in ob.O:
+    assert -90 <= o['y'] <= 90 and -180 <= o['x'] <= 180 and o['t'] in ('ref','field','lng','port'), o['n']
+for q in ob.QUIZ: assert 0 <= q['a'] < len(q['o'])
 ids = [r['id'] for r in m.ROUTES]; assert len(ids) == len(set(ids)), 'повторы id'
 for r in m.ROUTES:
     assert len(r['pts']) >= 2 and all(-180 <= x <= 180 and -90 <= y <= 90 for x, y in r['pts']), r['id']
     assert r['kind'] in ('oil', 'gas', 'lng') and r.get('v', 0) >= 0
 data = json.dumps({'routes': [{k: (list(map(list, v)) if k == 'pts' else v) for k, v in r.items()} for r in m.ROUTES],
-                   'deals': m.DEALS, 'dealsAsOf': m.DEALS_AS_OF, 'chokes': [{'n': c['n'], 'x': c['x'], 'y': c['y'], 't': c['t']} for c in m.CHOKES]}, ensure_ascii=False, separators=(',', ':'))
+                   'objects': ob.O, 'regions': ob.REGIONS, 'records': ob.RECORDS, 'quiz': ob.QUIZ, 'deals': m.DEALS, 'dealsAsOf': m.DEALS_AS_OF, 'chokes': [{'n': c['n'], 'x': c['x'], 'y': c['y'], 't': c['t']} for c in m.CHOKES]}, ensure_ascii=False, separators=(',', ':'))
 ft = open(os.path.join(ROOT, 'src', 'finance', 'finance_template.html'), encoding='utf-8').read().split('\n')
 def span(a, b):
     i = next(k for k, s in enumerate(ft) if s.startswith(a)); j = next(k for k, s in enumerate(ft) if k >= i and s.startswith(b)); return '\n'.join(ft[i:j + 1])
