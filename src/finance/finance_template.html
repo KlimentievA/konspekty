@@ -427,6 +427,18 @@ html.wfs-lock,html.wfs-lock body{overflow:hidden}
 @media(max-width:520px){.wk2{grid-template-columns:1fr}}
 .wcmpb{margin:2px 0 8px;display:flex;gap:6px;flex-wrap:wrap}.cmp-chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.cmp-chips .chip button{margin-left:4px;background:none;border:0;color:inherit;font-size:15px;cursor:pointer;padding:0 2px}.cmp-sug{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .cmp-sc{overflow-x:auto;-webkit-overflow-scrolling:touch}.wcmp td.v{position:relative;min-width:92px}.wcmp td.v i{display:block;height:3px;border-radius:2px;background:var(--accent);opacity:.55;margin:3px 0 0 auto}.wcmp thead td.v{font-weight:600;color:var(--fg);text-transform:none;letter-spacing:0;font-size:12.5px}
+.chip.fav.on{color:var(--accent2);border-color:var(--accent2)}
+.fv-h{margin:24px 0 4px;font:600 18px/1.2 var(--serif)}.fv-e{margin:12px 0;color:var(--muted);font:400 14.5px/1.5 var(--sans)}
+.fv-i{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line2)}.fv-i a{flex:1;min-width:0;text-decoration:none;font:500 15px/1.3 var(--sans)}.fv-i small{display:block;color:var(--muted);font:400 12.5px/1.3 var(--sans)}
+.fv-i button{flex:none;width:36px;height:36px;border-radius:10px;color:var(--accent2);font-size:18px}
+.quiz{margin:30px 0 8px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.quiz h2{margin:0 0 2px!important;font:600 19px/1.25 var(--serif)}.quiz .qz-s{margin:0 0 12px;color:var(--muted);font:400 13px/1.4 var(--sans)}
+.qz-q{margin:16px 0 0}.qz-q p{margin:0 0 8px;font:600 15.5px/1.4 var(--sans)}
+.qz-o{display:block;width:100%;margin:6px 0;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--bg);text-align:left;font:400 14.5px/1.4 var(--sans)}
+.qz-o:hover:not(:disabled){border-color:var(--faint)}.qz-o:disabled{cursor:default;opacity:.92}
+.qz-o.ok{border-color:var(--up);background:color-mix(in srgb,var(--up) 14%,var(--bg))}.qz-o.no{border-color:var(--down);background:color-mix(in srgb,var(--down) 12%,var(--bg))}
+.qz-e{margin:8px 0 0;padding:9px 12px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent);font:400 13.5px/1.5 var(--sans);color:var(--muted)}
+.qz-r{margin:18px 0 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:600 15px/1.3 var(--sans)}
 .rk-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 4px}.rk-ctl select{font:500 14px/1.2 var(--sans);padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg)}
 .rk-r{border-bottom:1px solid var(--line2)}.rk-t{display:grid;grid-template-columns:1.8em minmax(0,1fr) auto;gap:6px 10px;width:100%;text-align:left;padding:10px 0 9px;font:400 14px/1.3 var(--sans);color:var(--fg);align-items:baseline}
 .rk-t .no{color:var(--faint);font:600 12px/1 var(--mono);text-align:right}.rk-t .nm b{font-weight:600}.rk-t .nm small{display:block;color:var(--muted);font-size:12px;margin-top:1px}
@@ -741,7 +753,7 @@ function renderChapter(c){
   var crumb=c.sec?'<a href="#world">Мир</a> · <a href="#world/sectors">Сектора</a> · ':'<a href="#learn">Обучение</a> · ';
   view.innerHTML='<div class="doc"><article class="art"><p class="eyebrow">'+crumb+(c.i+1)+' из '+L.length+'</p><h1>'+esc(c.title)+'</h1><p class="meta">'+c.min+' мин чтения'+(!gl?' · термины с пунктиром — наведи или нажми':'')+'</p>'+
     (heads.length>2?'<details class="toc"><summary>Содержание</summary><nav>'+toc+'</nav></details>':'')+
-    (gl?'<input class="gfilter" type="search" placeholder="Найти термин: EBITDA, спред, оферта…" aria-label="Фильтр глоссария">':'')+'<div class="prose">'+body+'</div>'+(cl?'<a class="try" href="#calc/'+cl[0]+'">'+esc(cl[1])+' в калькуляторе →</a>':'')+(!c.sec&&c.id!=='glossariy'&&c.id!=='istochniki'?'<div class="donebar"><button type="button" class="chip'+(doneIs(c.id)?' on':'')+'" data-ckc="'+c.id+'" aria-pressed="'+(doneIs(c.id)?'true':'false')+'">'+(doneIs(c.id)?'✓ Урок пройден':'Отметить пройденным')+'</button><span class="note" style="margin:0">Отметка хранится в этом браузере.</span></div>':'')+'<nav class="pager">'+
+    (gl?'<input class="gfilter" type="search" placeholder="Найти термин: EBITDA, спред, оферта…" aria-label="Фильтр глоссария">':'')+'<div class="prose">'+body+'</div>'+(!c.sec&&c.id!=='glossariy'&&c.id!=='istochniki'?'<div class="quiz" id="quiz" hidden></div>':'')+(cl?'<a class="try" href="#calc/'+cl[0]+'">'+esc(cl[1])+' в калькуляторе →</a>':'')+(!c.sec&&c.id!=='glossariy'&&c.id!=='istochniki'?'<div class="donebar"><button type="button" class="chip'+(doneIs(c.id)?' on':'')+'" data-ckc="'+c.id+'" aria-pressed="'+(doneIs(c.id)?'true':'false')+'">'+(doneIs(c.id)?'✓ Урок пройден':'Отметить пройденным')+'</button><span class="note" style="margin:0">Отметка хранится в этом браузере.</span></div>':'')+'<nav class="pager">'+
     (pv?'<a href="'+base+pv.id+'"><small>← Назад</small><b>'+esc(pv.title)+'</b></a>':'')+
     (nx?'<a class="nx" href="'+base+nx.id+'"><small>Дальше →</small><b>'+esc(nx.title)+'</b></a>':(c.sec?'<a class="nx" href="#world/sectors"><small>Все сектора →</small><b>Сектора мировой экономики</b></a>':''))+
     '</nav></article>'+(heads.length>2?'<aside class="side"><p class="h">Содержание</p>'+toc+'</aside>':'')+'</div>';
@@ -752,6 +764,7 @@ function renderChapter(c){
     var pr=view.querySelector('.prose');pr.insertBefore(bar,pr.firstChild.nextSibling);
   }
   if(Q){hl(view.querySelector('.prose'),Q)}
+  qzInit(c);
 }
 view.addEventListener('input',function(e){if(!e.target.classList.contains('gfilter'))return;var q=e.target.value.trim().toLowerCase();view.querySelectorAll('.prose tbody tr').forEach(function(tr){tr.hidden=q&&tr.textContent.toLowerCase().indexOf(q)<0})});
 view.addEventListener('click',function(e){
@@ -1728,7 +1741,7 @@ view.addEventListener('input',function(e){var k=e.target.getAttribute('data-cv')
 view.addEventListener('click',function(e){if(!e.target.closest('[data-creset]'))return;var c=CALCS.filter(function(x){return x.id===calcCur})[0];CV[c.id]=null;try{localStorage.removeItem('calc:'+c.id)}catch(err){}renderCalc(c.id)});
 
 /* ---------------- мир: сектора ---------------- */
-function wsub(on){return '<nav class="sub"><a class="chip'+(on==='map'?' on':'')+'" href="#world/map">Карта</a><a class="chip'+(on==='sectors'?' on':'')+'" href="#world/sectors">Сектора</a><a class="chip'+(on==='companies'?' on':'')+'" href="#world/companies">Компании</a><a class="chip'+(on==='ranking'?' on':'')+'" href="#world/ranking">Рейтинг</a><a class="chip'+(on==='life'?' on':'')+'" href="#world/life">Зарплаты</a><a class="chip'+(on==='compare'?' on':'')+'" href="#world/compare">Сравнение'+(cmpGet().length?' · '+cmpGet().length:'')+'</a></nav>'}
+function wsub(on){return '<nav class="sub"><a class="chip'+(on==='map'?' on':'')+'" href="#world/map">Карта</a><a class="chip'+(on==='sectors'?' on':'')+'" href="#world/sectors">Сектора</a><a class="chip'+(on==='companies'?' on':'')+'" href="#world/companies">Компании</a><a class="chip'+(on==='ranking'?' on':'')+'" href="#world/ranking">Рейтинг</a><a class="chip'+(on==='life'?' on':'')+'" href="#world/life">Зарплаты</a><a class="chip'+(on==='compare'?' on':'')+'" href="#world/compare">Сравнение'+(cmpGet().length?' · '+cmpGet().length:'')+'</a><a class="chip'+(on==='fav'?' on':'')+'" href="#world/fav" aria-label="Избранное">★'+(favGet().length?' '+favGet().length:'')+'</a></nav>'}
 function renderSectors(){
   view.innerHTML=wsub('sectors')+'<section class="hero whero"><h1>Сектора мировой экономики</h1><p>Как устроены 12 крупнейших секторов мировой экономики: размер, драйверы, KPI, оценка, игроки мира и России.</p></section>'+
     (SEC.length?'<div class="chs">'+SEC.map(function(c){return '<a class="ch" href="#world/sectors/'+c.id+'"><span class="n">'+(c.i+1)+'</span><span><b>'+esc(c.title)+'</b><i>'+esc(c.short)+'</i><em>'+c.min+' мин чтения</em></span></a>'}).join('')+'</div>'
@@ -1781,7 +1794,14 @@ var WS=(function(){var s={};try{s=JSON.parse(store('world:st')||'{}')||{}}catch(
   return {layer:'countries',ind:WI[s.ind]?s.ind:'NGDPD',year:0,bm:WBL[s.bm]?s.bm:'gdp',desc:s.desc!==false,sel:null}})();
 function wSave(){store('world:st',JSON.stringify({ind:WS.ind,year:WS.year,bm:WS.bm,desc:WS.desc}))}
 function wDark(){var t=root.getAttribute('data-theme');return t==='dark'||(!t&&!!window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)}
-function wR(){return WRAMP[wDark()?'dark':'light']}
+var WSK={k:'',v:null};
+function wR(){
+  var b=WRAMP[wDark()?'dark':'light'],sk=root.getAttribute('data-skin');if(!sk||!window.d3)return b;
+  var key=sk+(wDark()?'d':'l');if(WSK.k===key)return WSK.v;
+  var cs=getComputedStyle(root),g=function(k){return cs.getPropertyValue(k).trim()},ac=g('--accent'),a2=g('--accent2'),bg=g('--bg'),sf=g('--surface'),ln=g('--line'),dk=wDark(),mx=function(x,y,t){return d3.interpolateRgb(x,y)(t)};
+  var ramp=function(c){return dk?[mx(bg,c,.28),mx(bg,c,.5),mx(bg,c,.75),c,mx(c,'#ffffff',.6)]:[mx('#ffffff',c,.2),mx('#ffffff',c,.4),mx('#ffffff',c,.68),c,mx(c,'#000000',.6)]};
+  var o={};Object.keys(b).forEach(function(k){o[k]=b[k]});o.seq=ramp(ac);o.bad=ramp(a2);o.bub=ac;o.pos=[mx(sf,ac,.2),ac];o.border=sf;o.land=mx(bg,ln,.55);o.na=mx(bg,ln,.8);o.host=mx(bg,ln,.9);o.defl=mx(sf,ln,.9);
+  WSK={k:key,v:o};return o}
 function wScript(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.async=true;s.onload=ok;s.onerror=function(){s.parentNode&&s.parentNode.removeChild(s);no(new Error(src))};document.head.appendChild(s)})}
 function wGet(u,opt){return fetch(u,opt||{}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
 function cosLoad(ix){   // страны без карты регионов, только список компаний (+ справки)
@@ -1892,7 +1912,7 @@ function renderWorld(){
 var WDEEP=null;
 function wBuild(){
   var l=$('#w-load');if(l)l.remove();
-  if(WDEEP){var dp=WDEEP;WDEEP=null;if(WM.reg[dp.layer]&&!WM.reg[dp.layer].coonly){var DL=WM.reg[dp.layer],di=DL.items.findIndex(function(x){return x.name===dp.name});WS.layer=dp.layer;WS.sel=di>=0?'b:'+di:null;if(di>=0)setTimeout(function(){if(state==='world'&&WS.sel==='b:'+di)wZoomTo(WS.sel)},900)}}
+  if(WDEEP){var dp=WDEEP;WDEEP=null;if(dp.country){WS.layer='countries';WS.sel=WM.names[dp.country]?dp.country:null}else if(WM.reg[dp.layer]&&!WM.reg[dp.layer].coonly){var DL=WM.reg[dp.layer],di=DL.items.findIndex(function(x){return x.name===dp.name});WS.layer=dp.layer;WS.sel=di>=0?'b:'+di:null;if(di>=0)setTimeout(function(){if(state==='world'&&WS.sel==='b:'+di)wZoomTo(WS.sel)},900)}}
   wLayChips();wMap();wCtl();wPaint(true);wCard();
 }
 function wLayChips(){
@@ -2167,7 +2187,7 @@ function wWageHTML(id){   // средняя зарплата страны (го�
   if(w.local&&w.local.v>0)rows.push('<tr><td>В местной валюте</td><td class="v">'+nf(w.local.v,0)+' '+esc(w.local.cur)+' в год</td></tr>');
   return '<p class="wsm" style="margin:14px 0 6px"><b>Средняя зарплата</b>'+(rk?' · '+rk+'-е место из '+ks.length+' стран с данными':'')+'</p><table class="wkv">'+rows.join('')+'</table><details class="wcalc wsrcd"><summary>ⓘ Откуда цифра</summary>'+esc(W.countries&&W.countries.definition||'')+'<br>'+esc(w.note||'')+(w.src?' · <a href="'+esc(w.src)+'" target="_blank" rel="noopener">источник ↗</a>':'')+'</details>'}
 function wCountryCard(id,nc,withCo){
-  var n=WM.names[id]||id,d=WM.data,h='<div class="wck"><div><p class="wck-e">'+(d?WS.year+(WS.year>WM.la?' · прогноз МВФ':' · факт'):'Страна')+'</p><h3>'+esc(n)+'</h3></div>'+(nc?'':'<button type="button" class="wx" data-wclose aria-label="Закрыть">×</button>')+'</div><div class="wcmpb">'+cmpBtn('c:'+id)+'</div>'+(!nc&&WHOSTREV[id]&&WS.layer==='countries'?'<button type="button" class="chip on" data-wl="'+WHOSTREV[id]+'" style="margin:2px 0 10px">Открыть регионы →</button>':'');
+  var n=WM.names[id]||id,d=WM.data,h='<div class="wck"><div><p class="wck-e">'+(d?WS.year+(WS.year>WM.la?' · прогноз МВФ':' · факт'):'Страна')+'</p><h3>'+esc(n)+'</h3></div>'+(nc?'':'<button type="button" class="wx" data-wclose aria-label="Закрыть">×</button>')+'</div><div class="wcmpb">'+cmpBtn('c:'+id)+' '+favBtn('c:'+id)+'</div>'+(!nc&&WHOSTREV[id]&&WS.layer==='countries'?'<button type="button" class="chip on" data-wl="'+WHOSTREV[id]+'" style="margin:2px 0 10px">Открыть регионы →</button>':'');
   var r=d&&d.data[id],yi=d?wyi():0;
   if(!r)h+='<p class="wsm">'+(d?'МВФ не публикует данные по этой территории.':'Данные МВФ появятся после первого обновления.')+'</p>';
   else{
@@ -2232,7 +2252,7 @@ function wBubCard(i){
   var L=WM.reg[WS.layer],x=L.items[i];if(!x)return '';
   var tot=d3.sum(L.items,function(z){return z.gdp}),rk=L.items.filter(function(z){return z.gdp>x.gdp}).length+1;
   var av=wTabAvail(L,x),tab=av[WS.tab]?WS.tab:'main';
-  var rc=wRegColor(i),h='<div class="wck rc"'+(rc?' style="--rc:'+rc+'"':'')+'><div><p class="wck-e">'+esc(L.title||'')+(L.year?' · '+L.year:'')+'</p><h3>'+esc(x.name)+'</h3>'+(x.country?'<p class="wsm" style="margin:2px 0 0">'+esc(x.country)+'</p>':'')+'</div><button type="button" class="wx wfull" data-wfull aria-label="Развернуть" title="Развернуть на весь экран">⤢</button><button type="button" class="wx" data-wclose aria-label="Закрыть">×</button></div><div class="wcmpb">'+cmpBtn('r:'+WS.layer+'|'+x.name)+'</div>';
+  var rc=wRegColor(i),h='<div class="wck rc"'+(rc?' style="--rc:'+rc+'"':'')+'><div><p class="wck-e">'+esc(L.title||'')+(L.year?' · '+L.year:'')+'</p><h3>'+esc(x.name)+'</h3>'+(x.country?'<p class="wsm" style="margin:2px 0 0">'+esc(x.country)+'</p>':'')+'</div><button type="button" class="wx wfull" data-wfull aria-label="Развернуть" title="Развернуть на весь экран">⤢</button><button type="button" class="wx" data-wclose aria-label="Закрыть">×</button></div><div class="wcmpb">'+cmpBtn('r:'+WS.layer+'|'+x.name)+' '+favBtn('r:'+WS.layer+'|'+x.name)+'</div>';
   if(x.gdp>0)h+='<div class="wbig">'+wfmtB(x,'gdp',L)+'</div><p class="wsm">'+esc(L.metric||'ВВП')+' · '+rk+'-е место из '+L.items.filter(function(z){return z.gdp>0}).length+' · '+nf(x.gdp/tot*100,x.gdp/tot<.01?2:1)+'% суммы</p>';
   else h+='<p class="wsm">'+esc(L.metric||'ВВП')+': данных нет</p>';
   h+=wPeekTiles(L,x);
@@ -2297,6 +2317,9 @@ view.addEventListener('click',function(e){
   if(b=t.closest('[data-wcmpx]')){cmpToggle(b.getAttribute('data-wcmpx'));return}
   if(b=t.closest('[data-wcmpa]')){var ck=b.getAttribute('data-wcmpa'),ca=cmpGet();if(ca.indexOf(ck)<0&&ca.length<5){ca.push(ck);cmpSet(ca)}cmpDraw();return}
   if(b=t.closest('[data-scrx]')){scrToggle(+b.getAttribute('data-scrx'));return}
+  if(b=t.closest('[data-fav]')){e.preventDefault();favToggle(b.getAttribute('data-fav'));return}
+  var qb=t.closest('[data-qz]');if(qb){var qq=qb.getAttribute('data-qz').split(':');qzPick(+qq[0],+qq[1]);return}
+  if(t.closest('[data-qzr]')){QZ.ans={};qzDraw();var qe=$('#quiz');if(qe)qe.scrollIntoView({block:'start',behavior:'smooth'});return}
   if(b=t.closest('[data-rkm]')){RK.m=b.getAttribute('data-rkm');RK.n=25;rkDraw();return}
   if(b=t.closest('[data-rkx]')){var ri=+b.getAttribute('data-rkx');RK.open[ri]=!RK.open[ri];rkDraw();return}
   if(t.closest('[data-rkmore]')){RK.n+=25;rkDraw();return}
@@ -2333,7 +2356,7 @@ view.addEventListener('mouseout',function(e){if(state==='world'&&e.target.closes
 var wRT=0,wLW=0;
 window.addEventListener('resize',function(){if(state!=='world'||!WM.g)return;clearTimeout(wRT);wRT=setTimeout(function(){var b=$('#w-map');if(!b||Math.abs(b.clientWidth-WM.w)<2&&wLW===innerWidth)return;wLW=innerWidth;wMap();wPaint(WS.layer!=='countries'?'fit':0);wCard()},150)});
 function wRecolor(){if(state==='world'&&WM.g){wPaint();if(WS.sel)wCard()}}
-try{new MutationObserver(wRecolor).observe(root,{attributes:true,attributeFilter:['data-theme']})}catch(e){}
+try{new MutationObserver(wRecolor).observe(root,{attributes:true,attributeFilter:['data-theme','data-skin']})}catch(e){}
 try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',wRecolor)}catch(e){}
 
 
@@ -2396,7 +2419,7 @@ function scrDraw(){
   sh.forEach(function(r,i){var idx=SC.rows.indexOf(r),c=r.c,op=SC.open[idx];
     h+='<div class="scr-r'+(op?' open':'')+'"><button type="button" class="scr-t" data-scrx="'+idx+'"><span class="nm">'+esc(c.name)+(c.ticker?' <small>'+esc(c.ticker)+'</small>':'')+'<small class="rg">'+esc(r.country+(c.region?' · '+c.region:'')+' · '+(WSN[c.sector]||c.sector||''))+'</small></span>'+
       '<span class="v">'+scrFmt(r,c.rev,o.usd)+'</span><span class="v '+(c.profit<0?'neg':'')+'">'+scrFmt(r,c.profit,o.usd)+'</span><span class="v mg">'+(r.m==null?'—':nf(r.m,1)+'%')+'</span></button>'+
-      (op?'<div class="wcb">'+(r.m!=null?'<p class="wcw" style="font-style:normal">Маржа прибыли: <b>'+nf(r.m,1)+'%</b></p>':'')+(r.det?wCoBody(r.det):'<p class="wcw">Подробной справки пока нет — только выручка и прибыль.</p>')+'<p class="wcs">'+(WM.reg[r.layer].coonly?'':'<a href="#world/'+r.layer+'/'+encodeURIComponent(c.region||'')+'">Показать регион на карте →</a>'+(c.note?' · ':''))+(c.note?esc(c.note):'')+'</p></div>':'')+'</div>'});
+      (op?'<div class="wcb">'+(r.m!=null?'<p class="wcw" style="font-style:normal">Маржа прибыли: <b>'+nf(r.m,1)+'%</b></p>':'')+(r.det?wCoBody(r.det):'<p class="wcw">Подробной справки пока нет — только выручка и прибыль.</p>')+'<p style="margin:8px 0 0">'+favBtn('k:'+r.layer+'|'+c.name)+'</p><p class="wcs">'+(WM.reg[r.layer].coonly?'':'<a href="#world/'+r.layer+'/'+encodeURIComponent(c.region||'')+'">Показать регион на карте →</a>'+(c.note?' · ':''))+(c.note?esc(c.note):'')+'</p></div>':'')+'</div>'});
   if(a.length>SC.lim)h+='<button type="button" class="chip" data-scrmore style="margin:12px 0">Показать ещё '+Math.min(60,a.length-SC.lim)+'</button>';
   el.innerHTML=h}
 function scrToggle(i){SC.open[i]=!SC.open[i];scrDraw()}
@@ -2420,6 +2443,45 @@ function renderScreener(){
 }
 
 
+/* ---------------- избранное ---------------- */
+function favGet(){try{var a=JSON.parse(store('fin:fav')||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+function favIs(k){return favGet().indexOf(k)>=0}
+function favBtn(k){var on=favIs(k);return '<button type="button" class="chip sm fav'+(on?' on':'')+'" data-fav="'+esc(k)+'" aria-pressed="'+on+'">'+(on?'★ В избранном':'☆ В избранное')+'</button>'}
+function favToggle(k){var a=favGet(),i=a.indexOf(k);if(i>=0)a.splice(i,1);else a.unshift(k);store('fin:fav',JSON.stringify(a.slice(0,200)));
+  document.querySelectorAll('[data-fav]').forEach(function(b){if(b.getAttribute('data-fav')!==k)return;var on=favIs(k);b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);if(b.classList.contains('chip'))b.textContent=on?'★ В избранном':'☆ В избранное';else b.textContent=on?'★':'☆'});
+  var nv=document.querySelector('nav.sub a[href="#world/fav"]');if(nv)nv.textContent='★'+(a.length?' '+a.length:'');
+  if($('#fav-body'))favDraw()}
+function favDraw(){
+  var el=$('#fav-body');if(!el)return;var a=favGet(),h='';
+  if(!a.length){el.innerHTML='<p class="fv-e">Пока пусто. Нажми «☆ В избранное» в карточке страны или региона на карте, а также у компании в списке «Рейтинг» или «Компании» — они соберутся здесь.</p>';return}
+  var cs=a.filter(function(k){return k.indexOf('c:')===0}),rs=a.filter(function(k){return k.indexOf('r:')===0}),ks=a.filter(function(k){return k.indexOf('k:')===0});
+  function row(href,t,sub,k){return '<div class="fv-i"><a href="'+href+'">'+esc(t)+(sub?'<small>'+esc(sub)+'</small>':'')+'</a><button type="button" data-fav="'+esc(k)+'" aria-label="Убрать из избранного">★</button></div>'}
+  if(cs.length)h+='<h2 class="fv-h">Страны</h2>'+cs.map(function(k){var id=k.slice(2);return row('#world/country/'+id,WM.names[id]||id,'',k)}).join('');
+  if(rs.length)h+='<h2 class="fv-h">Регионы</h2>'+rs.map(function(k){var q=k.slice(2).split('|'),ll=WLAY.filter(function(x){return x[0]===q[0]})[0];return row('#world/'+q[0]+'/'+encodeURIComponent(q[1]),q[1],ll?ll[1]:'',k)}).join('');
+  if(ks.length)h+='<h2 class="fv-h">Компании</h2>'+ks.map(function(k){var q=k.slice(2).split('|'),r=SC.rows&&SC.rows.filter(function(x){return x.layer===q[0]&&x.c.name===q[1]})[0];
+    if(!r)return row('#world/companies',q[1],'',k);var c=r.c,idx=SC.rows.indexOf(r),op=RK.open[idx];
+    return '<div class="rk-r"><div class="fv-i"><a href="#" data-rkx="'+idx+'">'+esc(c.name)+'<small>'+esc(r.country+(c.region?' · '+c.region:'')+' · '+wfmtC(c.rev,r.u)+(c.profit!=null?' / прибыль '+wfmtC(c.profit,r.u):''))+'</small></a><button type="button" data-fav="'+esc(k)+'" aria-label="Убрать из избранного">★</button></div>'+(op?'<div class="wcb">'+(r.det?wCoBody(r.det):'<p class="wcw">Подробной справки пока нет.</p>')+'</div>':'')+'</div>'}).join('');
+  el.innerHTML=h}
+function renderFav(){
+  view.innerHTML=wsub('fav')+'<section class="wm"><div class="wh"><h1>Избранное</h1><p class="wlead">Страны, регионы и компании, которые ты отметил звёздочкой. Список хранится в этом браузере.</p></div><div id="fav-body"><span class="empty skel"></span></div></section>';
+  Promise.all([wLoad(),scrRates()]).then(function(){if(state!=='world'||!$('#fav-body'))return;scrBuild();favDraw()}).catch(function(){var e=$('#fav-body');if(e)e.innerHTML='<p class="empty">Не удалось загрузить данные. <button type="button" class="chip sm" data-wretry>Повторить</button></p>'});
+}
+/* ---------------- проверочные вопросы к главам ---------------- */
+var QZ={data:null,tried:false,id:null,ans:{}};
+function qzLoad(){if(QZ.data||QZ.tried)return Promise.resolve(QZ.data);QZ.tried=true;return fetch('quiz.json').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){QZ.data=j;return j}).catch(function(){return null})}
+function qzBest(){try{return JSON.parse(store('fin:quiz')||'{}')||{}}catch(e){return {}}}
+function qzDraw(){
+  var el=$('#quiz');if(!el||!QZ.id)return;var qs=(QZ.data&&QZ.data[QZ.id])||[];if(!qs.length){el.hidden=true;return}
+  var best=qzBest()[QZ.id],n=Object.keys(QZ.ans).length,ok=0;Object.keys(QZ.ans).forEach(function(i){if(QZ.ans[i]===qs[i].a)ok++});
+  var h='<h2>Проверь себя</h2><p class="qz-s">'+plural(qs.length,['вопрос','вопроса','вопросов'])+' по этой главе'+(best?' · лучший результат: '+best.ok+' из '+best.n:'')+'</p>';
+  qs.forEach(function(q,i){var an=QZ.ans[i];h+='<div class="qz-q"><p>'+(i+1)+'. '+esc(q.q)+'</p>'+q.o.map(function(o,j){var cl=an==null?'':j===q.a?' ok':j===an?' no':'';return '<button type="button" class="qz-o'+cl+'" data-qz="'+i+':'+j+'"'+(an!=null?' disabled':'')+'>'+esc(o)+'</button>'}).join('')+(an!=null&&q.e?'<p class="qz-e">'+esc(q.e)+'</p>':'')+'</div>'});
+  if(n===qs.length)h+='<div class="qz-r"><span>Результат: '+ok+' из '+qs.length+'</span><button type="button" class="chip" data-qzr>Пройти заново</button></div>';
+  el.hidden=false;el.innerHTML=h}
+function qzInit(c){QZ.id=c.id;QZ.ans={};var el=$('#quiz');if(!el||c.sec)return;qzLoad().then(function(){if(QZ.id===c.id)qzDraw()})}
+function qzPick(i,j){var qs=(QZ.data&&QZ.data[QZ.id])||[];if(!qs[i]||QZ.ans[i]!=null)return;QZ.ans[i]=j;
+  if(Object.keys(QZ.ans).length===qs.length){var ok=0;Object.keys(QZ.ans).forEach(function(k){if(QZ.ans[k]===qs[k].a)ok++});var b=qzBest(),o=b[QZ.id];if(!o||ok>=o.ok){b[QZ.id]={ok:ok,n:qs.length};store('fin:quiz',JSON.stringify(b))}}
+  qzDraw()}
+
 /* ---------------- рейтинг компаний мира ---------------- */
 var RK={m:'rev',nb:true,sec:'',n:25,open:{}};
 function rkRows(){
@@ -2438,7 +2500,7 @@ function rkDraw(){
   if(usdOk)h+='<p class="wsm">Курсы валют не загрузились: компании России и Китая в рейтинг не попали.</p>';
   h+='<div>'+top.map(function(x,i){var r=x.r,c=r.c,idx=SC.rows.indexOf(r),op=RK.open[idx];
     return '<div class="rk-r"><button type="button" class="rk-t" data-rkx="'+idx+'"><span class="no">'+(i+1)+'</span><span class="nm"><b>'+esc(c.name)+'</b><small>'+esc(r.country+(c.region?' · '+c.region:'')+' · '+(WSN[c.sector]||''))+'</small></span><span class="v">'+fm(x)+'</span><span class="rk-bar"><i style="width:'+Math.max(1,x.v/mx*100).toFixed(1)+'%"></i></span></button>'+
-      (op?'<div class="wcb">'+(r.det?wCoBody(r.det):'<p class="wcw">Подробной справки пока нет — только выручка и прибыль: '+wfmtC(scrUsd(r,c.rev),'млрд $')+(c.profit!=null?' и '+wfmtC(scrUsd(r,c.profit),'млрд $'):'')+'.</p>')+(c.note?'<p class="wcs">'+esc(c.note)+'</p>':'')+'</div>':'')+'</div>'}).join('')+'</div>';
+      (op?'<div class="wcb">'+(r.det?wCoBody(r.det):'<p class="wcw">Подробной справки пока нет — только выручка и прибыль: '+wfmtC(scrUsd(r,c.rev),'млрд $')+(c.profit!=null?' и '+wfmtC(scrUsd(r,c.profit),'млрд $'):'')+'.</p>')+(c.note?'<p class="wcs">'+esc(c.note)+'</p>':'')+'<p style="margin:10px 0 0">'+favBtn('k:'+r.layer+'|'+c.name)+'</p></div>':'')+'</div>'}).join('')+'</div>';
   if(all.length>RK.n)h+='<button type="button" class="chip" data-rkmore style="margin:12px 0">Показать ещё 25</button>';
   var t100=all.slice(0,100),cc={},sc={};t100.forEach(function(x){cc[x.r.country]=(cc[x.r.country]||0)+1;sc[WSN[x.r.c.sector]||'—']=(sc[WSN[x.r.c.sector]||'—']||0)+1});
   function bars(o){var k=Object.keys(o).sort(function(p,q){return o[q]-o[p]}),m=o[k[0]]||1;return k.slice(0,10).map(function(n){return '<div class="rk-cnt"><span>'+esc(n)+'</span><div><i style="width:'+(o[n]/m*100)+'%"></i></div><b>'+o[n]+'</b></div>'}).join('')}
@@ -2494,11 +2556,12 @@ function route(){
     clearInterval(timer);
     if(p[1]==='compare'){renderCompare();document.title='Сравнение · Мир · Финансы'}
     else if(p[1]==='companies'){renderScreener();document.title='Компании · Мир · Финансы'}
+    else if(p[1]==='fav'){renderFav();document.title='Избранное · Мир · Финансы'}
     else if(p[1]==='ranking'){renderRanking();document.title='Рейтинг компаний · Мир · Финансы'}
     else if(p[1]==='life'){renderLife();document.title='Зарплаты и налоги · Мир · Финансы'}
     else if(p[1]==='sectors'){var sc=SEC.filter(function(x){return x.id===p[2]})[0];
       if(sc){renderChapter(sc);document.title=sc.title+' · Сектора · Финансы'}else{renderSectors();document.title='Сектора мировой экономики · Финансы'}}
-    else{WDEEP=(p[1]&&p[1]!=='map'&&p[2])?{layer:p[1],name:p.slice(2).join('/')}:null;if(!WDEEP){WS.layer='countries';WS.sel=null}renderWorld();document.title='Карта мира · Финансы'}
+    else{WDEEP=(p[1]==='country'&&p[2])?{country:p[2]}:(p[1]&&p[1]!=='map'&&p[2])?{layer:p[1],name:p.slice(2).join('/')}:null;if(!WDEEP){WS.layer='countries';WS.sel=null}renderWorld();document.title='Карта мира · Финансы'}
   }else{
     clearInterval(timer);
     var c=CH.filter(function(x){return x.id===p[1]})[0];

@@ -132,6 +132,9 @@ def corp_cal():
         print('ISS дивиденды недоступны, пробую запасной источник'); items, ok = corp_cal_alt()
     if ok < 5:
         print('corp_cal: слишком мало ответов, файл не трогаем'); return
+    prev = len(load('corp_cal.json', {}).get('items', []))
+    if prev and len(items) < prev * 0.5:
+        print('corp_cal: новых записей', len(items), 'против', prev, '— похоже на сбой разбора, файл не трогаем'); return
     items.sort(key=lambda x: x['d'], reverse=True)
     save('corp_cal.json', {'updated': NOW.strftime('%Y-%m-%dT%H:%MZ'), 'items': items})
     print('corp_cal', len(items), 'записей по', ok, 'эмитентам')
