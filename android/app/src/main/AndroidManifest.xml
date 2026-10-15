@@ -24,7 +24,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="klimentiev.github.io" android:pathPrefix="/konspekty" />
+                <data android:scheme="https" android:host="klimentieva.github.io" android:pathPrefix="/konspekty" />
             </intent-filter>
         </activity>
     </application>
