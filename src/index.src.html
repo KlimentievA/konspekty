@@ -224,20 +224,25 @@ main{min-width:0;padding-inline:var(--gut);padding-bottom:96px}
 .todo .td-s b{color:var(--fg);font-weight:600}.todo .td-s .bad{color:#d9534f}
 .todo .td-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:24px 0 2px;font:600 12.5px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .todo .td-h.over{color:#d9534f}
+.todo .td-h.ok{color:#3a9d5d}
 .todo .td-h .n{font-weight:500;letter-spacing:0}
 .todo ul.td-l{list-style:none;margin:0;padding:0}
-.todo .td-i{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
-.todo .td-c{flex:none;width:28px;height:28px;padding:0;display:grid;place-items:center;border:2px solid var(--faint);border-radius:50%;background:transparent;cursor:pointer;transition:background .15s,border-color .15s}
-.todo .td-c svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.6);transition:opacity .15s,transform .15s}
-.todo .td-c:hover{border-color:#3a9d5d}
-.todo .done .td-c{background:#3a9d5d;border-color:#3a9d5d}.todo .done .td-c svg{opacity:1;transform:none}
+.todo .td-i{position:relative;display:flex;align-items:center;gap:12px;margin:0 -10px;padding:13px 10px;border-radius:12px;transition:background .25s}
+.todo .td-i::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:1px;background:var(--line);transition:opacity .25s}
+.todo .td-i.done{background:color-mix(in srgb,#3a9d5d 16%,transparent)}
+.todo .td-i.done::after,.todo .td-i:last-child::after,.todo .td-i:has(+ .td-i.done)::after{opacity:0}
+.todo .td-c{flex:none;width:26px;height:26px;padding:0;display:grid;place-items:center;border:1.75px solid var(--faint);border-radius:50%;background:transparent;cursor:pointer;transition:background .2s,border-color .2s,transform .15s}
+.todo .td-c:active{transform:scale(.9)}
+.todo .td-c svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22;stroke-dashoffset:22;transition:stroke-dashoffset .28s ease}
+.todo .td-c:hover{border-color:#3a9d5d;background:color-mix(in srgb,#3a9d5d 14%,transparent)}
+.todo .done .td-c{background:#3a9d5d;border-color:#3a9d5d}.todo .done .td-c svg{stroke-dashoffset:0}
 .todo .td-t{flex:1;min-width:0;font:500 16px/1.35 var(--sans);overflow-wrap:anywhere;cursor:text}
-.todo .done .td-t{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint);cursor:default}
+.todo .done .td-t{color:var(--fg);cursor:default}
 .todo .td-d{position:relative;flex:none;display:inline-flex;align-items:center;height:28px;padding:0 11px;border:1px solid var(--line);border-radius:999px;font:500 12.5px/1 var(--sans);color:var(--muted);white-space:nowrap;cursor:pointer;overflow:hidden}
 .todo .td-d.now{color:var(--fg);border-color:var(--fg)}
 .todo .td-d.over{color:#d9534f;border-color:#d9534f}
 .todo .td-d.none{border-style:dashed;color:var(--faint)}
-.todo .done .td-d{opacity:.6}
+.todo .done .td-d{border-color:color-mix(in srgb,#3a9d5d 55%,transparent);color:var(--muted)}
 .todo .td-d input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .todo .td-x{flex:none;width:28px;height:28px;padding:0;border:0;border-radius:50%;background:none;color:var(--faint);font:400 22px/1 var(--sans);cursor:pointer}
 .todo .td-x:hover{color:#d9534f;background:color-mix(in srgb,#d9534f 12%,transparent)}
@@ -1830,7 +1835,7 @@ function renderSession(){
 
 
 /* ---------- дела ---------- */
-var todoUndo=null,todoDoneOpen=false;
+var todoUndo=null;
 function todoAll(){try{var a=JSON.parse(store('todo')||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
 function todoSave(a){store('todo',JSON.stringify(a));todoCount()}
 function todayStr(){return dstr(new Date())}
@@ -1841,8 +1846,9 @@ function todoDue(x){
   if(!x.d)return 'срок';
   var k=dayDiff(x.d),d=new Date(x.d+'T12:00:00');
   if(!x.done&&k<0)return 'просрочено · '+plural(-k,['день','дня','дней']);
+  if(x.done&&k<0)return 'было до '+WD[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()];
   if(k===0)return 'сегодня';if(k===1)return 'завтра';
-  return WD[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?' '+d.getFullYear():'');
+  return 'до '+WD[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?' '+d.getFullYear():'');
 }
 function todoItem(x){
   var k=x.d?dayDiff(x.d):null,over=!x.done&&k!==null&&k<0,now=!x.done&&k===0;
@@ -1853,27 +1859,32 @@ function todoItem(x){
 }
 function todoDraw(){
   var box=$('#tdlist');if(!box)return;
-  var a=todoAll(),g={over:[],today:[],tom:[],week:[],later:[],none:[],done:[]};
+  var a=todoAll(),g={past:[],today:[],tom:[],week:[],later:[],none:[]},doneN=0,overN=0;
   a.forEach(function(x){
-    if(x.done)g.done.push(x);else if(!x.d)g.none.push(x);
-    else{var k=dayDiff(x.d);(k<0?g.over:k===0?g.today:k===1?g.tom:k<=7?g.week:g.later).push(x)}
+    if(x.done)doneN++;
+    if(!x.d)g.none.push(x);
+    else{var k=dayDiff(x.d);if(!x.done&&k<0)overN++;(k<0?g.past:k===0?g.today:k===1?g.tom:k<=7?g.week:g.later).push(x)}
   });
-  var by=function(p,q){var a1=p.d||'9',b1=q.d||'9';return a1<b1?-1:a1>b1?1:(p.at||0)-(q.at||0)};
-  ['over','today','tom','week','later','none'].forEach(function(k){g[k].sort(by)});
-  g.done.sort(function(p,q){return (q.dn||0)-(p.dn||0)});
-  var open=a.length-g.done.length,h='';
-  if(a.length)h+='<p class="td-s">Осталось: <b>'+open+'</b>'+(g.over.length?' · <b class="bad">просрочено: '+g.over.length+'</b>':'')+(g.done.length?' · сделано: '+g.done.length:'')+'</p>';
+  var by=function(p,q){var d1=p.done?1:0,d2=q.done?1:0;if(d1!==d2)return d1-d2;var a1=p.d||'9',b1=q.d||'9';return a1<b1?-1:a1>b1?1:(p.at||0)-(q.at||0)};
+  Object.keys(g).forEach(function(k){g[k].sort(by)});
+  var open=a.length-doneN,h='';
+  if(a.length)h+='<p class="td-s">Осталось: <b>'+open+'</b>'+(overN?' · <b class="bad">просрочено: '+overN+'</b>':'')+(doneN?' · сделано: '+doneN:'')+'</p>';
   if(todoUndo)h+='<div class="td-undo" role="status"><span>Дело удалено</span><button type="button" data-tundo>Вернуть</button></div>';
-  var T=[['over','Просрочено'],['today','Сегодня'],['tom','Завтра'],['week','На этой неделе'],['later','Позже'],['none','Без срока']];
-  T.forEach(function(t){var l=g[t[0]];if(!l.length)return;h+='<div class="td-h'+(t[0]==='over'?' over':'')+'"><span>'+t[1]+'</span><span class="n">'+l.length+'</span></div><ul class="td-l">'+l.map(todoItem).join('')+'</ul>'});
+  var T=[['past','Просрочено'],['today','Сегодня'],['tom','Завтра'],['week','Ближайшие 7 дней'],['later','Позже'],['none','Без срока']];
+  T.forEach(function(t){
+    var l=g[t[0]];if(!l.length)return;
+    var hasOpen=l.some(function(x){return !x.done}),title=t[1],cls='td-h';
+    if(t[0]==='past'){if(hasOpen)cls+=' over';else{title='Раньше';cls+=' ok'}}
+    h+='<div class="'+cls+'"><span>'+title+'</span><span class="n">'+l.length+'</span></div><ul class="td-l">'+l.map(todoItem).join('')+'</ul>';
+  });
   if(!a.length)h+='<div class="td-empty">Пока дел нет.<br>Напиши первое выше и поставь срок.</div>';
   else if(!open)h+='<div class="td-empty">Всё сделано. Можно отдыхать.</div>';
-  if(g.done.length)h+='<details class="td-dn"'+(todoDoneOpen?' open':'')+'><summary><span>Сделано</span><span class="n">'+g.done.length+'</span></summary><ul class="td-l">'+g.done.map(todoItem).join('')+'</ul><button type="button" class="td-clr" data-tclear>Очистить сделанное</button></details>';
+  if(doneN)h+='<button type="button" class="td-clr" data-tclear>Убрать сделанное из списка</button>';
   box.innerHTML=h;
 }
 function renderTodo(){
   state.heads=null;todoUndo=null;
-  view.innerHTML='<section class="results aboutp todo"><h1>Дела</h1><p class="aboutlead">Что нужно сделать. Запиши дело и срок, поставь галочку, когда сделал. Нажми на дело, чтобы изменить текст, на срок — чтобы перенести.</p>'
+  view.innerHTML='<section class="results aboutp todo"><h1>Дела</h1><p class="aboutlead">Что нужно сделать. Запиши дело и срок, поставь галочку, когда сделал: дело подсветится зелёным и останется на месте. Нажми на дело, чтобы изменить текст, на срок — чтобы перенести.</p>'
    +'<form class="td-add" id="tdform" autocomplete="off"><input class="td-in" id="tdtext" type="text" maxlength="200" placeholder="Что нужно сделать?" aria-label="Новое дело" enterkeyhint="done">'
    +'<div class="td-row"><input type="date" id="tddate" aria-label="Срок"><span class="td-ch"><button type="button" data-tq="0">Сегодня</button><button type="button" data-tq="1">Завтра</button><button type="button" data-tq="7">Через неделю</button></span><button type="submit" class="td-go">Добавить</button></div></form>'
    +'<div id="tdlist"></div></section>';
@@ -1913,7 +1924,6 @@ view.addEventListener('click',function(e){
   var dp=t.closest('.td-d');if(dp){var inp=$('input',dp);try{if(inp&&inp.showPicker)inp.showPicker()}catch(x){}return}
   var tx=t.closest('.td-t');if(tx&&li&&!li.classList.contains('done'))todoEdit(li);
 });
-view.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('td-dn'))todoDoneOpen=e.target.open},true);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&state.tok==='todo'&&!$('.td-edit'))todoDraw()});
 window.addEventListener('sync:applied',function(){todoCount();if(state.tok==='todo'&&!$('.td-edit'))todoDraw()});
 todoCount();
