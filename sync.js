@@ -1,11 +1,13 @@
 /* Синхронизация прогресса между устройствами (телефон, компьютер, приложение).
-   Хранилище — Cloudflare Worker (worker/sync-worker.js). Пока SYNC_URL пуст, скрипт ничего не делает.
+   Хранилище — приватный репозиторий GitHub (GH_REPO, файл <профиль>.json), доступ по токену, который вводится
+   на каждом устройстве один раз (кнопка ☁ в углу). Запасной вариант — Cloudflare Worker (SYNC_URL, worker/sync-worker.js).
    Как работает: любая запись в localStorage по ключам прогресса помечается временем изменения, затем в фоне
    страница забирает облачную копию, берёт у каждого ключа более свежую версию и отправляет результат обратно.
    Профиль (artem / nastya) берётся из входа в Hub: у каждого человека своя копия. */
 (function () {
   var SYNC_URL = '';
-  if (!SYNC_URL || !window.fetch || !window.localStorage || !window.Storage) return;
+  var GH_REPO = 'klimentiev-a/konspekty-sync', GH_API = 'https://api.github.com';
+  if (!window.fetch || !window.localStorage || !window.Storage) return;
 
   var LS = window.localStorage, SP = Storage.prototype;
   var nset = SP.setItem, nrem = SP.removeItem, nget = SP.getItem;
@@ -19,6 +21,17 @@
   var P = nget.call(LS, 'hub:last');
   if (!P || !/^(artem|nastya)$/.test(P) || !nget.call(LS, 'hub:auth:' + P)) return;
   var URL_ = SYNC_URL.replace(/\/+$/, '') + '/p/' + P;
+
+  /* токен можно передать ссылкой: ...#synctoken=XXXX (сохранится и сразу сотрётся из адреса) */
+  try {
+    var hm = /[#&]synctoken=([A-Za-z0-9_\-]+)/.exec(location.hash);
+    if (hm) {
+      nset.call(LS, 'sync:gh', hm[1]);
+      var nh = location.hash.replace(/[#&]synctoken=[A-Za-z0-9_\-]+/, '').replace(/^&/, '#');
+      history.replaceState(null, '', location.pathname + location.search + (nh === '#' ? '' : nh));
+    }
+  } catch (e) {}
+  function token() { return SYNC_URL ? 'x' : (nget.call(LS, 'sync:gh') || '') }
 
   function meta() { try { return JSON.parse(nget.call(LS, 'sync:meta') || '{}') || {} } catch (e) { return {} } }
   function saveMeta(m) { try { nset.call(LS, 'sync:meta', JSON.stringify(m)) } catch (e) {} }
@@ -70,29 +83,65 @@
     return nrem.apply(this, arguments);
   };
 
-  function req(opts, ms) {
+  function req(opts, ms, url) {
     var ac = window.AbortController ? new AbortController() : null, t = ac && setTimeout(function () { ac.abort() }, ms || 9000);
     if (ac) opts.signal = ac.signal;
-    return fetch(URL_, opts).then(function (r) { clearTimeout(t); return r }, function (e) { clearTimeout(t); throw e });
+    return fetch(url || URL_, opts).then(function (r) { clearTimeout(t); return r }, function (e) { clearTimeout(t); throw e });
+  }
+
+  /* --- хранилище: GitHub (файл в репозитории) или Cloudflare Worker --- */
+  var status = 'off', ghSha = null, ghR = {};
+  function setStatus(s) { status = s; paint() }
+  function b64d(t) { var bin = atob(String(t).replace(/\s/g, '')), u = ''; for (var i = 0; i < bin.length; i++) u += '%' + ('0' + bin.charCodeAt(i).toString(16)).slice(-2); return decodeURIComponent(u) }
+  function b64e(t) { return btoa(unescape(encodeURIComponent(t))) }
+  function ghUrl() { return GH_API + '/repos/' + GH_REPO + '/contents/' + P + '.json' }
+  function ghHead() { return { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + token() } }
+  function ghErr(r) { setStatus(r.status === 401 || r.status === 403 ? 'auth' : r.status === 404 ? 'norepo' : 'err'); throw 0 }
+  function remoteGet() {
+    if (SYNC_URL) return req({ cache: 'no-store' }).then(function (r) { if (r.status === 404) return {}; if (!r.ok) throw 0; return r.json() });
+    return req({ cache: 'no-store', headers: ghHead() }, 12000, ghUrl() + '?t=' + Date.now()).then(function (r) {
+      if (r.status === 404) { ghSha = null; ghR = {}; return {} }  /* файла ещё нет; если нет репозитория — это выяснится при записи */
+      if (!r.ok) return ghErr(r);
+      return r.json().then(function (j) {
+        var R = {}; try { R = JSON.parse(b64d(j.content)) || {} } catch (e) {}
+        ghSha = j.sha; ghR = R; setStatus('ok'); return R;
+      });
+    });
+  }
+  function mergeR(cur, out) {
+    var res = {}, k;
+    for (k in cur) res[k] = cur[k];
+    for (k in out) { var n = out[k]; if (!res[k] || !(res[k][1] >= n[1])) res[k] = n }
+    return res;
+  }
+  function remotePut(out, tries) {
+    if (SYNC_URL) return req({ method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(out) }).then(function (r) { if (!r.ok) throw 0 });
+    tries = tries == null ? 3 : tries;
+    var body = { message: 'sync ' + P, content: b64e(JSON.stringify(mergeR(ghR, out))) };
+    if (ghSha) body.sha = ghSha;
+    return req({ method: 'PUT', headers: ghHead(), body: JSON.stringify(body) }, 15000, ghUrl()).then(function (r) {
+      if (r.ok) return r.json().then(function (j) { ghSha = j.content && j.content.sha; ghR = mergeR(ghR, out); setStatus('ok') });
+      if ((r.status === 409 || r.status === 422) && tries > 0) return remoteGet().then(function () { return remotePut(out, tries - 1) });
+      return ghErr(r);
+    });
   }
 
   function flush() {
     var ks = Object.keys(dirty);
     if (!ks.length) return;
     clearTimeout(timer); timer = 0;
+    /* GitHub нельзя записать «на лету» при закрытии страницы: несохранённое уйдёт при следующем открытии */
+    if (!SYNC_URL) return;
     var m = meta(), body = {};
     ks.forEach(function (k) { var v = nget.call(LS, k); body[k] = [v, m[k] || Date.now()] });
     try { fetch(URL_, { method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) } catch (e) {}
   }
 
   function sync(first) {
+    if (!token()) { setStatus('off'); return }
     if (busy) { again = true; return }
     busy = true; lastRun = Date.now();
-    req({ cache: 'no-store' }).then(function (r) {
-      if (r.status === 404) return {};
-      if (!r.ok) throw 0;
-      return r.json();
-    }).then(function (R) {
+    remoteGet().then(function (R) {
       R = isObj(R) ? R : {};
       var m = meta(), out = {}, push = false, hard = false, seen = {}, k;
       for (k in R) seen[k] = 1;
@@ -124,7 +173,7 @@
       saveMeta(m);
       if (hard || Object.keys(out).length) { try { window.dispatchEvent(new Event('sync:applied')) } catch (e) {} }
       if (!push) return hard;
-      return req({ method: 'PUT', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(out) }).then(function (r) { if (!r.ok) throw 0; dirty = {}; return hard });
+      return remotePut(out).then(function () { dirty = {}; return hard });
     }).then(function (hard) {
       busy = false;
       if (hard && first) {
@@ -132,8 +181,36 @@
         if (Date.now() - last > 30000) { try { sessionStorage.setItem('sync:rl', String(Date.now())) } catch (e) {} location.reload(); return }
       }
       if (again) { again = false; plan(300) }
-    }).catch(function () { busy = false; again = false });
+    }).catch(function () { busy = false; again = false; if (status === 'ok' || status === 'off') setStatus('err') });
   }
+
+  /* --- кнопка ☁ и панель с токеном --- */
+  var btn, pan;
+  var TXT = { off: 'Не подключено', ok: 'Синхронизировано', err: 'Нет связи, повторю позже', auth: 'Токен не подошёл (проверь права и срок)', norepo: 'Репозиторий ' + GH_REPO + ' не найден' };
+  function paint() {
+    if (!btn) return;
+    btn.style.color = status === 'ok' ? '#3a9d5d' : status === 'off' ? '#8a8a8a' : '#d9534f';
+    btn.title = TXT[status] || '';
+    if (pan && pan.style.display !== 'none') { var st = pan.querySelector('[data-st]'); if (st) st.textContent = TXT[status] || '' }
+  }
+  function ui() {
+    if (SYNC_URL || !document.body) return;
+    btn = document.createElement('button'); btn.type = 'button'; btn.setAttribute('aria-label', 'Синхронизация');
+    btn.textContent = '\u2601';
+    btn.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:99998;width:34px;height:34px;border-radius:50%;border:1px solid rgba(128,128,128,.35);background:rgba(128,128,128,.14);backdrop-filter:blur(6px);font:18px/1 system-ui,sans-serif;padding:0;cursor:pointer;opacity:.75';
+    pan = document.createElement('div'); pan.style.cssText = 'display:none;position:fixed;left:10px;bottom:52px;z-index:99999;width:min(300px,calc(100vw - 20px));padding:14px;border-radius:14px;background:#fff;color:#222;border:1px solid rgba(0,0,0,.15);box-shadow:0 8px 30px rgba(0,0,0,.25);font:14px/1.4 system-ui,sans-serif';
+    pan.innerHTML = '<b>Синхронизация</b><div data-st style="margin:4px 0 10px;color:#666"></div><input type="password" placeholder="GitHub-токен" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:8px;font-size:16px;background:#fff;color:#222"><div style="display:flex;gap:8px;margin-top:10px"><button data-save style="flex:1;padding:9px;border:0;border-radius:8px;background:#3a9d5d;color:#fff;font-size:14px">Подключить</button><button data-off style="padding:9px 12px;border:1px solid #bbb;border-radius:8px;background:#fff;color:#222;font-size:14px">Отключить</button></div>';
+    document.body.appendChild(pan); document.body.appendChild(btn);
+    btn.onclick = function () { pan.style.display = pan.style.display === 'none' ? 'block' : 'none'; paint() };
+    pan.querySelector('[data-save]').onclick = function () {
+      var v = pan.querySelector('input').value.replace(/\s/g, '');
+      if (!v) return;
+      nset.call(LS, 'sync:gh', v); pan.querySelector('input').value = ''; setStatus('off'); sync(true);
+    };
+    pan.querySelector('[data-off]').onclick = function () { nrem.call(LS, 'sync:gh'); ghSha = null; setStatus('off') };
+    paint();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ui); else ui();
 
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') { if (Date.now() - lastRun > 20000) sync(false) }
