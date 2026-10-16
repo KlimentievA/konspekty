@@ -440,7 +440,8 @@ html.wfs-lock,html.wfs-lock body{overflow:hidden}
 .qz-o{display:block;width:100%;margin:6px 0;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--bg);text-align:left;font:400 14.5px/1.4 var(--sans)}
 .qz-o:hover:not(:disabled){border-color:var(--faint)}.qz-o:disabled{cursor:default;opacity:.92}
 .qz-o:disabled{opacity:1}.qz-o.ok{border:2px solid var(--up);background:color-mix(in srgb,var(--up) 30%,var(--bg));color:var(--fg);font-weight:600}.qz-o.ok::before{content:"✓  ";color:var(--up);font-weight:700}.qz-o.no{border:2px solid var(--down);background:color-mix(in srgb,var(--down) 28%,var(--bg));color:var(--fg);font-weight:600}.qz-o.no::before{content:"✕  ";color:var(--down);font-weight:700}
-.qz-q.good>p:first-child::after{content:"  ✓ верно";color:var(--up);font-weight:700;font-size:13px}.qz-q.bad>p:first-child::after{content:"  ✕ неверно";color:var(--down);font-weight:700;font-size:13px}
+.qz-q.good>p:first-child::after{content:"  ✓ верно";color:var(--up);font-weight:700;font-size:13px}.qz-q.bad>p:first-child::after{content:"  ✕ неверно, попробуй ещё";color:var(--down);font-weight:700;font-size:13px}
+.qz-h{margin:-2px 0 8px;padding:0 12px;font:400 13px/1.45 var(--sans)!important;color:var(--down)}
 .qz-e{margin:8px 0 0;padding:9px 12px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent);font:400 13.5px/1.5 var(--sans);color:var(--muted)}
 .qz-w{margin:6px 0 0;padding:9px 12px;list-style:none;border-left:3px solid var(--line);font:400 13px/1.5 var(--sans);color:var(--muted)}.qz-w li{margin:6px 0}.qz-w li.wh{margin:0 0 4px;font-weight:700;font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--faint)}.qz-w li b{color:var(--fg);font-weight:600}.qz-w li.mine b{color:var(--down)}
 .qz-lnk{padding:0;border:0;background:none;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
@@ -2328,7 +2329,7 @@ function wFxFill(el,cur){
 view.addEventListener('click',function(e){
   var qb=e.target.closest('[data-qz]');if(qb){var qq=qb.getAttribute('data-qz').split(':');qzPick(+qq[0],+qq[1]);return}
   if(e.target.closest('[data-qzb]')){var bb=qzBest();delete bb[QZ.id];store('fin:quiz',JSON.stringify(bb));qzDraw();return}
-  if(e.target.closest('[data-qzr]')){QZ.ans={};qzDraw();var qe=$('#quiz');if(qe)qe.scrollIntoView({block:'start',behavior:'smooth'});return}
+  if(e.target.closest('[data-qzr]')){qzReset();qzDraw();var qe=$('#quiz');if(qe)qe.scrollIntoView({block:'start',behavior:'smooth'});return}
 });
 view.addEventListener('click',function(e){
   if(state!=='world')return;var t=e.target,b;
@@ -2485,19 +2486,26 @@ function renderFav(){
   Promise.all([wLoad(),scrRates()]).then(function(){if(state!=='world'||!$('#fav-body'))return;scrBuild();favDraw()}).catch(function(){var e=$('#fav-body');if(e)e.innerHTML='<p class="empty">Не удалось загрузить данные. <button type="button" class="chip sm" data-wretry>Повторить</button></p>'});
 }
 /* ---------------- проверочные вопросы к главам ---------------- */
-var QZ={data:null,tried:false,id:null,ans:{}};
+var QZ={data:null,tried:false,id:null,first:{},bad:{},solved:{}};
 function qzLoad(){if(QZ.data||QZ.tried)return Promise.resolve(QZ.data);QZ.tried=true;return fetch('quiz.json').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){QZ.data=j;return j}).catch(function(){return null})}
 function qzBest(){try{return JSON.parse(store('fin:quiz')||'{}')||{}}catch(e){return {}}}
+function qzReset(){QZ.first={};QZ.bad={};QZ.solved={}}
 function qzDraw(){
   var el=$('#quiz');if(!el||!QZ.id)return;var qs=(QZ.data&&QZ.data[QZ.id])||[];if(!qs.length){el.hidden=true;return}
-  var best=qzBest()[QZ.id],n=Object.keys(QZ.ans).length,ok=0;Object.keys(QZ.ans).forEach(function(i){if(QZ.ans[i]===qs[i].a)ok++});
-  var h='<h2>Проверь себя</h2><p class="qz-s">'+plural(qs.length,['вопрос','вопроса','вопросов'])+' по этой главе'+(best?' · лучший результат: '+best.ok+' из '+best.n+' <button type="button" class="qz-lnk" data-qzb>сбросить</button>':'')+(n?' · <button type="button" class="qz-lnk" data-qzr>начать заново</button>':'')+'</p>';
-  qs.forEach(function(q,i){var an=QZ.ans[i];h+='<div class="qz-q'+(an==null?'':an===q.a?' good':' bad')+'"><p>'+(i+1)+'. '+esc(q.q)+'</p>'+q.o.map(function(o,j){var cl=an==null?'':j===q.a?' ok':j===an?' no':'';return '<button type="button" class="qz-o'+cl+'" data-qz="'+i+':'+j+'"'+(an!=null?' disabled':'')+'>'+esc(o)+'</button>'}).join('')+(an!=null&&q.e?'<p class="qz-e">'+esc(q.e)+'</p>':'')+(an!=null&&q.w?'<ul class="qz-w"><li class="wh">Почему остальные варианты неверны</li>'+q.o.map(function(o,j){return j===q.a||!q.w[j]?'':'<li'+(j===an?' class="mine"':'')+'><b>'+esc(o)+'</b> — '+esc(q.w[j])+'</li>'}).join('')+'</ul>':'')+'</div>'});
-  if(n===qs.length)h+='<div class="qz-r"><span>Результат: '+ok+' из '+qs.length+'</span><button type="button" class="chip" data-qzr>Пройти заново</button></div>';
+  var best=qzBest()[QZ.id],n=Object.keys(QZ.first).length,done=Object.keys(QZ.solved).length,ok=0;Object.keys(QZ.first).forEach(function(i){if(QZ.first[i]===qs[i].a)ok++});
+  var h='<h2>Проверь себя</h2><p class="qz-s">'+plural(qs.length,['вопрос','вопроса','вопросов'])+' по этой главе. Ошибся? Просто выбери другой вариант'+(best?' · лучший результат с первой попытки: '+best.ok+' из '+best.n+' <button type="button" class="qz-lnk" data-qzb>сбросить</button>':'')+(n?' · <button type="button" class="qz-lnk" data-qzr>начать заново</button>':'')+'</p>';
+  qs.forEach(function(q,i){var sv=QZ.solved[i],bd=QZ.bad[i]||{},nb=Object.keys(bd).length;
+    h+='<div class="qz-q'+(sv?' good':nb?' bad':'')+'"><p>'+(i+1)+'. '+esc(q.q)+'</p>'+q.o.map(function(o,j){var cl=sv&&j===q.a?' ok':bd[j]?' no':'';
+      return '<button type="button" class="qz-o'+cl+'" data-qz="'+i+':'+j+'"'+(sv||bd[j]?' disabled':'')+'>'+esc(o)+'</button>'+(bd[j]&&q.w&&q.w[j]?'<p class="qz-h">'+esc(q.w[j])+'</p>':'')}).join('')
+      +(sv&&q.e?'<p class="qz-e">'+esc(q.e)+'</p>':'')
+      +(sv&&q.w?'<ul class="qz-w"><li class="wh">Почему остальные варианты неверны</li>'+q.o.map(function(o,j){return j===q.a||!q.w[j]?'':'<li'+(bd[j]?' class="mine"':'')+'><b>'+esc(o)+'</b> — '+esc(q.w[j])+'</li>'}).join('')+'</ul>':'')+'</div>'});
+  if(done===qs.length)h+='<div class="qz-r"><span>С первой попытки: '+ok+' из '+qs.length+'</span><button type="button" class="chip" data-qzr>Пройти заново</button></div>';
   el.hidden=false;el.innerHTML=h}
-function qzInit(c){QZ.id=c.id;QZ.ans={};var el=$('#quiz');if(!el||c.sec)return;qzLoad().then(function(){if(QZ.id===c.id)qzDraw()})}
-function qzPick(i,j){var qs=(QZ.data&&QZ.data[QZ.id])||[];if(!qs[i]||QZ.ans[i]!=null)return;QZ.ans[i]=j;
-  if(Object.keys(QZ.ans).length===qs.length){var ok=0;Object.keys(QZ.ans).forEach(function(k){if(QZ.ans[k]===qs[k].a)ok++});var b=qzBest(),o=b[QZ.id];if(!o||ok>=o.ok){b[QZ.id]={ok:ok,n:qs.length};store('fin:quiz',JSON.stringify(b))}}
+function qzInit(c){QZ.id=c.id;qzReset();var el=$('#quiz');if(!el||c.sec)return;qzLoad().then(function(){if(QZ.id===c.id)qzDraw()})}
+function qzPick(i,j){var qs=(QZ.data&&QZ.data[QZ.id])||[];if(!qs[i]||QZ.solved[i])return;
+  if(QZ.first[i]==null)QZ.first[i]=j;
+  if(j===qs[i].a)QZ.solved[i]=1;else{(QZ.bad[i]=QZ.bad[i]||{})[j]=1}
+  if(Object.keys(QZ.solved).length===qs.length){var ok=0;Object.keys(QZ.first).forEach(function(k){if(QZ.first[k]===qs[k].a)ok++});var b=qzBest(),o=b[QZ.id];if(!o||ok>=o.ok){b[QZ.id]={ok:ok,n:qs.length};store('fin:quiz',JSON.stringify(b))}}
   qzDraw()}
 
 /* ---------------- рейтинг компаний мира ---------------- */
