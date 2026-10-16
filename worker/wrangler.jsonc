@@ -1,0 +1,6 @@
+{
+  "name": "patient-art-f90f",
+  "main": "sync-worker.js",
+  "compatibility_date": "2025-01-01",
+  "kv_namespaces": [{ "binding": "KV" }]
+}
