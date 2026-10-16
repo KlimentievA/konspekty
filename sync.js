@@ -32,7 +32,7 @@
     }
   } catch (e) {}
   /* вшитый токен (только запись в приватный репозиторий с прогрессом), хранится закодированным: «обратный порядок → base64» */
-  var GH_TOK = '';
+  var GH_TOK = 'TmZ5ZnBBcVRSWVFJSUtZV25VVkJOcFA3dFF2eGhSVnZkWkxCeHhhZ0s1UXcxSHF0aWdoUjZaWmlQNG5fOVk5ZVBpMDgwZ2paMFlVMjNEV0ExMV90YXBfYnVodGln';
   function builtin() { try { return GH_TOK ? atob(GH_TOK).split('').reverse().join('') : '' } catch (e) { return '' } }
   function token() { return SYNC_URL ? 'x' : (nget.call(LS, 'sync:gh') || builtin()) }
 
