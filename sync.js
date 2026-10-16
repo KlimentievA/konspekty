@@ -99,7 +99,8 @@
   function b64e(t) { return btoa(unescape(encodeURIComponent(t))) }
   function ghUrl() { return GH_API + '/repos/' + GH_REPO + '/contents/' + P + '.json' }
   function ghHead() { return { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + token() } }
-  function ghErr(r) { setStatus(r.status === 401 || r.status === 403 ? 'auth' : r.status === 404 ? 'norepo' : 'err'); throw 0 }
+  var lastHttp = 0, lastExc = '';
+  function ghErr(r) { lastHttp = r.status; setStatus(r.status === 401 || r.status === 403 ? 'auth' : r.status === 404 ? 'norepo' : 'err'); throw 0 }
   function remoteGet() {
     if (SYNC_URL) return req({ cache: 'no-store' }).then(function (r) { if (r.status === 404) return {}; if (!r.ok) throw 0; return r.json() });
     return req({ cache: 'no-store', headers: ghHead() }, 12000, ghUrl() + '?t=' + Date.now()).then(function (r) {
@@ -184,12 +185,16 @@
         if (Date.now() - last > 30000) { try { sessionStorage.setItem('sync:rl', String(Date.now())) } catch (e) {} location.reload(); return }
       }
       if (again) { again = false; plan(300) }
-    }).catch(function () { busy = false; again = false; if (status === 'ok' || status === 'off') setStatus('err') });
+    }).catch(function (e) { busy = false; again = false; lastExc = String(e && e.message || e); if (status === 'ok' || status === 'off') setStatus('err') });
   }
 
   var btn, pan;
   var TXT = {};
   function paint() {}
+
+  /* для страницы sync-test.html: что видит это устройство */
+  window.__syncInfo = function () { var m = meta(); return { profile: P, status: status, http: lastHttp, error: lastExc, tokenFromLink: !!nget.call(LS, 'sync:gh'), builtinToken: !!builtin(), local: allKeys().map(function (k) { return k + ' @' + (m[k] ? new Date(m[k]).toLocaleString() : 'без метки') }), remote: Object.keys(ghR), pending: Object.keys(dirty), lastRun: lastRun ? new Date(lastRun).toLocaleTimeString() : '-' } };
+  window.__syncNow = function () { sync(false) };
 
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') { if (Date.now() - lastRun > 20000) sync(false) }

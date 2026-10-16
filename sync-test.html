@@ -1,0 +1,6 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><script src="sync.js"></script><meta name="viewport" content="width=device-width,initial-scale=1"><title>Проверка синхронизации</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;margin:16px;background:#f4f1e8;color:#222}pre{white-space:pre-wrap;word-break:break-word;background:#fff;padding:12px;border-radius:10px}button{padding:10px 14px;font-size:16px;border-radius:8px;border:1px solid #999;background:#fff}@media(prefers-color-scheme:dark){body{background:#151412;color:#eee}pre{background:#222}button{background:#222;color:#eee}}</style></head>
+<body><h3>Проверка синхронизации</h3><p><button onclick="go()">Синхронизировать сейчас</button></p><pre id="o">Жду…</pre>
+<script>function show(){var o=document.getElementById('o');if(!window.__syncInfo){o.textContent='sync.js не работает: нет входа в профиль (зайди в Hub и введи пароль) или файл не загрузился.';return}var i=window.__syncInfo();o.textContent=JSON.stringify(i,null,1)}
+function go(){if(window.__syncNow)window.__syncNow();setTimeout(show,3500)}
+setTimeout(show,3500);setInterval(show,5000)</script></body></html>
