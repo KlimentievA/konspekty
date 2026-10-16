@@ -187,33 +187,9 @@
     }).catch(function () { busy = false; again = false; if (status === 'ok' || status === 'off') setStatus('err') });
   }
 
-  /* --- кнопка ☁ и панель с токеном --- */
   var btn, pan;
-  var TXT = { off: 'Не подключено', ok: 'Синхронизировано', err: 'Нет связи, повторю позже', auth: 'Токен не подошёл (проверь права и срок)', norepo: 'Репозиторий ' + GH_REPO + ' не найден' };
-  function paint() {
-    if (!btn) return;
-    btn.style.color = status === 'ok' ? '#3a9d5d' : status === 'off' ? '#8a8a8a' : '#d9534f';
-    btn.title = TXT[status] || '';
-    if (pan && pan.style.display !== 'none') { var st = pan.querySelector('[data-st]'); if (st) st.textContent = TXT[status] || '' }
-  }
-  function ui() {
-    if (SYNC_URL || !document.body) return;
-    btn = document.createElement('button'); btn.type = 'button'; btn.setAttribute('aria-label', 'Синхронизация');
-    btn.textContent = '\u2601';
-    btn.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:99998;width:34px;height:34px;border-radius:50%;border:1px solid rgba(128,128,128,.35);background:rgba(128,128,128,.14);backdrop-filter:blur(6px);font:18px/1 system-ui,sans-serif;padding:0;cursor:pointer;opacity:.75';
-    pan = document.createElement('div'); pan.style.cssText = 'display:none;position:fixed;left:10px;bottom:52px;z-index:99999;width:min(300px,calc(100vw - 20px));padding:14px;border-radius:14px;background:#fff;color:#222;border:1px solid rgba(0,0,0,.15);box-shadow:0 8px 30px rgba(0,0,0,.25);font:14px/1.4 system-ui,sans-serif';
-    pan.innerHTML = '<b>Синхронизация</b><div data-st style="margin:4px 0 10px;color:#666"></div><input type="password" placeholder="GitHub-токен" autocomplete="off" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:8px;font-size:16px;background:#fff;color:#222"><div style="display:flex;gap:8px;margin-top:10px"><button data-save style="flex:1;padding:9px;border:0;border-radius:8px;background:#3a9d5d;color:#fff;font-size:14px">Подключить</button><button data-off style="padding:9px 12px;border:1px solid #bbb;border-radius:8px;background:#fff;color:#222;font-size:14px">Отключить</button></div>';
-    document.body.appendChild(pan); document.body.appendChild(btn);
-    btn.onclick = function () { pan.style.display = pan.style.display === 'none' ? 'block' : 'none'; paint() };
-    pan.querySelector('[data-save]').onclick = function () {
-      var v = pan.querySelector('input').value.replace(/\s/g, '');
-      if (!v) return;
-      nset.call(LS, 'sync:gh', v); pan.querySelector('input').value = ''; setStatus('off'); sync(true);
-    };
-    pan.querySelector('[data-off]').onclick = function () { nrem.call(LS, 'sync:gh'); ghSha = null; setStatus('off') };
-    paint();
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ui); else ui();
+  var TXT = {};
+  function paint() {}
 
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') { if (Date.now() - lastRun > 20000) sync(false) }
