@@ -1915,6 +1915,7 @@ view.addEventListener('click',function(e){
 });
 view.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('td-dn'))todoDoneOpen=e.target.open},true);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&state.tok==='todo'&&!$('.td-edit'))todoDraw()});
+window.addEventListener('sync:applied',function(){todoCount();if(state.tok==='todo'&&!$('.td-edit'))todoDraw()});
 todoCount();
 
 /* ---------- о предметах ---------- */

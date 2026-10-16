@@ -12,3 +12,14 @@ python3 src/finance/build_finance.py src/finance/content src/marked.min.js finan
 python3 src/english/build_english.py
 python3 src/energy/build_energy.py
 python3 src/finance/make_search.py
+# Синхронизация прогресса между устройствами: подключаем sync.js первым скриптом (идемпотентно)
+python3 - <<'PY'
+import re
+for f in ['index.html','artem.html','nastya.html','nastya-ucheba.html','ucheba.html','finance.html','english.html']:
+    s = open(f, encoding='utf-8').read()
+    if 'src="sync.js"' in s: continue
+    s2 = s.replace('<meta charset="utf-8">', '<meta charset="utf-8"><script src="sync.js"></script>', 1)
+    assert s2 != s, f
+    open(f, 'w', encoding='utf-8').write(s2)
+print('ok sync.js подключён')
+PY
