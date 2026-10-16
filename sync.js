@@ -31,7 +31,10 @@
       history.replaceState(null, '', location.pathname + location.search + (nh === '#' ? '' : nh));
     }
   } catch (e) {}
-  function token() { return SYNC_URL ? 'x' : (nget.call(LS, 'sync:gh') || '') }
+  /* вшитый токен (только запись в приватный репозиторий с прогрессом), хранится закодированным: «обратный порядок → base64» */
+  var GH_TOK = '';
+  function builtin() { try { return GH_TOK ? atob(GH_TOK).split('').reverse().join('') : '' } catch (e) { return '' } }
+  function token() { return SYNC_URL ? 'x' : (nget.call(LS, 'sync:gh') || builtin()) }
 
   function meta() { try { return JSON.parse(nget.call(LS, 'sync:meta') || '{}') || {} } catch (e) { return {} } }
   function saveMeta(m) { try { nset.call(LS, 'sync:meta', JSON.stringify(m)) } catch (e) {} }
