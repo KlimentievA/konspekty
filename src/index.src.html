@@ -1411,14 +1411,15 @@ window.addEventListener('hashchange',function(){
 
 /* ---------- навигация: предметы и вкладки ---------- */
 var withNotes=DATA.subjects.filter(function(s){return s.notes.length});
-$('#subjects').innerHTML='<a class="subj" href="#" data-go="" data-s="notes" style="--h:70"><span class="dot"></span><span class="nm">Конспекты</span><span class="ct">'+allNotes.length+'</span></a><a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a><a class="subj" href="#todo" data-go="todo" data-s="todo" style="--h:250"><span class="dot"></span><span class="nm">Дела</span><span class="ct"></span></a><a class="subj" href="#tickets" data-go="tickets" data-s="tickets" style="--h:250"><span class="dot"></span><span class="nm">Билеты</span><span class="ct"></span></a><a class="subj" href="#about" data-go="about" data-s="about" style="--h:250"><span class="dot"></span><span class="nm">О предметах</span><span class="ct"></span></a><a class="subj" href="#session" data-go="session" data-s="session" style="--h:250"><span class="dot"></span><span class="nm">Сессия</span><span class="ct"></span></a>';
+$('#subjects').innerHTML='<a class="subj" href="#" data-go="" data-s="notes" style="--h:70"><span class="dot"></span><span class="nm">Конспекты</span><span class="ct">'+allNotes.length+'</span></a><a class="subj" href="#schedule" data-go="schedule" data-s="schedule" style="--h:250"><span class="dot"></span><span class="nm">Расписание</span><span class="ct"></span></a><a class="subj" href="#todo" data-go="todo" data-s="todo" style="--h:250"><span class="dot"></span><span class="nm">Дела</span><span class="ct"></span></a><a class="subj" href="#links-1" data-go="links-1" data-s="links-1" style="--h:310"><span class="dot"></span><span class="nm">Ведомости</span><span class="ct"></span></a><a class="subj" href="#tickets" data-go="tickets" data-s="tickets" style="--h:250"><span class="dot"></span><span class="nm">Билеты</span><span class="ct"></span></a><a class="subj" href="#about" data-go="about" data-s="about" style="--h:250"><span class="dot"></span><span class="nm">О предметах</span><span class="ct"></span></a><a class="subj" href="#session" data-go="session" data-s="session" style="--h:250"><span class="dot"></span><span class="nm">Сессия</span><span class="ct"></span></a>';
 
 function centerIn(box,el){box.scrollLeft=el.offsetLeft-(box.clientWidth-el.offsetWidth)/2}
 
 function markSubject(n){
   $$('.subj').forEach(function(a){
     var cur=/^tickets-/.test(state.tok)?'tickets':state.tok;
-    var on=a.getAttribute('data-s')===(n||cur===''?'notes':cur);
+    var key=state.tok==='links-1'?'links-1':(n||cur===''?'notes':cur);
+    var on=a.getAttribute('data-s')===key;
     a.classList.toggle('on',on);
     if(on){a.setAttribute('aria-current','page');if(window.innerWidth<900)centerIn(a.parentNode,a)}else a.removeAttribute('aria-current');
   });
